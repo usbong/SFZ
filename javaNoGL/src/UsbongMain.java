@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240628; from 20240627
+ * @last updated: 20240629; from 20240628
  * @website: www.usbong.ph
  *
  */
@@ -236,6 +236,7 @@ class MyPanel extends JPanel {
 
 	//added by Mike, 20240622
 	RobotShip myRobotShip;
+		
 	JFrame myJFrameInstance;
 
 	//edited by Mike, 20240628
@@ -243,7 +244,7 @@ class MyPanel extends JPanel {
     public MyPanel(JFrame f, int iScreenWidth, int iScreenHeight) {				
 		//added by Mike, 20240622
 		myJFrameInstance = f;
-
+				
 		redSquare  = new RedSquare();
 		//edited by Mike, 20240628
 		//myRobotShip = new RobotShip();
@@ -266,7 +267,7 @@ class MyPanel extends JPanel {
 		//added by Mike, 20240622
 		addKeyListener(new KeyListener() {
             public void keyPressed(KeyEvent key) {
-                System.out.println("Key pressed.");
+                //System.out.println("Key pressed.");
 
 				if (key.getKeyCode() == KeyEvent.VK_ESCAPE){
 					System.out.println("ESC.");
@@ -274,9 +275,15 @@ class MyPanel extends JPanel {
 					//TODO: -add: open exit menu
 					myJFrameInstance.dispatchEvent(new WindowEvent(myJFrameInstance, WindowEvent.WINDOW_CLOSING));
 				}
+				
+				//added by Mike, 20240629
+				myRobotShip.keyPressed(key);
             }
 
-			public void keyReleased(KeyEvent key) {}
+			public void keyReleased(KeyEvent key) {				
+				myRobotShip.keyReleased(key);				
+			}
+			
             public void keyTyped(KeyEvent key) {}
 		});
     }
@@ -382,8 +389,17 @@ class RobotShip {
 	private int iHeight=0;	
 	private int iXPos=0;
 	private int iYPos=0;
-	private final int iStepX=2;
-	private final int iStepY=2;
+	//edited by Mike, 20240629
+	private final int iStepX=4; //2;
+	private final int iStepY=4; //2;
+	
+	//added by Mike, 20240629	
+	private final int KEY_W=0; //same as key UP
+	private final int KEY_S=1; //same as key DOWN
+	private final int KEY_D=2; //same as key RIGHT
+	private final int KEY_A=3; //same as key LEFT
+	private final int iNumOfKeyTypes=4;
+	private boolean myKeysDown[];
 	
 	private int iFrameCount=0;
 	private int iFrameCountMax=4;
@@ -414,6 +430,9 @@ class RobotShip {
 	  this.iScreenWidth=iScreenWidth;
 	  this.iScreenHeight=iScreenHeight;
 	  
+	  //added by Mike, 20240629
+	  myKeysDown = new boolean[iNumOfKeyTypes];
+	  
 	  reset();
 	}
 
@@ -429,6 +448,12 @@ class RobotShip {
 		iFrameCount=0;
 		iFrameCountDelay=0;
 		iRotationDegrees=0;
+		
+		//added by Mike, 20240629
+		int iMyKeysDownLength = myKeysDown.length;
+		for (int i=0; i<iMyKeysDownLength; i++) {
+			myKeysDown[i]=false;
+		}
 	}
 	
     public void setX(int iXPos){
@@ -456,8 +481,29 @@ class RobotShip {
     }
 
 	public void update() {
+		//removed by Mike, 20240629
 		//movement
-		setX(getX()+iStepX);
+		//setX(getX()+iStepX);
+		
+		if (myKeysDown[KEY_A])
+		{
+			setX(getX()-iStepX);
+		}
+
+		if (myKeysDown[KEY_D])
+		{
+			setX(getX()+iStepX);
+		}		
+
+		if (myKeysDown[KEY_W])
+		{
+			setY(getY()-iStepY);
+		}
+
+		if (myKeysDown[KEY_S])
+		{
+			setY(getY()+iStepY);
+		}
 		
 		//animation
 		if (iFrameCountDelay<iFrameCountDelayMax) {
@@ -468,6 +514,71 @@ class RobotShip {
 			iFrameCountDelay=0;
 		}
 	}
+/*	
+	//added by Mike, 20240629
+	public void move(KeyEvent key) {			
+		//horizontal movement
+		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
+			setX(getX()-iStepX);
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_D) || (key.getKeyCode() == KeyEvent.VK_RIGHT)) {
+			setX(getX()+iStepX);
+		}
+
+		//vertical movement
+		if ((key.getKeyCode() == KeyEvent.VK_W) || (key.getKeyCode() == KeyEvent.VK_UP)) {
+			setY(getY()-iStepY);
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_S) || (key.getKeyCode() == KeyEvent.VK_DOWN)) {
+			setY(getY()+iStepY);
+		}	
+	}
+*/
+	
+	public void keyPressed(KeyEvent key) {	
+		//added by Mike, 20240629
+		//horizontal movement
+		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
+			myKeysDown[KEY_A]=true;
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_D) || (key.getKeyCode() == KeyEvent.VK_RIGHT)) {
+			myKeysDown[KEY_D]=true;
+		}
+
+		//vertical movement
+		if ((key.getKeyCode() == KeyEvent.VK_W) || (key.getKeyCode() == KeyEvent.VK_UP)) {
+			myKeysDown[KEY_W]=true;
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_S) || (key.getKeyCode() == KeyEvent.VK_DOWN)) {
+			myKeysDown[KEY_S]=true;
+		}
+	}
+
+	public void keyReleased(KeyEvent key) {	
+		//added by Mike, 20240629
+		//horizontal movement
+		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
+			myKeysDown[KEY_A]=false;
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_D) || (key.getKeyCode() == KeyEvent.VK_RIGHT)) {
+			myKeysDown[KEY_D]=false;
+		}
+
+		//vertical movement
+		if ((key.getKeyCode() == KeyEvent.VK_W) || (key.getKeyCode() == KeyEvent.VK_UP)) {
+			myKeysDown[KEY_W]=false;
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_S) || (key.getKeyCode() == KeyEvent.VK_DOWN)) {
+			myKeysDown[KEY_S]=false;
+		}
+	}
+		
 
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625	
   public void draw(Graphics g) {
