@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240629; from 20240628
+ * @last updated: 20240706; from 20240629
  * @website: www.usbong.ph
  *
  */
@@ -147,7 +147,7 @@ public class UsbongMain {
 
 	    System.out.println("width: "+iScreenWidth);
 	    System.out.println("height: "+iScreenHeight);
-
+				
       //edited by Mike, 20240622
       //macOS still has menu row, etc.
       //f.setSize(iWidth, iHeight);
@@ -241,10 +241,15 @@ class MyPanel extends JPanel {
 
 	//edited by Mike, 20240628
     //public MyPanel(JFrame f) {
-    public MyPanel(JFrame f, int iScreenWidth, int iScreenHeight) {				
+    public MyPanel(JFrame f, int iScreenWidth, int iScreenHeight) {
+
 		//added by Mike, 20240622
 		myJFrameInstance = f;
-				
+
+		//added by Mike, 20240706
+		//TODO: square frame; margins, the excess
+		//iScreenWidth=iScreenHeight;
+		
 		redSquare  = new RedSquare();
 		//edited by Mike, 20240628
 		//myRobotShip = new RobotShip();
@@ -324,15 +329,19 @@ class MyPanel extends JPanel {
         return new Dimension(250,200);
     }
 
-	  public void update() {
-		  myRobotShip.update();
+	public void update() {
+	  myRobotShip.update();
 
-		  //OK
-		  //System.out.println("!!!");
-	  }
+	  //OK
+	  //System.out.println("!!!");
+	}
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+		
+		//TODO: -add: background
+		//array-based mapping
+		
         //edited by Mike, 20240622
 		//g.drawString("This is my custom Panel!",10,20);
 		g.drawString("HALLO!",150,20);
@@ -421,8 +430,9 @@ class RobotShip {
     //public RobotShip() {
     public RobotShip(int iScreenWidth, int iScreenHeight) {
 	  try {
-          //image = ImageIO.read(new File("D:/USBONG/res/count.png"));
-		  myBufferedImage = ImageIO.read(new File("../res/count.png"));
+		  //edited by Mike, 20240706
+		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
+		  myBufferedImage = ImageIO.read(new File("../res/robotship.png"));		  
       } catch (IOException ex) {
       }
 	  
@@ -505,6 +515,7 @@ class RobotShip {
 			setY(getY()+iStepY);
 		}
 		
+/* 	//edited by Mike, 20240706; OK		
 		//animation
 		if (iFrameCountDelay<iFrameCountDelayMax) {
 			iFrameCountDelay++;
@@ -513,6 +524,8 @@ class RobotShip {
 			iFrameCount=(iFrameCount+1)%iFrameCountMax;
 			iFrameCountDelay=0;
 		}
+*/		
+		iFrameCount=0;
 	}
 /*	
 	//added by Mike, 20240629
@@ -634,11 +647,13 @@ class RobotShip {
     //trans.scale(2,2);	
 	//rotates using top-left as anchor
     //trans.rotate(Math.toRadians(45)); //input in degrees
-	
+
+/* //removed by Mike, 20240706; OK	
 	//rotate at center; put translate after rotate
 	iRotationDegrees=(iRotationDegrees+10)%360;	
     trans.rotate(Math.toRadians(iRotationDegrees));
     trans.translate(-iFrameWidth/2,-iFrameHeight/2);
+*/
 
 	//added by Mike, 20240625
 	g2d.setTransform(trans);
