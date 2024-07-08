@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240706; from 20240629
+ * @last updated: 20240708; from 20240706
  * @website: www.usbong.ph
  *
  */
@@ -231,7 +231,15 @@ public class UsbongMain {
 
 //note JPanel? JFrame? confusing at the start, without working sample code;
 class MyPanel extends JPanel {
-
+	//added by Mike, 20240708
+	int iScreenWidth;
+	int iScreenHeight;
+	int iOffsetScreenWidthLeftMargin;			
+	final int iTileWidth=64;//128;
+	final int iTileHeight=64;//128;
+	int iTileWidthCountMax;
+	int iTileHeightCountMax;
+	
     RedSquare redSquare;
 
 	//added by Mike, 20240622
@@ -245,15 +253,33 @@ class MyPanel extends JPanel {
 
 		//added by Mike, 20240622
 		myJFrameInstance = f;
+		
+		//added by Mike, 20240708
+		this.iScreenWidth=iScreenWidth;
+		this.iScreenHeight=iScreenHeight;
 
 		//added by Mike, 20240706
 		//TODO: square frame; margins, the excess
 		//iScreenWidth=iScreenHeight;
 		
+		//added by Mike, 20240708
+		//square screen; make the excess, margins		
+		System.out.println("iScreenWidth: "+iScreenWidth);
+		System.out.println("iScreenHeight: "+iScreenHeight);
+		
+		iOffsetScreenWidthLeftMargin=(iScreenWidth-iScreenHeight)/2;
+		iScreenWidth=iScreenHeight;
+
+		iTileWidthCountMax=iScreenWidth/iTileWidth;
+		iTileHeightCountMax=iScreenHeight/iTileHeight;
+
+		System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
+		
+		
 		redSquare  = new RedSquare();
 		//edited by Mike, 20240628
 		//myRobotShip = new RobotShip();
-		myRobotShip = new RobotShip(iScreenWidth, iScreenHeight);
+		myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight);
 
         setBorder(BorderFactory.createLineBorder(Color.black));
 
@@ -342,6 +368,33 @@ class MyPanel extends JPanel {
 		//TODO: -add: background
 		//array-based mapping
 		
+		//added by Mike, 20240708
+		//square screen; make the excess, margins		
+		//g.drawLine(iTileWidth,iTileHeight,iScreenWidth,iTileHeight);
+		g.setColor(Color.black);	
+		
+		g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iTileWidth*iTileWidthCountMax,iScreenHeight);
+/*
+		System.out.println("iScreenWidth: "+iScreenWidth);
+		System.out.println("iTileWidth*iTileWidthCountMax: "+iTileWidth*iTileWidthCountMax);
+		 
+        //iScreenWidth not yet set to be equal to iScreenHeight; multithreaded?
+		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iScreenWidth-iOffsetScreenWidthLeftMargin*2,iScreenHeight);
+*/
+	
+		g.setColor(Color.green);
+		
+		//draw horizontal line
+		//include the last line
+		for (int i=0; i<=iTileHeightCountMax; i++) {
+			g.drawLine(0+iOffsetScreenWidthLeftMargin,iTileHeight*i,iScreenWidth-iOffsetScreenWidthLeftMargin,iTileHeight*i);
+		}
+		//draw vertical line
+		//include the last line
+		for (int j=0; j<=iTileWidthCountMax; j++) {
+			g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0,iOffsetScreenWidthLeftMargin+iTileWidth*j,iScreenHeight);
+		}		
+		
         //edited by Mike, 20240622
 		//g.drawString("This is my custom Panel!",10,20);
 		g.drawString("HALLO!",150,20);
@@ -422,19 +475,27 @@ class RobotShip {
 		
 	private BufferedImage myBufferedImage;
 	
-	//added by Mike, 20240628
+	//added by Mike, 20240708
+	private int iOffsetScreenWidthLeftMargin=0;
+	private int iOffsetScreenHeight=0;
+	
+	//added by Mike, 20240628	
 	private int iScreenWidth=0;
 	private int iScreenHeight=0;
 
 	//edited by Mike, 20240628
     //public RobotShip() {
-    public RobotShip(int iScreenWidth, int iScreenHeight) {
+    public RobotShip(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeight, int iScreenWidth, int iScreenHeight) {
 	  try {
 		  //edited by Mike, 20240706
 		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
 		  myBufferedImage = ImageIO.read(new File("../res/robotship.png"));		  
       } catch (IOException ex) {
       }
+	  
+	  //added by Mike, 20240708
+	  this.iOffsetScreenWidthLeftMargin=iOffsetScreenWidthLeftMargin;
+	  this.iOffsetScreenHeight=iOffsetScreenHeight;
 	  
 	  //added by Mike, 20240628
 	  this.iScreenWidth=iScreenWidth;
@@ -452,8 +513,8 @@ class RobotShip {
 		iHeight=iFrameHeight;
 		
 		//setX(0);
-		setX(0+iScreenWidth/2);
-		setY(iYPos=0+iScreenHeight/2);
+		setX(iOffsetScreenWidthLeftMargin+0+iScreenWidth/2);
+		setY(iOffsetScreenHeight+0+iScreenHeight/2);
 		
 		iFrameCount=0;
 		iFrameCountDelay=0;
@@ -623,6 +684,7 @@ class RobotShip {
 	//added by Mike, 20240625
 	//note clip rect has to also be updated;
 	//trans.scale(2,2); //1.5,1.5
+	//put scale after translate position;
 
 /*  //reference: https://stackoverflow.com/questions/8721312/java-image-cut-off; last accessed: 20240623
     //animating image doable, but shall need more computations;
@@ -654,6 +716,10 @@ class RobotShip {
     trans.rotate(Math.toRadians(iRotationDegrees));
     trans.translate(-iFrameWidth/2,-iFrameHeight/2);
 */
+
+	//added by Mike, 20240708
+	trans.scale(0.5,0.5);
+
 
 	//added by Mike, 20240625
 	g2d.setTransform(trans);
