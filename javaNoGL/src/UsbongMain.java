@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240708; from 20240706
+ * @last updated: 20240711; from 20240709
  * @website: www.usbong.ph
  *
  */
@@ -244,7 +244,10 @@ class MyPanel extends JPanel {
 
 	//added by Mike, 20240622
 	RobotShip myRobotShip;
-		
+
+	//added by Mike, 20240711
+	BackgroundCanvas myBackgroundCanvas;
+	
 	JFrame myJFrameInstance;
 
 	//edited by Mike, 20240628
@@ -281,6 +284,9 @@ class MyPanel extends JPanel {
 		//myRobotShip = new RobotShip();
 		myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight);
 
+		//added by Mike, 20240711
+		myBackgroundCanvas = new BackgroundCanvas(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight);
+		
         setBorder(BorderFactory.createLineBorder(Color.black));
 
         addMouseListener(new MouseAdapter(){
@@ -398,10 +404,15 @@ class MyPanel extends JPanel {
         //edited by Mike, 20240622
 		//g.drawString("This is my custom Panel!",10,20);
 		g.drawString("HALLO!",150,20);
-
+		
         redSquare.paintSquare(g);
 
-		myRobotShip.draw(g);
+		//added by Mike, 20240711
+		//put this here; uses Graphics2D; with scale, etc.
+		//Graphics2D shared;
+		myBackgroundCanvas.draw(g);
+		
+		myRobotShip.draw(g);	
     }
 }
 
@@ -744,7 +755,318 @@ class RobotShip {
     //g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
     g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
 
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn	
+	//g2d.dispose();
+  }
+}
+
+
+//added by Mike, 20240711
+class BackgroundCanvas {
+	//added by Mike, 20240628
+	private int iWidth=0;
+	private int iHeight=0;	
+	private int iXPos=0;
+	private int iYPos=0;
+	//edited by Mike, 20240629
+	private final int iStepX=4; //2;
+	private final int iStepY=4; //2;
+	
+	//added by Mike, 20240629	
+	private final int KEY_W=0; //same as key UP
+	private final int KEY_S=1; //same as key DOWN
+	private final int KEY_D=2; //same as key RIGHT
+	private final int KEY_A=3; //same as key LEFT
+	private final int iNumOfKeyTypes=4;
+	private boolean myKeysDown[];
+	
+	private int iFrameCount=0;
+	private int iFrameCountMax=4;
+	private int iFrameCountDelay=0;
+	private int iFrameCountDelayMax=20;
+	
+	//added by Mike, 20240626
+	private int iRotationDegrees=0;
+	private int iFrameWidth=128;
+	private int iFrameHeight=128;
+		
+	private BufferedImage myBufferedImage;
+	
+	//added by Mike, 20240708
+	private int iOffsetScreenWidthLeftMargin=0;
+	private int iOffsetScreenHeight=0;
+	
+	//added by Mike, 20240628	
+	private int iScreenWidth=0;
+	private int iScreenHeight=0;
+
+    public BackgroundCanvas(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeight, int iScreenWidth, int iScreenHeight) {
+	  try {
+		  //edited by Mike, 20240706
+		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
+		  
+		  myBufferedImage = ImageIO.read(new File("../res/background.png"));		  
+      } catch (IOException ex) {
+      }
+	  
+	  //added by Mike, 20240708
+	  this.iOffsetScreenWidthLeftMargin=iOffsetScreenWidthLeftMargin;
+	  this.iOffsetScreenHeight=iOffsetScreenHeight;
+	  
+	  //added by Mike, 20240628
+	  this.iScreenWidth=iScreenWidth;
+	  this.iScreenHeight=iScreenHeight;
+	  
+	  //added by Mike, 20240629
+	  myKeysDown = new boolean[iNumOfKeyTypes];
+	  
+	  reset();
+	}
+
+	//added by Mike, 20240628
+	public void reset() {
+		iWidth=iFrameWidth;
+		iHeight=iFrameHeight;
+		
+		//setX(0);
+/*		
+		setX(iOffsetScreenWidthLeftMargin+0+iScreenWidth/2);
+		setY(iOffsetScreenHeight+0+iScreenHeight/2);
+*/
+		setX(iOffsetScreenWidthLeftMargin+0);
+		setY(iOffsetScreenHeight+0);
+		
+		iFrameCount=0;
+		iFrameCountDelay=0;
+		iRotationDegrees=0;
+		
+		//added by Mike, 20240629
+		int iMyKeysDownLength = myKeysDown.length;
+		for (int i=0; i<iMyKeysDownLength; i++) {
+			myKeysDown[i]=false;
+		}
+	}
+	
+    public void setX(int iXPos){
+        this.iXPos = iXPos;
+    }
+
+    public int getX(){
+        return iXPos;
+    }
+
+    public void setY(int iYPos){
+        this.iYPos = iYPos;
+    }
+
+    public int getY(){
+        return iYPos;
+    }
+
+    public int getWidth(){
+        return iWidth;
+    }
+
+    public int getHeight(){
+        return iHeight;
+    }
+
+	public void update() {
+		//removed by Mike, 20240629
+		//movement
+		//setX(getX()+iStepX);
+		
+		if (myKeysDown[KEY_A])
+		{
+			setX(getX()-iStepX);
+		}
+
+		if (myKeysDown[KEY_D])
+		{
+			setX(getX()+iStepX);
+		}		
+
+		if (myKeysDown[KEY_W])
+		{
+			setY(getY()-iStepY);
+		}
+
+		if (myKeysDown[KEY_S])
+		{
+			setY(getY()+iStepY);
+		}
+		
+/* 	//edited by Mike, 20240706; OK		
+		//animation
+		if (iFrameCountDelay<iFrameCountDelayMax) {
+			iFrameCountDelay++;
+		}
+		else {
+			iFrameCount=(iFrameCount+1)%iFrameCountMax;
+			iFrameCountDelay=0;
+		}
+*/		
+		iFrameCount=0;
+	}
+/*	
+	//added by Mike, 20240629
+	public void move(KeyEvent key) {			
+		//horizontal movement
+		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
+			setX(getX()-iStepX);
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_D) || (key.getKeyCode() == KeyEvent.VK_RIGHT)) {
+			setX(getX()+iStepX);
+		}
+
+		//vertical movement
+		if ((key.getKeyCode() == KeyEvent.VK_W) || (key.getKeyCode() == KeyEvent.VK_UP)) {
+			setY(getY()-iStepY);
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_S) || (key.getKeyCode() == KeyEvent.VK_DOWN)) {
+			setY(getY()+iStepY);
+		}	
+	}
+*/
+	
+	public void keyPressed(KeyEvent key) {	
+		//added by Mike, 20240629
+		//horizontal movement
+		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
+			myKeysDown[KEY_A]=true;
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_D) || (key.getKeyCode() == KeyEvent.VK_RIGHT)) {
+			myKeysDown[KEY_D]=true;
+		}
+
+		//vertical movement
+		if ((key.getKeyCode() == KeyEvent.VK_W) || (key.getKeyCode() == KeyEvent.VK_UP)) {
+			myKeysDown[KEY_W]=true;
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_S) || (key.getKeyCode() == KeyEvent.VK_DOWN)) {
+			myKeysDown[KEY_S]=true;
+		}
+	}
+
+	public void keyReleased(KeyEvent key) {	
+		//added by Mike, 20240629
+		//horizontal movement
+		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
+			myKeysDown[KEY_A]=false;
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_D) || (key.getKeyCode() == KeyEvent.VK_RIGHT)) {
+			myKeysDown[KEY_D]=false;
+		}
+
+		//vertical movement
+		if ((key.getKeyCode() == KeyEvent.VK_W) || (key.getKeyCode() == KeyEvent.VK_UP)) {
+			myKeysDown[KEY_W]=false;
+		}
+
+		if ((key.getKeyCode() == KeyEvent.VK_S) || (key.getKeyCode() == KeyEvent.VK_DOWN)) {
+			myKeysDown[KEY_S]=false;
+		}
+	}
+		
+
+//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625	
+  public void draw(Graphics g) {
+	//TODO: -verify: if clip still has to be cleared
+	Rectangle2D rect = new Rectangle2D.Float();
+
+	//added by Mike, 20240621
+	//iFrameCount=2;
+
+	//rect.setRect(0, 0, 128, 128);
+	//rect.setRect(iFrameCount*128, 0, 128, 128);
+	
+/*
+	g.setClip(myClipArea);
+	//added by Mike, 20240621
+	//g.drawImage(myBufferedImage, 0, 0, this);
+	g.drawImage(myBufferedImage, 0-iFrameCount*128, 0, null);
+*/
+    //added by Mike, 20240623
+    AffineTransform identity = new AffineTransform();
+
+    Graphics2D g2d = (Graphics2D)g;
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+    //300 is object position;
+    //trans.translate(300-iFrameCount*128, 0);
+    //trans.translate(-iFrameCount*128, 0);
+	
 	//added by Mike, 20240625
-	g2d.dispose();
+	//note clip rect has to also be updated;
+	//trans.scale(2,2); //1.5,1.5
+	//put scale after translate position;
+
+/*  //reference: https://stackoverflow.com/questions/8721312/java-image-cut-off; last accessed: 20240623
+    //animating image doable, but shall need more computations;
+    //sin, cos; Bulalakaw Wars;
+    trans.translate(128/2,128/2);
+    trans.rotate(Math.toRadians(45)); //input in degrees
+    trans.translate(-128/2,-128/2);
+*/
+	//reminder: when objects moved in x-y coordinates, rotation's reference point also moves with the update;
+	//"compounded translate and rotate"
+	//https://stackoverflow.com/questions/32513508/rotating-java-2d-graphics-around-specified-point; last accessed: 20240625
+	//answered by: MadProgrammer, 20150911T00:48; from 20150911T00:41
+	
+	//update x and y positions before rotate
+	//object position x=300, y=0;
+    //trans.translate(300,0);
+    //edited by Mike, 20240628
+	//trans.translate(300,300);
+	trans.translate(getX(),getY());
+
+	//scales from top-left as reference point
+    //trans.scale(2,2);	
+	//rotates using top-left as anchor
+    //trans.rotate(Math.toRadians(45)); //input in degrees
+
+/* //removed by Mike, 20240706; OK	
+	//rotate at center; put translate after rotate
+	iRotationDegrees=(iRotationDegrees+10)%360;	
+    trans.rotate(Math.toRadians(iRotationDegrees));
+    trans.translate(-iFrameWidth/2,-iFrameHeight/2);
+*/
+
+	//added by Mike, 20240708
+	trans.scale(0.5,0.5);
+
+
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+	
+	//note: clip rect has to move with object position
+    //edited by Mike, 20240623
+    //reminder:
+    //300 is object position;
+    //iFrameCount*128 is the animation frame to show;
+    //-iFrameCount*128 is move the object position to the current frame;
+    //rect.setRect(300+iFrameCount*128-iFrameCount*128, 0, 128, 128);
+    rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0, iFrameWidth, iFrameHeight);
+	
+	Area myClipArea = new Area(rect);
+		
+    //edited by Mike, 20240625; from 20240623
+    g2d.setClip(myClipArea);
+    //g.setClip(myClipArea);
+
+    //g2d.drawImage(image, trans, this);
+    //g2d.drawImage(myBufferedImage, trans, null);
+    //g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
+    g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
   }
 }
