@@ -507,6 +507,13 @@ class RobotShip {
 	//added by Mike, 20240714
 	private int iTileWidth=0;
 	private int iTileHeight=0;
+	
+	//added by Mike, 20240714
+	private final int FACING_UP=0;
+	private final int FACING_DOWN=1;
+	private final int FACING_LEFT=2;
+	private final int FACING_RIGHT=3;	
+	private int currentFacingState=0;
 
 	//edited by Mike, 20240628
     //public RobotShip() 
@@ -541,6 +548,9 @@ class RobotShip {
 	public void reset() {
 		iWidth=iFrameWidth;
 		iHeight=iFrameHeight;
+		
+		//added by Mike, 20240714
+		currentFacingState=FACING_RIGHT;
 		
 		//setX(0);
 		//edited by Mike, 20240714
@@ -604,11 +614,17 @@ class RobotShip {
 		if (myKeysDown[KEY_A])
 		{
 			setX(getX()-iStepX);
+			
+			//added by Mike, 20240714
+			currentFacingState=FACING_LEFT;
 		}
 
 		if (myKeysDown[KEY_D])
 		{
 			setX(getX()+iStepX);
+			
+			//added by Mike, 20240714
+			currentFacingState=FACING_RIGHT;
 		}		
 
 		if (myKeysDown[KEY_W])
@@ -748,6 +764,7 @@ class RobotShip {
     //trans.translate(300,0);
     //edited by Mike, 20240628
 	//trans.translate(300,300);
+	//edited by Mike, 20240714
 	trans.translate(getX(),getY());
 
 	//scales from top-left as reference point
@@ -774,8 +791,18 @@ class RobotShip {
 	//double temp = iTileWidth*1.0/iFrameWidth;
 	//System.out.println("temp: "+temp);		
 	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
-
-
+		
+	//added by Mike, 20240714
+	//put this after scale; 
+	//move the input image to the correct row of the frame
+	//TODO: -add: collision detection; UsbongV2
+	if (currentFacingState==FACING_RIGHT) {
+		//trans.translate(getX(),getY());
+	}
+	else { //FACING_LEFT
+		trans.translate(0,0-iFrameHeight);
+	}	
+				
 	//added by Mike, 20240625
 	g2d.setTransform(trans);
 	
@@ -786,7 +813,16 @@ class RobotShip {
     //iFrameCount*128 is the animation frame to show;
     //-iFrameCount*128 is move the object position to the current frame;
     //rect.setRect(300+iFrameCount*128-iFrameCount*128, 0, 128, 128);
-    rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0, iFrameWidth, iFrameHeight);
+	//edited by Mike, 20240714; from 20240714
+    //rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0, iFrameWidth, iFrameHeight);
+	
+	if (currentFacingState==FACING_RIGHT) {
+		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
+	    rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+	}
+	else { //FACING_LEFT
+	   rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	}	
 	
 	Area myClipArea = new Area(rect);
 		
@@ -797,6 +833,8 @@ class RobotShip {
     //g2d.drawImage(image, trans, this);
     //g2d.drawImage(myBufferedImage, trans, null);
     //g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
+	
+	//edited by Mike, 20240714
     g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
 
 	//removed by Mike, 20240711; from 20240625
