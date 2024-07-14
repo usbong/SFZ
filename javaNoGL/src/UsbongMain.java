@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240711; from 20240709
+ * @last updated: 20240714; from 20240711
  * @website: www.usbong.ph
  *
  */
@@ -234,11 +234,18 @@ class MyPanel extends JPanel {
 	//added by Mike, 20240708
 	int iScreenWidth;
 	int iScreenHeight;
-	int iOffsetScreenWidthLeftMargin;			
+	int iOffsetScreenWidthLeftMargin;
+	
+	//edited by Mike, 20240714
+/*	
 	final int iTileWidth=64;//128;
 	final int iTileHeight=64;//128;
-	int iTileWidthCountMax;
-	int iTileHeightCountMax;
+*/	
+	int iTileWidth=64;//default
+	int iTileHeight=64;//default	
+	
+	final int iTileWidthCountMax=13;
+	final int iTileHeightCountMax=13;
 	
     RedSquare redSquare;
 
@@ -273,19 +280,22 @@ class MyPanel extends JPanel {
 		iOffsetScreenWidthLeftMargin=(iScreenWidth-iScreenHeight)/2;
 		iScreenWidth=iScreenHeight;
 
+/*		//edited by Mike, 20240714
 		iTileWidthCountMax=iScreenWidth/iTileWidth;
 		iTileHeightCountMax=iScreenHeight/iTileHeight;
+*/
+		iTileWidth=iScreenWidth/iTileWidthCountMax;
+		iTileHeight=iScreenHeight/iTileHeightCountMax;
 
 		System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
-		
-		
+				
 		redSquare  = new RedSquare();
-		//edited by Mike, 20240628
+		//edited by Mike, 20240714; from 20240628
 		//myRobotShip = new RobotShip();
-		myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight);
+		myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
 
-		//added by Mike, 20240711
-		myBackgroundCanvas = new BackgroundCanvas(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight);
+		//added by Mike, 20240714; from 20240711
+		myBackgroundCanvas = new BackgroundCanvas(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
 		
         setBorder(BorderFactory.createLineBorder(Color.black));
 
@@ -493,10 +503,15 @@ class RobotShip {
 	//added by Mike, 20240628	
 	private int iScreenWidth=0;
 	private int iScreenHeight=0;
+	
+	//added by Mike, 20240714
+	private int iTileWidth=0;
+	private int iTileHeight=0;
 
 	//edited by Mike, 20240628
-    //public RobotShip() {
-    public RobotShip(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeight, int iScreenWidth, int iScreenHeight) {
+    //public RobotShip() 
+	//edited by Mike, 20240714
+    public RobotShip(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeight, int iScreenWidth, int iScreenHeight, int iTileWidth, int iTileHeight) {
 	  try {
 		  //edited by Mike, 20240706
 		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
@@ -512,6 +527,10 @@ class RobotShip {
 	  this.iScreenWidth=iScreenWidth;
 	  this.iScreenHeight=iScreenHeight;
 	  
+	  //added by Mike, 20240714
+	  this.iTileWidth=iTileWidth;
+	  this.iTileHeight=iTileHeight;
+	  
 	  //added by Mike, 20240629
 	  myKeysDown = new boolean[iNumOfKeyTypes];
 	  
@@ -524,8 +543,23 @@ class RobotShip {
 		iHeight=iFrameHeight;
 		
 		//setX(0);
+		//edited by Mike, 20240714
+/*		
 		setX(iOffsetScreenWidthLeftMargin+0+iScreenWidth/2);
 		setY(iOffsetScreenHeight+0+iScreenHeight/2);
+*/
+/*
+		setX(iOffsetScreenWidthLeftMargin+0+iTileWidth); //+iScreenWidth
+		setY(iOffsetScreenHeight+0+iTileHeight); //iScreenHeight/2; position may not fit exactly with tile 
+*/
+		System.out.println(">>>"+iScreenWidth/2/iTileWidth); //iTileWidth
+		System.out.println(">>>"+iScreenHeight/2/iTileHeight); //iTileHeight
+
+		int iScreenCenterWidth=(iScreenWidth/2/iTileWidth)*iTileWidth; //iTileWidth*6
+		int iScreenCenterHeight=(iScreenHeight/2/iTileHeight)*iTileHeight; //iTileHeight*6
+
+		setX(iOffsetScreenWidthLeftMargin+0+iScreenCenterWidth);
+		setY(iOffsetScreenHeight+0+iScreenCenterHeight); 
 		
 		iFrameCount=0;
 		iFrameCountDelay=0;
@@ -728,8 +762,18 @@ class RobotShip {
     trans.translate(-iFrameWidth/2,-iFrameHeight/2);
 */
 
-	//added by Mike, 20240708
-	trans.scale(0.5,0.5);
+	//edited by Mike, 20240714; from 20240708
+/*	
+	System.out.println("iTileWidth: "+iTileWidth);
+	System.out.println("iTileHeight: "+iTileHeight);	
+*/	
+	//scale to size of iTileWidth and iTileHeight;
+	//example: iTileWidth=83
+	//iFrameWidth=128;	
+	//trans.scale(0.5,0.5);
+	//double temp = iTileWidth*1.0/iFrameWidth;
+	//System.out.println("temp: "+temp);		
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
 
 
 	//added by Mike, 20240625
@@ -800,8 +844,12 @@ class BackgroundCanvas {
 	//added by Mike, 20240628	
 	private int iScreenWidth=0;
 	private int iScreenHeight=0;
+	
+	//added by Mike, 20240714
+	private int iTileWidth=0;
+	private int iTileHeight=0;	
 
-    public BackgroundCanvas(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeight, int iScreenWidth, int iScreenHeight) {
+    public BackgroundCanvas(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeight, int iScreenWidth, int iScreenHeight, int iTileWidth, int iTileHeight) {
 	  try {
 		  //edited by Mike, 20240706
 		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
@@ -817,6 +865,10 @@ class BackgroundCanvas {
 	  //added by Mike, 20240628
 	  this.iScreenWidth=iScreenWidth;
 	  this.iScreenHeight=iScreenHeight;
+	  
+	  //added by Mike, 20240714
+	  this.iTileWidth=iTileWidth;
+	  this.iTileHeight=iTileHeight;	  
 	  
 	  //added by Mike, 20240629
 	  myKeysDown = new boolean[iNumOfKeyTypes];
@@ -1038,10 +1090,15 @@ class BackgroundCanvas {
     trans.translate(-iFrameWidth/2,-iFrameHeight/2);
 */
 
-	//added by Mike, 20240708
-	trans.scale(0.5,0.5);
-
-
+	//edited by Mike, 20240714; from 20240708
+	//scale to size of iTileWidth and iTileHeight;
+	//example: iTileWidth=83
+	//iFrameWidth=128;	
+	//trans.scale(0.5,0.5);
+	//double temp = iTileWidth*1.0/iFrameWidth;
+	//System.out.println("temp: "+temp);		
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+	
 	//added by Mike, 20240625
 	g2d.setTransform(trans);
 	
