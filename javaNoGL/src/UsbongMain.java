@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240714; from 20240711
+ * @last updated: 20240718; from 20240714
  * @website: www.usbong.ph
  *
  */
@@ -144,6 +144,9 @@ public class UsbongMain {
 
 	    iScreenWidth = (int) Math.round(dWidth);
 	    iScreenHeight = (int) Math.round(dHeight);
+		
+		//added by Mike, 20240718; debug
+		//iScreenHeight=512;
 
 	    System.out.println("width: "+iScreenWidth);
 	    System.out.println("height: "+iScreenHeight);
@@ -235,6 +238,7 @@ class MyPanel extends JPanel {
 	int iScreenWidth;
 	int iScreenHeight;
 	int iOffsetScreenWidthLeftMargin;
+	int iOffsetScreenHeightTopMargin; //added by Mike, 20240718
 	
 	//edited by Mike, 20240714
 /*	
@@ -287,15 +291,20 @@ class MyPanel extends JPanel {
 		iTileWidth=iScreenWidth/iTileWidthCountMax;
 		iTileHeight=iScreenHeight/iTileHeightCountMax;
 
+		//added by Mike, 20240718
+		iOffsetScreenHeightTopMargin=(iScreenHeight-(iTileHeight*iTileHeightCountMax))/2;
+		
 		System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
-				
+
+		System.out.println("iOffsetScreenHeightTopMargin: "+iOffsetScreenHeightTopMargin);
+
 		redSquare  = new RedSquare();
 		//edited by Mike, 20240714; from 20240628
 		//myRobotShip = new RobotShip();
 		myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
 
 		//added by Mike, 20240714; from 20240711
-		myBackgroundCanvas = new BackgroundCanvas(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
+		myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
 		
         setBorder(BorderFactory.createLineBorder(Color.black));
 
@@ -389,7 +398,11 @@ class MyPanel extends JPanel {
 		//g.drawLine(iTileWidth,iTileHeight,iScreenWidth,iTileHeight);
 		g.setColor(Color.black);	
 		
-		g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iTileWidth*iTileWidthCountMax,iScreenHeight);
+		//edited by Mike, 20240718
+		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iTileWidth*iTileWidthCountMax,iScreenHeight);
+		g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iTileWidth*iTileWidthCountMax,iTileHeight*iTileHeightCountMax-iOffsetScreenHeightTopMargin);
+		
+		
 /*
 		System.out.println("iScreenWidth: "+iScreenWidth);
 		System.out.println("iTileWidth*iTileWidthCountMax: "+iTileWidth*iTileWidthCountMax);
@@ -408,7 +421,8 @@ class MyPanel extends JPanel {
 		//draw vertical line
 		//include the last line
 		for (int j=0; j<=iTileWidthCountMax; j++) {
-			g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0,iOffsetScreenWidthLeftMargin+iTileWidth*j,iScreenHeight);
+			//edited by Mike, 20240718			//g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0,iOffsetScreenWidthLeftMargin+iTileWidth*j,iScreenHeight);
+			g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0+iOffsetScreenHeightTopMargin,iOffsetScreenWidthLeftMargin+iTileWidth*j,iScreenHeight-iOffsetScreenHeightTopMargin);
 		}		
 		
         //edited by Mike, 20240622
