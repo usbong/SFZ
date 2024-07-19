@@ -464,7 +464,9 @@ class MyPanel extends JPanel {
 		for (int i=0; i<=iTileHeightCountMax; i++) {
 			//g.drawLine(0+iOffsetScreenWidthLeftMargin,iTileHeight*i,iScreenWidth-iOffsetScreenWidthLeftMargin,iTileHeight*i);
       //g.drawLine(0+iOffsetScreenWidthLeftMargin,iTileHeight*i,iOffsetScreenWidthLeftMargin+iTileWidth*iTileWidthCountMax,iTileHeight*i);
-      g.drawLine(0+iOffsetScreenWidthLeftMargin,iTileHeight*i,iOffsetScreenWidthLeftMargin+iStageWidth,iTileHeight*i);
+	  //edited by Mike, 20240719 
+      //g.drawLine(0+iOffsetScreenWidthLeftMargin,iTileHeight*i,iOffsetScreenWidthLeftMargin+iStageWidth,iTileHeight*i);
+	  g.drawLine(0+iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin+iTileHeight*i,iOffsetScreenWidthLeftMargin+iStageWidth,iOffsetScreenHeightTopMargin+iTileHeight*i);
 		}
 		//draw vertical line
 		//include the last line
