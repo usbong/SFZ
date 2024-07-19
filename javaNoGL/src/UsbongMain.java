@@ -82,6 +82,9 @@ import java.util.Timer;
 import java.awt.Toolkit;
 import java.awt.Dimension;
 
+//added by Mike, 20240719
+import java.awt.event.WindowStateListener;
+
 //added by Mike, 20240622
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -154,7 +157,27 @@ public class UsbongMain {
       //edited by Mike, 20240622
       //macOS still has menu row, etc.
       //f.setSize(iWidth, iHeight);
-      f.setUndecorated(true); //removes close, minimize, maxime buttons in window
+      
+	  //edited by Mike, 20240719
+	  //in Java21, shall still need to switch between windows;
+	  //f.setUndecorated(true); //removes close, minimize, maxime buttons in window
+/*
+	  //f.setExtendedState(f.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+	  f.addWindowStateListener(new WindowStateListener() {
+	    public void windowStateChanged(WindowEvent e) {
+		   // minimized
+		   if ((e.getNewState() & f.ICONIFIED) == f.ICONIFIED){
+		     //f.setUndecorated(false); //displays close, minimize, maxime buttons in window
+			 //System.out.println("MINIMIZED!");
+		   }
+		   // maximized
+		   else if ((e.getNewState() & f.MAXIMIZED_BOTH) == f.MAXIMIZED_BOTH){
+			 f.setUndecorated(true); //removes close, minimize, maxime buttons in window
+			 //System.out.println("MAXIMIZED!");
+		   }  
+	    }
+  	  });
+*/
 
       //Reference: https://stackoverflow.com/questions/1155838/how-can-i-do-full-screen-in-java-on-osx; last accessed: 20240622
       //answered by: Michael Myers, 20090720T2105
@@ -163,13 +186,12 @@ public class UsbongMain {
 
       //macOS, Windows both have "Full Screen Support"
       if (gd.isFullScreenSupported()) {
-          gd.setFullScreenWindow(f);
+          gd.setFullScreenWindow(f);		  
       } else { //note: in case, no "Full Screen Support"
           f.setSize(iScreenWidth, iScreenHeight);
           f.setVisible(true);
       }
-
-
+		
 		//edited by Mike, 20240622
 		//f.add(new MyPanel());
 		//edited by Mike, 20240628
@@ -391,6 +413,8 @@ class MyPanel extends JPanel {
         }
     }
 
+	//added by Mike, 20240719
+	@Override
     public Dimension getPreferredSize() {
         return new Dimension(250,200);
     }
@@ -402,8 +426,12 @@ class MyPanel extends JPanel {
 	  //System.out.println("!!!");
 	}
 
-    public void paintComponent(Graphics g) {
+	//added by Mike, 20240719
+	@Override
+    public void paintComponent(final Graphics g) {
         super.paintComponent(g);
+
+//System.out.println(">>>>> DITO");
 
 		//TODO: -add: background
 		//array-based mapping
