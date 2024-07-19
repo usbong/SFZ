@@ -14,7 +14,7 @@ REM @date created: 20240719
 REM @date updated: 20240719
 REM
 
-REM cd src
-REM java UsbongMain
+cd src
+java UsbongMain
 
-java -classpath "./src" UsbongMain
+REM java -classpath "./src" UsbongMain
