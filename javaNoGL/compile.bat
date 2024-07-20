@@ -11,10 +11,7 @@ REM
 REM @company: USBONG
 REM @author: SYSON, MICHAEL B.
 REM @date created: 20240719
-REM @date updated: 20240719
+REM @date updated: 20240720; from 20240719
 REM
 
-REM cd src
-REM java UsbongMain
-
-java -classpath "./src" UsbongMain
+javac "./src/"*.java
