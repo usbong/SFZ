@@ -157,7 +157,7 @@ public class UsbongMain {
       //edited by Mike, 20240622
       //macOS still has menu row, etc.
       //f.setSize(iWidth, iHeight);
-      
+
 	  //edited by Mike, 20240719
 	  //in Java21, shall still need to switch between windows;
 	  //f.setUndecorated(true); //removes close, minimize, maxime buttons in window
@@ -174,7 +174,7 @@ public class UsbongMain {
 		   else if ((e.getNewState() & f.MAXIMIZED_BOTH) == f.MAXIMIZED_BOTH){
 			 f.setUndecorated(true); //removes close, minimize, maxime buttons in window
 			 //System.out.println("MAXIMIZED!");
-		   }  
+		   }
 	    }
   	  });
 */
@@ -186,12 +186,12 @@ public class UsbongMain {
 
       //macOS, Windows both have "Full Screen Support"
       if (gd.isFullScreenSupported()) {
-          gd.setFullScreenWindow(f);		  
+          gd.setFullScreenWindow(f);
       } else { //note: in case, no "Full Screen Support"
           f.setSize(iScreenWidth, iScreenHeight);
           f.setVisible(true);
       }
-		
+
 		//edited by Mike, 20240622
 		//f.add(new MyPanel());
 		//edited by Mike, 20240628
@@ -309,7 +309,7 @@ class MyPanel extends JPanel {
 		System.out.println("iScreenWidth: "+iScreenWidth);
 		System.out.println("iScreenHeight: "+iScreenHeight);
 
-		
+
     //edited by Mike, 20240718
     //reminder: screen width must be greater than the screen height
     iOffsetScreenWidthLeftMargin=(iScreenWidth-iScreenHeight)/2;
@@ -322,8 +322,8 @@ class MyPanel extends JPanel {
     iTileWidth=iScreenWidth/iTileWidthCountMax;
     iTileHeight=iScreenHeight/iTileHeightCountMax;
 
-		//added by Mike, 20240718
-		iOffsetScreenHeightTopMargin=(iScreenHeight-(iTileHeight*iTileHeightCountMax));///2;
+		//edited by Mike, 20240720; from 20240718
+		iOffsetScreenHeightTopMargin=(iScreenHeight-(iTileHeight*iTileHeightCountMax))/2;
 
 		System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
 
@@ -456,7 +456,8 @@ class MyPanel extends JPanel {
 		//edited by Mike, 20240718
 		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iTileWidth*iTileWidthCountMax,iScreenHeight);
 		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iTileWidth*iTileWidthCountMax,iTileHeight*iTileHeightCountMax-iOffsetScreenHeightTopMargin);
-    g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth,iStageHeight-iOffsetScreenHeightTopMargin);
+    //g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth,iStageHeight-iOffsetScreenHeightTopMargin);
+    g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth,iStageHeight);
 
 /*
 		System.out.println("iScreenWidth: "+iScreenWidth);
@@ -478,18 +479,16 @@ System.out.println("iTileWidthCountMax: "+iTileWidthCountMax);
 		for (int i=0; i<=iTileHeightCountMax; i++) {
 			//g.drawLine(0+iOffsetScreenWidthLeftMargin,iTileHeight*i,iScreenWidth-iOffsetScreenWidthLeftMargin,iTileHeight*i);
       //g.drawLine(0+iOffsetScreenWidthLeftMargin,iTileHeight*i,iOffsetScreenWidthLeftMargin+iTileWidth*iTileWidthCountMax,iTileHeight*i);
-	  //edited by Mike, 20240719 
+	  //edited by Mike, 20240719
       //g.drawLine(0+iOffsetScreenWidthLeftMargin,iTileHeight*i,iOffsetScreenWidthLeftMargin+iStageWidth,iTileHeight*i);
 	  g.drawLine(0+iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin+iTileHeight*i,iOffsetScreenWidthLeftMargin+iStageWidth,iOffsetScreenHeightTopMargin+iTileHeight*i);
 		}
 		//draw vertical line
 		//include the last line
 		for (int j=0; j<=iTileWidthCountMax; j++) {
-			//edited by Mike, 20240718
-      //g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0,iOffsetScreenWidthLeftMargin+iTileWidth*j,iScreenHeight);
-			//g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0+iOffsetScreenHeightTopMargin,iOffsetScreenWidthLeftMargin+iTileWidth*j,iScreenHeight-iOffsetScreenHeightTopMargin);
-      //g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0+iOffsetScreenHeightTopMargin,iOffsetScreenWidthLeftMargin+iTileWidth*j,iTileHeight*iTileHeightCountMax);
-      g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0+iOffsetScreenHeightTopMargin,iOffsetScreenWidthLeftMargin+iTileWidth*j,iStageHeight);      
+			//edited by Mike, 20240720; from 20240718
+      //g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0+iOffsetScreenHeightTopMargin,iOffsetScreenWidthLeftMargin+iTileWidth*j,iStageHeight);
+      g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0+iOffsetScreenHeightTopMargin,iOffsetScreenWidthLeftMargin+iTileWidth*j,iOffsetScreenHeightTopMargin+iStageHeight);
 		}
 
         //edited by Mike, 20240622
@@ -582,7 +581,7 @@ class RobotShip {
 	private int iOffsetScreenHeightTopMargin=0;
 
 	//edited by Mike, 20240719; from 20240628
-/*	
+/*
 	private int iScreenWidth=0;
 	private int iScreenHeight=0;
 */
@@ -610,7 +609,7 @@ class RobotShip {
 		  //edited by Mike, 20240720
 		  //myBufferedImage = ImageIO.read(new File("../res/robotship.png"));
 		  //app executed from base directory
-		  myBufferedImage = ImageIO.read(new File("./res/robotship.png"));		  
+		  myBufferedImage = ImageIO.read(new File("./res/robotship.png"));
       } catch (IOException ex) {
       }
 
@@ -983,7 +982,7 @@ class BackgroundCanvas {
 		  //edited by Mike, 20240720
 		  //myBufferedImage = ImageIO.read(new File("../res/background.png"));
 		  //app executed from base directory
-		  myBufferedImage = ImageIO.read(new File("./res/background.png"));		  
+		  myBufferedImage = ImageIO.read(new File("./res/background.png"));
       } catch (IOException ex) {
       }
 
