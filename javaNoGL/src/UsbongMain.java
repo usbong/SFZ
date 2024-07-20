@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240719; from 20240718
+ * @last updated: 20240720; from 20240719
  * @website: www.usbong.ph
  *
  */
@@ -219,7 +219,9 @@ public class UsbongMain {
 	//...java.util.prefs.WindowsPreferences <init>
 	//WARNING: Could not open/create prefs root node Software\JavaSoft\Prefs at root
     //0x80000002. Windows RegCreateKeyEx(...) returned error code 5.
-	playSound("../assets/audio/MIDI_sample.mid");
+	//edited by Mike, 20240720
+	//playSound("../assets/audio/MIDI_sample.mid");
+	playSound("./assets/audio/MIDI_sample.mid");
 
 		//timer.scheduleAtFixedRate(() -> mainRun(), 0, updateDelay, MILLISECONDS);
 
@@ -307,6 +309,7 @@ class MyPanel extends JPanel {
 		System.out.println("iScreenWidth: "+iScreenWidth);
 		System.out.println("iScreenHeight: "+iScreenHeight);
 
+		
     //edited by Mike, 20240718
     //reminder: screen width must be greater than the screen height
     iOffsetScreenWidthLeftMargin=(iScreenWidth-iScreenHeight)/2;
@@ -330,6 +333,10 @@ class MyPanel extends JPanel {
     //TODO: -use: this as input parameter, instead of screenWidth and screenHeight
     iStageWidth=iTileWidth*iTileWidthCountMax;
     iStageHeight=iTileHeight*iTileHeightCountMax;
+
+		//added by Mike, 20240720
+		System.out.println("iStageWidth: "+iStageWidth);
+		System.out.println("iStageHeight: "+iStageHeight);
 
 
 		redSquare  = new RedSquare();
@@ -439,7 +446,9 @@ class MyPanel extends JPanel {
 		//added by Mike, 20240708
 		//square screen; make the excess, margins
 		//g.drawLine(iTileWidth,iTileHeight,iScreenWidth,iTileHeight);
-		g.setColor(Color.black);
+		//edited by Mike, 20240720
+		//g.setColor(Color.black);
+		g.setColor(Color.white);
 
 		//edited by Mike, 20240718
 		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iTileWidth*iTileWidthCountMax,iScreenHeight);
@@ -593,7 +602,10 @@ class RobotShip {
 	  try {
 		  //edited by Mike, 20240706
 		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
-		  myBufferedImage = ImageIO.read(new File("../res/robotship.png"));
+		  //edited by Mike, 20240720
+		  //myBufferedImage = ImageIO.read(new File("../res/robotship.png"));
+		  //app executed from base directory
+		  myBufferedImage = ImageIO.read(new File("./res/robotship.png"));		  
       } catch (IOException ex) {
       }
 
@@ -963,8 +975,10 @@ class BackgroundCanvas {
 	  try {
 		  //edited by Mike, 20240706
 		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
-
-		  myBufferedImage = ImageIO.read(new File("../res/background.png"));
+		  //edited by Mike, 20240720
+		  //myBufferedImage = ImageIO.read(new File("../res/background.png"));
+		  //app executed from base directory
+		  myBufferedImage = ImageIO.read(new File("./res/background.png"));		  
       } catch (IOException ex) {
       }
 
