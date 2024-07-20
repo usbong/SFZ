@@ -423,7 +423,10 @@ class MyPanel extends JPanel {
 	//added by Mike, 20240719
 	@Override
     public Dimension getPreferredSize() {
-        return new Dimension(250,200);
+        //edited by Mike, 20240720
+		//note iScreenWidth and iScreenHeight may not yet have been updated
+		//return new Dimension(250,200);
+		return new Dimension(800,800);
     }
 
 	public void update() {
@@ -448,7 +451,7 @@ class MyPanel extends JPanel {
 		//g.drawLine(iTileWidth,iTileHeight,iScreenWidth,iTileHeight);
 		//edited by Mike, 20240720
 		//g.setColor(Color.black);
-		g.setColor(Color.white);
+		g.setColor(Color.gray); //white
 
 		//edited by Mike, 20240718
 		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iTileWidth*iTileWidthCountMax,iScreenHeight);
@@ -465,9 +468,11 @@ class MyPanel extends JPanel {
 
 		g.setColor(Color.green);
 
-    //added by Mike, 20240718
-    //TODO: -add: stage width and height;
-
+    //added by Mike, 20240720
+/*
+System.out.println("iTileHeightCountMax: "+iTileHeightCountMax);
+System.out.println("iTileWidthCountMax: "+iTileWidthCountMax);
+*/
 		//draw horizontal line
 		//include the last line
 		for (int i=0; i<=iTileHeightCountMax; i++) {
@@ -489,7 +494,7 @@ class MyPanel extends JPanel {
 
         //edited by Mike, 20240622
 		//g.drawString("This is my custom Panel!",10,20);
-		g.drawString("HALLO!",150,20);
+		//g.drawString("HALLO!",150,20);
 
         redSquare.paintSquare(g);
 
