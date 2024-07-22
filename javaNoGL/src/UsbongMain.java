@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240720; from 20240719
+ * @last updated: 20240722; from 20240720
  * @website: www.usbong.ph
  *
  */
@@ -133,7 +133,7 @@ public class UsbongMain {
         //System.out.println("Created GUI on EDT? "+
         //SwingUtilities.isEventDispatchThread());
 
-		JFrame f = new JFrame("Usbong Main Demo");
+		JFrame f = new JFrame("Usbong Main Demo");		
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		//edited by Mike, 20240622
@@ -150,17 +150,18 @@ public class UsbongMain {
 
 		//added by Mike, 20240718; debug
 		//iScreenHeight=512;
-
+		
+/*	//removed by Mike, 20240722		
 	    System.out.println("width: "+iScreenWidth);
 	    System.out.println("height: "+iScreenHeight);
-
+*/
       //edited by Mike, 20240622
       //macOS still has menu row, etc.
       //f.setSize(iWidth, iHeight);
 
-	  //edited by Mike, 20240719
-	  //in Java21, shall still need to switch between windows;
-	  //f.setUndecorated(true); //removes close, minimize, maxime buttons in window
+	  //edited by Mike, 20240722; from 20240719
+	  //reminder: in Java21, shall still need to switch between windows;
+	  f.setUndecorated(true); //removes close, minimize, maxime buttons in window
 /*
 	  //f.setExtendedState(f.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 	  f.addWindowStateListener(new WindowStateListener() {
@@ -268,6 +269,11 @@ class MyPanel extends JPanel {
   int iStageWidth;
   int iStageHeight;
 
+  //added by Mike, 20240722
+  //note when titlebar appears; stage height decreases;
+  //iScreenHeight=iScreenHeight-iTileHeight/2;
+
+
 	//edited by Mike, 20240714
 /*
 	final int iTileWidth=64;//128;
@@ -309,9 +315,9 @@ class MyPanel extends JPanel {
 		System.out.println("iScreenWidth: "+iScreenWidth);
 		System.out.println("iScreenHeight: "+iScreenHeight);
 
-
-    //edited by Mike, 20240718
+    //edited by Mike, 20240722; from 20240718
     //reminder: screen width must be greater than the screen height
+	//iScreenWidth will be set to be iScreenHeight
     iOffsetScreenWidthLeftMargin=(iScreenWidth-iScreenHeight)/2;
     iScreenWidth=iScreenHeight;
 
@@ -321,6 +327,8 @@ class MyPanel extends JPanel {
 */
     iTileWidth=iScreenWidth/iTileWidthCountMax;
     iTileHeight=iScreenHeight/iTileHeightCountMax;
+	
+	//System.out.println("iTileHeight: "+iTileHeight);
 
 		//edited by Mike, 20240720; from 20240718
 		iOffsetScreenHeightTopMargin=(iScreenHeight-(iTileHeight*iTileHeightCountMax))/2;
@@ -446,15 +454,18 @@ class MyPanel extends JPanel {
 		//TODO: -add: background
 		//array-based mapping
 
-		//added by Mike, 20240708
-		//square screen; make the excess, margins
+		//edited by Mike, 20240722; from 20240708
+		//entire available screen
+		g.setColor(Color.decode("#adb2b6")); //gray
+		g.fillRect(0,0,iScreenWidth,iScreenHeight);		
 		//g.drawLine(iTileWidth,iTileHeight,iScreenWidth,iTileHeight);
-		//edited by Mike, 20240720
-		//g.setColor(Color.black);
-		g.setColor(Color.gray); //white
 
-		//edited by Mike, 20240718
-		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iTileWidth*iTileWidthCountMax,iScreenHeight);
+		//square screen; make the excess, margins
+		//g.setColor(Color.black);
+		//g.setColor(Color.gray); //white
+		g.setColor(Color.decode("#31363a")); //lubuntu, BreezeModified theme; dark terminal
+
+		//edited by Mike, 20240718		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iTileWidth*iTileWidthCountMax,iScreenHeight);
 		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iTileWidth*iTileWidthCountMax,iTileHeight*iTileHeightCountMax-iOffsetScreenHeightTopMargin);
     //g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth,iStageHeight-iOffsetScreenHeightTopMargin);
     g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth,iStageHeight);
@@ -466,9 +477,11 @@ class MyPanel extends JPanel {
         //iScreenWidth not yet set to be equal to iScreenHeight; multithreaded?
 		//g.fillRect(0+iOffsetScreenWidthLeftMargin,0,iScreenWidth-iOffsetScreenWidthLeftMargin*2,iScreenHeight);
 */
-
-		g.setColor(Color.green);
-
+		//edited by Mike, 20240722
+		//g.setColor(Color.green);
+		g.setColor(Color.decode("#33c699")); //lubuntu, BreezeModified theme; dark terminal
+		
+		
     //added by Mike, 20240720
 /*
 System.out.println("iTileHeightCountMax: "+iTileHeightCountMax);
@@ -649,8 +662,10 @@ class RobotShip {
 		setX(iOffsetScreenWidthLeftMargin+0+iTileWidth); //+iScreenWidth
 		setY(iOffsetScreenHeight+0+iTileHeight); //iScreenHeight/2; position may not fit exactly with tile
 */
+/*		//removed by Mike, 20240722
 		System.out.println(">>>"+iStageWidth/2/iTileWidth); //iTileWidth
 		System.out.println(">>>"+iStageHeight/2/iTileHeight); //iTileHeight
+*/
 
 		//edited by Mike, 20240719
 		int iStageCenterWidth=(iStageWidth/2/iTileWidth)*iTileWidth; //iTileWidth*6
