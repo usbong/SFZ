@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240722; from 20240720
+ * @last updated: 20240726; from 20240722
  * @website: www.usbong.ph
  *
  */
@@ -1168,105 +1168,119 @@ class BackgroundCanvas {
 			myKeysDown[KEY_S]=false;
 		}
 	}
+		
+	//added by Mike, 20240726
+	public void drawTree(Graphics g, int iInputTileWidthCount, int iInputTileHeightCount) {
+	//TODO: -verify: if clip still has to be cleared
+		Rectangle2D rect = new Rectangle2D.Float();
 
+		//added by Mike, 20240621
+		//iFrameCount=2;
+
+		//rect.setRect(0, 0, 128, 128);
+		//rect.setRect(iFrameCount*128, 0, 128, 128);
+
+	/*
+		g.setClip(myClipArea);
+		//added by Mike, 20240621
+		//g.drawImage(myBufferedImage, 0, 0, this);
+		g.drawImage(myBufferedImage, 0-iFrameCount*128, 0, null);
+	*/
+		//added by Mike, 20240623
+		AffineTransform identity = new AffineTransform();
+
+		Graphics2D g2d = (Graphics2D)g;
+		AffineTransform trans = new AffineTransform();
+		trans.setTransform(identity);
+		//300 is object position;
+		//trans.translate(300-iFrameCount*128, 0);
+		//trans.translate(-iFrameCount*128, 0);
+
+		//added by Mike, 20240625
+		//note clip rect has to also be updated;
+		//trans.scale(2,2); //1.5,1.5
+		//put scale after translate position;
+
+	/*  //reference: https://stackoverflow.com/questions/8721312/java-image-cut-off; last accessed: 20240623
+		//animating image doable, but shall need more computations;
+		//sin, cos; Bulalakaw Wars;
+		trans.translate(128/2,128/2);
+		trans.rotate(Math.toRadians(45)); //input in degrees
+		trans.translate(-128/2,-128/2);
+	*/
+		//reminder: when objects moved in x-y coordinates, rotation's reference point also moves with the update;
+		//"compounded translate and rotate"
+		//https://stackoverflow.com/questions/32513508/rotating-java-2d-graphics-around-specified-point; last accessed: 20240625
+		//answered by: MadProgrammer, 20150911T00:48; from 20150911T00:41
+
+		//update x and y positions before rotate
+		//object position x=300, y=0;
+		//trans.translate(300,0);
+		//edited by Mike, 20240628
+		//trans.translate(300,300);
+		//added by Mike, 20240726
+		setX(iOffsetScreenWidthLeftMargin+0+iInputTileWidthCount);
+		setY(iOffsetScreenHeightTopMargin+0+iInputTileWidthCount);
+
+		trans.translate(getX(),getY());
+
+		//scales from top-left as reference point
+		//trans.scale(2,2);
+		//rotates using top-left as anchor
+		//trans.rotate(Math.toRadians(45)); //input in degrees
+
+	/* //removed by Mike, 20240706; OK
+		//rotate at center; put translate after rotate
+		iRotationDegrees=(iRotationDegrees+10)%360;
+		trans.rotate(Math.toRadians(iRotationDegrees));
+		trans.translate(-iFrameWidth/2,-iFrameHeight/2);
+	*/
+
+		//edited by Mike, 20240714; from 20240708
+		//scale to size of iTileWidth and iTileHeight;
+		//example: iTileWidth=83
+		//iFrameWidth=128;
+		//trans.scale(0.5,0.5);
+		//double temp = iTileWidth*1.0/iFrameWidth;
+		//System.out.println("temp: "+temp);
+		trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+		//added by Mike, 20240625
+		g2d.setTransform(trans);
+
+		//note: clip rect has to move with object position
+		//edited by Mike, 20240623
+		//reminder:
+		//300 is object position;
+		//iFrameCount*128 is the animation frame to show;
+		//-iFrameCount*128 is move the object position to the current frame;
+		//rect.setRect(300+iFrameCount*128-iFrameCount*128, 0, 128, 128);
+		rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0, iFrameWidth, iFrameHeight);
+
+		Area myClipArea = new Area(rect);
+
+		//edited by Mike, 20240625; from 20240623
+		g2d.setClip(myClipArea);
+		//g.setClip(myClipArea);
+
+		//g2d.drawImage(image, trans, this);
+		//g2d.drawImage(myBufferedImage, trans, null);
+		//g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
+		g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
+
+		//removed by Mike, 20240711; from 20240625
+		//put after the last object to be drawn
+		//g2d.dispose();		
+			
+	}
 
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   public void draw(Graphics g) {
-	//TODO: -verify: if clip still has to be cleared
-	Rectangle2D rect = new Rectangle2D.Float();
+	//edited by Mike, 20240726
+	drawTree(g, 0, 0);
 
-	//added by Mike, 20240621
-	//iFrameCount=2;
-
-	//rect.setRect(0, 0, 128, 128);
-	//rect.setRect(iFrameCount*128, 0, 128, 128);
-
-/*
-	g.setClip(myClipArea);
-	//added by Mike, 20240621
-	//g.drawImage(myBufferedImage, 0, 0, this);
-	g.drawImage(myBufferedImage, 0-iFrameCount*128, 0, null);
-*/
-    //added by Mike, 20240623
-    AffineTransform identity = new AffineTransform();
-
-    Graphics2D g2d = (Graphics2D)g;
-    AffineTransform trans = new AffineTransform();
-    trans.setTransform(identity);
-    //300 is object position;
-    //trans.translate(300-iFrameCount*128, 0);
-    //trans.translate(-iFrameCount*128, 0);
-
-	//added by Mike, 20240625
-	//note clip rect has to also be updated;
-	//trans.scale(2,2); //1.5,1.5
-	//put scale after translate position;
-
-/*  //reference: https://stackoverflow.com/questions/8721312/java-image-cut-off; last accessed: 20240623
-    //animating image doable, but shall need more computations;
-    //sin, cos; Bulalakaw Wars;
-    trans.translate(128/2,128/2);
-    trans.rotate(Math.toRadians(45)); //input in degrees
-    trans.translate(-128/2,-128/2);
-*/
-	//reminder: when objects moved in x-y coordinates, rotation's reference point also moves with the update;
-	//"compounded translate and rotate"
-	//https://stackoverflow.com/questions/32513508/rotating-java-2d-graphics-around-specified-point; last accessed: 20240625
-	//answered by: MadProgrammer, 20150911T00:48; from 20150911T00:41
-
-	//update x and y positions before rotate
-	//object position x=300, y=0;
-    //trans.translate(300,0);
-    //edited by Mike, 20240628
-	//trans.translate(300,300);
-	trans.translate(getX(),getY());
-
-	//scales from top-left as reference point
-    //trans.scale(2,2);
-	//rotates using top-left as anchor
-    //trans.rotate(Math.toRadians(45)); //input in degrees
-
-/* //removed by Mike, 20240706; OK
-	//rotate at center; put translate after rotate
-	iRotationDegrees=(iRotationDegrees+10)%360;
-    trans.rotate(Math.toRadians(iRotationDegrees));
-    trans.translate(-iFrameWidth/2,-iFrameHeight/2);
-*/
-
-	//edited by Mike, 20240714; from 20240708
-	//scale to size of iTileWidth and iTileHeight;
-	//example: iTileWidth=83
-	//iFrameWidth=128;
-	//trans.scale(0.5,0.5);
-	//double temp = iTileWidth*1.0/iFrameWidth;
-	//System.out.println("temp: "+temp);
-	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
-
-	//added by Mike, 20240625
-	g2d.setTransform(trans);
-
-	//note: clip rect has to move with object position
-    //edited by Mike, 20240623
-    //reminder:
-    //300 is object position;
-    //iFrameCount*128 is the animation frame to show;
-    //-iFrameCount*128 is move the object position to the current frame;
-    //rect.setRect(300+iFrameCount*128-iFrameCount*128, 0, 128, 128);
-    rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0, iFrameWidth, iFrameHeight);
-
-	Area myClipArea = new Area(rect);
-
-    //edited by Mike, 20240625; from 20240623
-    g2d.setClip(myClipArea);
-    //g.setClip(myClipArea);
-
-    //g2d.drawImage(image, trans, this);
-    //g2d.drawImage(myBufferedImage, trans, null);
-    //g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
-    g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
-
-	//removed by Mike, 20240711; from 20240625
-	//put after the last object to be drawn
-	//g2d.dispose();
+	drawTree(g, iTileWidth, iTileHeight);
+	
+	drawTree(g, iTileWidth*2, iTileHeight*2);	
   }
 }
