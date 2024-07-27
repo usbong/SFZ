@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240726; from 20240722
+ * @last updated: 20240727; from 20240726
  * @website: www.usbong.ph
  *
  */
@@ -949,6 +949,14 @@ class RobotShip {
 
 //added by Mike, 20240711
 class BackgroundCanvas {
+	
+	//added by Mike, 20240727
+	private int[][] tileMap;
+	private final int MAX_TILE_MAP_HEIGHT=13;
+	private final int MAX_TILE_MAP_WIDTH=26;	
+	private final int TILE_BLANK=0;
+	private final int TILE_TREE=1;
+
 	//added by Mike, 20240628
 	private int iWidth=0;
 	private int iHeight=0;
@@ -991,6 +999,17 @@ class BackgroundCanvas {
 	private int iTileHeight=0;
 
     public BackgroundCanvas(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+		
+	//added by Mike, 20240727
+	tileMap = new int[MAX_TILE_MAP_HEIGHT][MAX_TILE_MAP_WIDTH];
+/*	  
+	  for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+			tileMap[i][k]=TILE_BLANK;
+		}
+	  }
+*/
+	  
 	  try {
 		  //edited by Mike, 20240706
 		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
@@ -1041,6 +1060,15 @@ class BackgroundCanvas {
 		for (int i=0; i<iMyKeysDownLength; i++) {
 			myKeysDown[i]=false;
 		}
+		
+		//added by Mike, 20240727
+	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+			tileMap[i][k]=TILE_BLANK;
+		  }
+	    }	
+		//tileMap[0][0]=TILE_TREE;		
+		tileMap[1][1]=TILE_TREE;				
 	}
 
     public void setX(int iXPos){
@@ -1276,11 +1304,20 @@ class BackgroundCanvas {
 
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   public void draw(Graphics g) {
-	//edited by Mike, 20240726
+	//edited by Mike, 20240727; from 20240726
+/*	
 	drawTree(g, 0, 0);
 
 	drawTree(g, iTileWidth, iTileHeight);
 	
 	drawTree(g, iTileWidth*2, iTileHeight*2);	
+*/
+	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+		if (tileMap[i][k]==TILE_TREE) {
+			drawTree(g, iTileWidth*k, iTileHeight*i);	
+		}
+	  }
+	}		
   }
 }
