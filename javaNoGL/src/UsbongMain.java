@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240727; from 20240726
+ * @last updated: 20240729; from 20240727
  * @website: www.usbong.ph
  *
  */
@@ -386,10 +386,16 @@ class MyPanel extends JPanel {
 
 				//added by Mike, 20240629
 				myRobotShip.keyPressed(key);
+				
+				//added by Mike, 20240729
+				myBackgroundCanvas.keyPressed(key);
             }
 
 			public void keyReleased(KeyEvent key) {
 				myRobotShip.keyReleased(key);
+
+				//added by Mike, 20240729
+				myBackgroundCanvas.keyReleased(key);
 			}
 
             public void keyTyped(KeyEvent key) {}
@@ -439,6 +445,9 @@ class MyPanel extends JPanel {
 
 	public void update() {
 	  myRobotShip.update();
+	  
+	  //added by Mike, 20240729
+	  myBackgroundCanvas.update();
 
 	  //OK
 	  //System.out.println("!!!");
@@ -709,7 +718,32 @@ class RobotShip {
         return iHeight;
     }
 
-	public void update() {
+	public void update() {	
+		//edited by Mike, 20240729
+		if (myKeysDown[KEY_A])
+		{
+			currentFacingState=FACING_LEFT;
+		}
+
+		if (myKeysDown[KEY_D])
+		{
+			currentFacingState=FACING_RIGHT;
+		}		
+		
+		//added by Mike, 20240729
+/*		//TODO: -update: this		
+		switch(currentFacingState) {
+			case FACING_RIGHT:
+				setX(getX()+iStepX);
+				break;
+			case FACING_LEFT:
+				setX(getX()-iStepX);
+				break;			
+		}
+*/
+		
+		return;
+/*		
 		//removed by Mike, 20240629
 		//movement
 		//setX(getX()+iStepX);
@@ -739,6 +773,7 @@ class RobotShip {
 		{
 			setY(getY()+iStepY);
 		}
+*/		
 
 /* 	//edited by Mike, 20240706; OK
 		//animation
@@ -749,8 +784,8 @@ class RobotShip {
 			iFrameCount=(iFrameCount+1)%iFrameCountMax;
 			iFrameCountDelay=0;
 		}
-*/
 		iFrameCount=0;
+*/		
 	}
 /*
 	//added by Mike, 20240629
@@ -953,10 +988,17 @@ class BackgroundCanvas {
 	//added by Mike, 20240727
 	private int[][] tileMap;
 	private final int MAX_TILE_MAP_HEIGHT=13;
-	private final int MAX_TILE_MAP_WIDTH=26;	
+	//TODO: -add: draw two tiles beyond the max; reduce pop-out
+	private final int MAX_TILE_MAP_WIDTH=26; 
 	private final int TILE_BLANK=0;
 	private final int TILE_TREE=1;
-
+	
+	//added by Mike, 20240729
+	private int iViewPortX;
+	private int iViewPortY;
+	private int iViewPortWidth;
+	private int iViewPortHeight;
+	
 	//added by Mike, 20240628
 	private int iWidth=0;
 	private int iHeight=0;
@@ -1067,8 +1109,28 @@ class BackgroundCanvas {
 			tileMap[i][k]=TILE_BLANK;
 		  }
 	    }	
-		//tileMap[0][0]=TILE_TREE;		
-		tileMap[1][1]=TILE_TREE;				
+		
+		//start values in default view port position;
+		tileMap[0][0]=TILE_TREE;		
+		tileMap[1][1]=TILE_TREE;	
+		tileMap[2][2]=TILE_TREE;	
+
+		//added by Mike, 20240729
+		//tileMap[1][10]=TILE_TREE;	
+
+		tileMap[MAX_TILE_MAP_HEIGHT-1][0]=TILE_TREE;		
+		tileMap[MAX_TILE_MAP_HEIGHT-1][13-1]=TILE_TREE;		
+		tileMap[0][13-1]=TILE_TREE;		
+		
+		//added by Mike, 20240729
+		iViewPortX=0;
+		iViewPortY=0;
+		iViewPortWidth=iStageWidth;
+		iViewPortHeight=iStageHeight;	
+/*
+		System.out.println("iViewPortWidth: "+iViewPortWidth);
+		System.out.println("iTileWidth*13: "+iTileWidth*13);
+*/	
 	}
 
     public void setX(int iXPos){
@@ -1099,7 +1161,7 @@ class BackgroundCanvas {
 		//removed by Mike, 20240629
 		//movement
 		//setX(getX()+iStepX);
-
+	
 		if (myKeysDown[KEY_A])
 		{
 			setX(getX()-iStepX);
@@ -1155,7 +1217,7 @@ class BackgroundCanvas {
 	}
 */
 
-	public void keyPressed(KeyEvent key) {
+	public void keyPressed(KeyEvent key) {		
 		//added by Mike, 20240629
 		//horizontal movement
 		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
@@ -1196,7 +1258,26 @@ class BackgroundCanvas {
 			myKeysDown[KEY_S]=false;
 		}
 	}
-		
+	
+	//added by Mike, 20240729
+	//TODO: -add: in a "MyDynamicObject" class
+	private boolean isTileInsideViewport(int iViewPortX, int iViewPortY, int iCurrTileX, int iCurrTileY)
+{     
+	//System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
+	
+	//TODO: -verify: why we need to multiply by 2 the viewport width and height; 
+	//iViewPortWidth*2; iViewPortHeight*2
+	
+    if (iCurrTileY+iTileHeight < iViewPortY || //is above the top of iViewPortY?
+        iCurrTileY > iViewPortY+iViewPortHeight*2 || //is at the bottom of iViewPortY?
+        iCurrTileX+iTileWidth < iViewPortX || //is at the left of iViewPortX?
+        iCurrTileX > iViewPortX+iViewPortWidth*2) { //is at the right of iViewPortX?
+			return false;
+		}
+	
+		return true;
+	}
+
 	//added by Mike, 20240726
 	public void drawTree(Graphics g, int iInputTileWidthCount, int iInputTileHeightCount) {
 	//TODO: -verify: if clip still has to be cleared
@@ -1246,11 +1327,13 @@ class BackgroundCanvas {
 		//trans.translate(300,0);
 		//edited by Mike, 20240628
 		//trans.translate(300,300);
-		//added by Mike, 20240726
+/* 		//edited by Mike, 20240729; from 20240726
 		setX(iOffsetScreenWidthLeftMargin+0+iInputTileWidthCount);
 		setY(iOffsetScreenHeightTopMargin+0+iInputTileWidthCount);
 
 		trans.translate(getX(),getY());
+*/		
+		trans.translate(iInputTileWidthCount,iInputTileHeightCount);
 
 		//scales from top-left as reference point
 		//trans.scale(2,2);
@@ -1312,12 +1395,57 @@ class BackgroundCanvas {
 	
 	drawTree(g, iTileWidth*2, iTileHeight*2);	
 */
+
+/*	//edited by Mike, 20240729
 	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
 		if (tileMap[i][k]==TILE_TREE) {
 			drawTree(g, iTileWidth*k, iTileHeight*i);	
 		}
 	  }
-	}		
+	}
+*/
+/*
+	viewPortWidth=iStageWidth;
+	viewPortHeight=iStageHeight;
+*/	
+	//identify the current tile in horizontal axis
+	iViewPortX=getX();
+	iViewPortY=getY();
+/*	
+	System.out.println("iViewPortX: "+iViewPortX);
+	System.out.println("iViewPortY: "+iViewPortY);
+*/
+	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+	
+			int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*k);
+
+			int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
+	
+			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k,iOffsetScreenHeightTopMargin+iTileHeight*i)) {
+			
+			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {
+
+			if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {				
+	
+//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+				
+//System.out.println("HALLO!");
+
+				if (tileMap[i][k]==TILE_TREE) {		
+					//drawTree(g, iOffsetScreenWidthLeftMargin+iTileWidth*k, iOffsetScreenHeightTopMargin+iTileHeight*i);	
+					
+					//drawTree(g, iViewPortX+iTileWidth*k, iViewPortY+iTileHeight*i);
+					
+					//drawTree(g, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos, iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos);	
+					
+					drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+					
+				}
+			}	  
+	  }
+	}
+
   }
 }
