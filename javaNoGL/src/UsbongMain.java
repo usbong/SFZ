@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240729; from 20240727
+ * @last updated: 20240730; from 20240729
  * @website: www.usbong.ph
  *
  */
@@ -518,7 +518,7 @@ System.out.println("iTileWidthCountMax: "+iTileWidthCountMax);
 		//g.drawString("HALLO!",150,20);
 
         redSquare.paintSquare(g);
-
+		
 		//added by Mike, 20240711
 		//put this here; uses Graphics2D; with scale, etc.
 		//Graphics2D shared;
@@ -574,10 +574,11 @@ class RobotShip {
 	private int iHeight=0;
 	private int iXPos=0;
 	private int iYPos=0;
-	//edited by Mike, 20240629
-	private final int iStepX=4; //2;
-	private final int iStepY=4; //2;
-
+	
+	//edited by Mike, 20240730; from 20240629
+	private final int iStepX=1; //4;
+	private final int iStepY=1; //4;
+	
 	//added by Mike, 20240629
 	private final int KEY_W=0; //same as key UP
 	private final int KEY_S=1; //same as key DOWN
@@ -620,6 +621,9 @@ class RobotShip {
 	private final int FACING_LEFT=2;
 	private final int FACING_RIGHT=3;
 	private int currentFacingState=0;
+	
+	//added by Mike, 20240730
+	private boolean bHasStarted=false;
 
 	//edited by Mike, 20240628
     //public RobotShip()
@@ -691,7 +695,9 @@ class RobotShip {
 		int iMyKeysDownLength = myKeysDown.length;
 		for (int i=0; i<iMyKeysDownLength; i++) {
 			myKeysDown[i]=false;
-		}
+		}		
+		//added by Mike, 20240730
+		myKeysDown[KEY_D]=true;
 	}
 
     public void setX(int iXPos){
@@ -730,17 +736,21 @@ class RobotShip {
 			currentFacingState=FACING_RIGHT;
 		}		
 		
-		//added by Mike, 20240729
-/*		//TODO: -update: this		
+		//added by Mike, 20240730; from 20240729
 		switch(currentFacingState) {
 			case FACING_RIGHT:
-				setX(getX()+iStepX);
+				//setX(getX()+iStepX);
 				break;
 			case FACING_LEFT:
-				setX(getX()-iStepX);
+				//setX(getX()-iStepX);
 				break;			
 		}
-*/
+		
+		//added by Mike, 20240730
+		if (!bHasStarted) {
+			myKeysDown[KEY_D]=false;
+			bHasStarted=true;
+		}
 		
 		return;
 /*		
@@ -1004,9 +1014,9 @@ class BackgroundCanvas {
 	private int iHeight=0;
 	private int iXPos=0;
 	private int iYPos=0;
-	//edited by Mike, 20240629
-	private final int iStepX=4; //2;
-	private final int iStepY=4; //2;
+	//edited by Mike, 20240730; from 20240629
+	private final int iStepX=1; //4;
+	private final int iStepY=1; //4;
 
 	//added by Mike, 20240629
 	private final int KEY_W=0; //same as key UP
@@ -1040,6 +1050,15 @@ class BackgroundCanvas {
 	private int iTileWidth=0;
 	private int iTileHeight=0;
 
+	//added by Mike, 20240730;
+	//warning: must be the same with RobotShip
+	private final int FACING_UP=0;
+	private final int FACING_DOWN=1;
+	private final int FACING_LEFT=2;
+	private final int FACING_RIGHT=3;
+	private int currentFacingState=0;
+	private boolean bHasStarted=false;
+	
     public BackgroundCanvas(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 		
 	//added by Mike, 20240727
@@ -1051,7 +1070,6 @@ class BackgroundCanvas {
 		}
 	  }
 */
-	  
 	  try {
 		  //edited by Mike, 20240706
 		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
@@ -1102,6 +1120,9 @@ class BackgroundCanvas {
 		for (int i=0; i<iMyKeysDownLength; i++) {
 			myKeysDown[i]=false;
 		}
+		//added by Mike, 20240730
+		myKeysDown[KEY_D]=true;
+		
 		
 		//added by Mike, 20240727
 	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
@@ -1165,11 +1186,17 @@ class BackgroundCanvas {
 		if (myKeysDown[KEY_A])
 		{
 			setX(getX()-iStepX);
+			
+			//added by Mike, 20240730
+			currentFacingState=FACING_LEFT;			
 		}
 
 		if (myKeysDown[KEY_D])
 		{
 			setX(getX()+iStepX);
+			
+			//added by Mike, 20240730
+			currentFacingState=FACING_RIGHT;	
 		}
 
 		if (myKeysDown[KEY_W])
@@ -1181,6 +1208,25 @@ class BackgroundCanvas {
 		{
 			setY(getY()+iStepY);
 		}
+		
+		//added by Mike, 20240730
+		switch(currentFacingState) {
+			case FACING_RIGHT:
+				setX(getX()+iStepX);
+				break;
+			case FACING_LEFT:
+				setX(getX()-iStepX);
+				break;			
+		}
+		
+		//added by Mike, 20240730
+		if (!bHasStarted) {
+			myKeysDown[KEY_D]=false;
+			bHasStarted=true;
+		}
+
+		
+		//return;		
 
 /* 	//edited by Mike, 20240706; OK
 		//animation
@@ -1267,10 +1313,12 @@ class BackgroundCanvas {
 	
 	//TODO: -verify: why we need to multiply by 2 the viewport width and height; 
 	//iViewPortWidth*2; iViewPortHeight*2
-	
-    if (iCurrTileY+iTileHeight < iViewPortY || //is above the top of iViewPortY?
+
+	//add 1 row before making the tile disappear	
+    if (iCurrTileY+iTileHeight*2 < iViewPortY || //is above the top of iViewPortY?
         iCurrTileY > iViewPortY+iViewPortHeight*2 || //is at the bottom of iViewPortY?
-        iCurrTileX+iTileWidth < iViewPortX || //is at the left of iViewPortX?
+		//add 1 column before making the tile disappear
+        iCurrTileX+iTileWidth*2 < iViewPortX || //is at the left of iViewPortX?
         iCurrTileX > iViewPortX+iViewPortWidth*2) { //is at the right of iViewPortX?
 			return false;
 		}
@@ -1381,10 +1429,34 @@ class BackgroundCanvas {
 
 		//removed by Mike, 20240711; from 20240625
 		//put after the last object to be drawn
+		//g2d.dispose();					
+	}
+
+	//added by Mike, 20240730
+	//TODO: =update: this
+	public void drawMargins(Graphics g) {
+		Rectangle2D rect = new Rectangle2D.Float();
+
+		//added by Mike, 20240623
+		AffineTransform identity = new AffineTransform();
+
+		Graphics2D g2d = (Graphics2D)g;
+		AffineTransform trans = new AffineTransform();
+		trans.setTransform(identity);
+		g2d.setTransform(trans);
+
+		//added by Mike, 20240730	
+		//paint the margins;
+		g.setColor(Color.decode("#adb2b6")); //gray; 
+		g.fillRect(0,0,iOffsetScreenWidthLeftMargin,iStageHeight);
+
+		
+		//removed by Mike, 20240711; from 20240625
+		//put after the last object to be drawn
 		//g2d.dispose();		
 			
 	}
-
+	
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   public void draw(Graphics g) {
 	//edited by Mike, 20240727; from 20240726
@@ -1446,6 +1518,8 @@ class BackgroundCanvas {
 			}	  
 	  }
 	}
-
+	
+	//added by Mike, 20240730
+	drawMargins(g);	
   }
 }
