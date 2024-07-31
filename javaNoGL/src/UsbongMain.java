@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240730; from 20240729
+ * @last updated: 20240731; from 20240730
  * @website: www.usbong.ph
  *
  */
@@ -1432,8 +1432,7 @@ class BackgroundCanvas {
 		//g2d.dispose();					
 	}
 
-	//added by Mike, 20240730
-	//TODO: =update: this
+	//added by Mike, 20240731; from 20240730
 	public void drawMargins(Graphics g) {
 		Rectangle2D rect = new Rectangle2D.Float();
 
@@ -1444,17 +1443,29 @@ class BackgroundCanvas {
 		AffineTransform trans = new AffineTransform();
 		trans.setTransform(identity);
 		g2d.setTransform(trans);
+		
+		//added by Mike, 20240731
+		//https://stackoverflow.com/questions/1241253/inside-clipping-with-java-graphics; last accessed: 20240731
+		//answer by: Savvas Dalkitsis, 20090806T2154
 
-		//added by Mike, 20240730	
+		//g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin+iStageHeight)));
+		g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin*2+iStageWidth, iOffsetScreenHeightTopMargin+iStageHeight)));
+
+		//edited by Mike, 20240731; from 20240730
 		//paint the margins;
 		g.setColor(Color.decode("#adb2b6")); //gray; 
+		
+		//cover the left margin
 		g.fillRect(0,0,iOffsetScreenWidthLeftMargin,iStageHeight);
 
+		//cover the right margin
+		g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthLeftMargin,iStageHeight);
+
+		//System.out.println(">>>");
 		
 		//removed by Mike, 20240711; from 20240625
 		//put after the last object to be drawn
 		//g2d.dispose();		
-			
 	}
 	
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
