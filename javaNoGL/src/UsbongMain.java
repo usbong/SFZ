@@ -289,6 +289,9 @@ class MyPanel extends JPanel {
 
 	//added by Mike, 20240622
 	RobotShip myRobotShip;
+	
+	//added by Mike, 20240802
+	EnemyRobotShip myEnemyShip;
 
 	//added by Mike, 20240711
 	BackgroundCanvas myBackgroundCanvas;
@@ -353,6 +356,12 @@ class MyPanel extends JPanel {
 		//edited by Mike, 20240719
 		//myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
 		myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		
+		//added by Mike, 20240802
+		myEnemyShip = new EnemyRobotShip(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		myEnemyShip.setX(0+iOffsetScreenWidthLeftMargin);
+		myEnemyShip.setY(0);
+		
 
 		//edited by Mike, 20240719; from 20240714
 		//myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
@@ -389,6 +398,9 @@ class MyPanel extends JPanel {
 				
 				//added by Mike, 20240729
 				myBackgroundCanvas.keyPressed(key);
+				
+				//added by Mike, 20240802
+				myEnemyShip.keyPressed(key);
             }
 
 			public void keyReleased(KeyEvent key) {
@@ -396,6 +408,9 @@ class MyPanel extends JPanel {
 
 				//added by Mike, 20240729
 				myBackgroundCanvas.keyReleased(key);
+				
+				//added by Mike, 20240802
+				myEnemyShip.keyReleased(key);				
 			}
 
             public void keyTyped(KeyEvent key) {}
@@ -448,6 +463,9 @@ class MyPanel extends JPanel {
 	  
 	  //added by Mike, 20240729
 	  myBackgroundCanvas.update();
+
+	  //added by Mike, 20240802
+	  myEnemyShip.update();
 
 	  //OK
 	  //System.out.println("!!!");
@@ -525,6 +543,9 @@ System.out.println("iTileWidthCountMax: "+iTileWidthCountMax);
 		myBackgroundCanvas.draw(g);
 
 		myRobotShip.draw(g);
+		
+		//added by Mike, 20240802
+		myEnemyShip.draw(g);
     }
 }
 
@@ -1037,6 +1058,247 @@ class RobotShip extends Actor {
 */		
 	}
 	
+
+//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
+  @Override
+  public void draw(Graphics g) {
+	//TODO: -verify: if clip still has to be cleared
+	Rectangle2D rect = new Rectangle2D.Float();
+
+	//added by Mike, 20240621
+	//iFrameCount=2;
+
+	//rect.setRect(0, 0, 128, 128);
+	//rect.setRect(iFrameCount*128, 0, 128, 128);
+
+/*
+	g.setClip(myClipArea);
+	//added by Mike, 20240621
+	//g.drawImage(myBufferedImage, 0, 0, this);
+	g.drawImage(myBufferedImage, 0-iFrameCount*128, 0, null);
+*/
+    //added by Mike, 20240623
+    AffineTransform identity = new AffineTransform();
+
+    Graphics2D g2d = (Graphics2D)g;
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+    //300 is object position;
+    //trans.translate(300-iFrameCount*128, 0);
+    //trans.translate(-iFrameCount*128, 0);
+
+	//added by Mike, 20240625
+	//note clip rect has to also be updated;
+	//trans.scale(2,2); //1.5,1.5
+	//put scale after translate position;
+
+/*  //reference: https://stackoverflow.com/questions/8721312/java-image-cut-off; last accessed: 20240623
+    //animating image doable, but shall need more computations;
+    //sin, cos; Bulalakaw Wars;
+    trans.translate(128/2,128/2);
+    trans.rotate(Math.toRadians(45)); //input in degrees
+    trans.translate(-128/2,-128/2);
+*/
+	//reminder: when objects moved in x-y coordinates, rotation's reference point also moves with the update;
+	//"compounded translate and rotate"
+	//https://stackoverflow.com/questions/32513508/rotating-java-2d-graphics-around-specified-point; last accessed: 20240625
+	//answered by: MadProgrammer, 20150911T00:48; from 20150911T00:41
+
+	//update x and y positions before rotate
+	//object position x=300, y=0;
+    //trans.translate(300,0);
+    //edited by Mike, 20240628
+	//trans.translate(300,300);
+	//edited by Mike, 20240714
+	trans.translate(getX(),getY());
+
+	//scales from top-left as reference point
+    //trans.scale(2,2);
+	//rotates using top-left as anchor
+    //trans.rotate(Math.toRadians(45)); //input in degrees
+
+/* //removed by Mike, 20240706; OK
+	//rotate at center; put translate after rotate
+	iRotationDegrees=(iRotationDegrees+10)%360;
+    trans.rotate(Math.toRadians(iRotationDegrees));
+    trans.translate(-iFrameWidth/2,-iFrameHeight/2);
+*/
+
+	//edited by Mike, 20240714; from 20240708
+/*
+	System.out.println("iTileWidth: "+iTileWidth);
+	System.out.println("iTileHeight: "+iTileHeight);
+*/
+	//scale to size of iTileWidth and iTileHeight;
+	//example: iTileWidth=83
+	//iFrameWidth=128;
+	//trans.scale(0.5,0.5);
+	//double temp = iTileWidth*1.0/iFrameWidth;
+	//System.out.println("temp: "+temp);
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+	//added by Mike, 20240714
+	//put this after scale;
+	//move the input image to the correct row of the frame
+	//TODO: -add: collision detection; UsbongV2
+	if (currentFacingState==FACING_RIGHT) {
+		//trans.translate(getX(),getY());
+	}
+	else { //FACING_LEFT
+		trans.translate(0,0-iFrameHeight);
+	}
+
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+
+	//note: clip rect has to move with object position
+    //edited by Mike, 20240623
+    //reminder:
+    //300 is object position;
+    //iFrameCount*128 is the animation frame to show;
+    //-iFrameCount*128 is move the object position to the current frame;
+    //rect.setRect(300+iFrameCount*128-iFrameCount*128, 0, 128, 128);
+	//edited by Mike, 20240714; from 20240714
+    //rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0, iFrameWidth, iFrameHeight);
+
+	if (currentFacingState==FACING_RIGHT) {
+		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
+	    rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+	}
+	else { //FACING_LEFT
+	   rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	}
+
+	Area myClipArea = new Area(rect);
+
+    //edited by Mike, 20240625; from 20240623
+    g2d.setClip(myClipArea);
+    //g.setClip(myClipArea);
+
+    //g2d.drawImage(image, trans, this);
+    //g2d.drawImage(myBufferedImage, trans, null);
+    //g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
+
+	//edited by Mike, 20240714
+    g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }
+}
+
+
+//added by Mike, 20240802
+//TODO: -add: AI; intersect, collision detection
+class EnemyRobotShip extends Actor {
+
+    public EnemyRobotShip(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		
+	  try {
+		  //edited by Mike, 20240706
+		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
+		  //edited by Mike, 20240720
+		  //myBufferedImage = ImageIO.read(new File("../res/robotship.png"));
+		  //app executed from base directory
+		  myBufferedImage = ImageIO.read(new File("./res/robotship.png"));
+      } catch (IOException ex) {
+      }
+	}
+
+	//added by Mike, 20240628
+	@Override
+	public void reset() {
+		iWidth=iFrameWidth;
+		iHeight=iFrameHeight;
+
+		//added by Mike, 20240714
+		currentFacingState=FACING_RIGHT;
+
+		//edited by Mike, 20240719
+		int iStageCenterWidth=(iStageWidth/2/iTileWidth)*iTileWidth; //iTileWidth*6
+		int iStageCenterHeight=(iStageHeight/2/iTileHeight)*iTileHeight; //iTileHeight*6
+
+		setX(iOffsetScreenWidthLeftMargin+0+iStageCenterWidth);
+		setY(iOffsetScreenHeightTopMargin+0+iStageCenterHeight);
+
+		iFrameCount=0;
+		iFrameCountDelay=0;
+		iRotationDegrees=0;
+
+		//added by Mike, 20240629
+		int iMyKeysDownLength = myKeysDown.length;
+		for (int i=0; i<iMyKeysDownLength; i++) {
+			myKeysDown[i]=false;
+		}		
+		//added by Mike, 20240730
+		myKeysDown[KEY_D]=true;
+	}
+	
+	@Override
+	public void update() {
+		//removed by Mike, 20240629
+		//movement
+		//setX(getX()+iStepX);
+	
+		if (myKeysDown[KEY_A])
+		{
+			setX(getX()-iStepX);
+			
+			//added by Mike, 20240730
+			currentFacingState=FACING_LEFT;			
+		}
+
+		if (myKeysDown[KEY_D])
+		{
+			setX(getX()+iStepX);
+			
+			//added by Mike, 20240730
+			currentFacingState=FACING_RIGHT;	
+		}
+
+		if (myKeysDown[KEY_W])
+		{
+			setY(getY()-iStepY);
+		}
+
+		if (myKeysDown[KEY_S])
+		{
+			setY(getY()+iStepY);
+		}
+		
+		//added by Mike, 20240730
+		switch(currentFacingState) {
+			case FACING_RIGHT:
+				setX(getX()+iStepX);
+				break;
+			case FACING_LEFT:
+				setX(getX()-iStepX);
+				break;			
+		}
+		
+		//added by Mike, 20240730
+		if (!bHasStarted) {
+			myKeysDown[KEY_D]=false;
+			bHasStarted=true;
+		}
+
+		
+		//return;		
+
+/* 	//edited by Mike, 20240706; OK
+		//animation
+		if (iFrameCountDelay<iFrameCountDelayMax) {
+			iFrameCountDelay++;
+		}
+		else {
+			iFrameCount=(iFrameCount+1)%iFrameCountMax;
+			iFrameCountDelay=0;
+		}
+*/
+		iFrameCount=0;
+	}	
 
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   @Override
