@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240802; from 20240731
+ * @last updated: 20240803; from 20240802
  * @website: www.usbong.ph
  *
  */
@@ -467,8 +467,8 @@ class MyPanel extends JPanel {
 	  //added by Mike, 20240802
 	  myEnemyShip.update();
 
-	  //OK
-	  //System.out.println("!!!");
+	  //added by Mike, 20240803
+	  myRobotShip.collideWith(myEnemyShip);
 	}
 
 	//added by Mike, 20240719
@@ -832,6 +832,39 @@ class Actor {
 
 		if ((key.getKeyCode() == KeyEvent.VK_S) || (key.getKeyCode() == KeyEvent.VK_DOWN)) {
 			myKeysDown[KEY_S]=false;
+		}
+	}
+
+	//added by Mike, 20240803	
+	//reference: UsbongPagong
+	public void hitBy(Actor a) {
+	}
+
+	public boolean isIntersectingRect(Actor a1, Actor a2) {     
+		if (a2.getY()+a2.getHeight() < a1.getY() || //is the bottom of a2 above the top of a1?
+			a2.getY() > a1.getY()+a1.getHeight() || //is the top of a2 below the bottom of a1?
+			a2.getX()+a2.getWidth() < a1.getX()  || //is the right of a2 to the left of a1?
+			a2.getX() > a1.getX()+a1.getWidth()) { //is the left of a2 to the right of a1?
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public void collideWith(Actor a) {
+/*
+		if ((!checkIsCollidable())||(!mdo->checkIsCollidable()))    
+		{
+	//    		printf(">>>>>NOT COLLIDABLE");
+			return;
+		}
+*/
+		if (isIntersectingRect(this, a))
+		{
+			System.out.println("COLLISION!");
+			
+			this.hitBy(a);
+			a.hitBy(this);
 		}
 	}
 
@@ -1428,6 +1461,9 @@ class EnemyRobotShip extends Actor {
 	//g2d.dispose();
   }
 }
+
+//added by Mike, 20240803
+//TODO: -add: class Level (for Actor object positions)
 
 //added by Mike, 20240711
 class BackgroundCanvas {
