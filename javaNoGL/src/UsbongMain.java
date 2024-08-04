@@ -609,14 +609,19 @@ class Actor {
 	
 	protected int currentState=ACTIVE_STATE;
 	
+	protected boolean isCollidable; 
+	
 	protected int iWidth=0;
 	protected int iHeight=0;
 	protected int iXPos=0;
 	protected int iYPos=0;
 	
-	//edited by Mike, 20240730; from 20240629
-	protected final int iStepX=1; //4;
-	protected final int iStepY=1; //4;
+	//edited by Mike, 20240804; from 20240730
+	protected final int ISTEP_X_DEFAULT=1;
+	protected final int ISTEP_Y_DEFAULT=1;
+	
+	protected int iStepX=ISTEP_X_DEFAULT; //4;
+	protected int iStepY=ISTEP_Y_DEFAULT; //4;
 	
 	//added by Mike, 20240629
 	protected final int KEY_W=0; //same as key UP
@@ -729,9 +734,23 @@ class Actor {
 		}		
 		//added by Mike, 20240730
 		myKeysDown[KEY_D]=true;
+		
+		//added by Mike, 20240804
+		currentState=ACTIVE_STATE;
+		isCollidable=true;
 	}
 
-    public void setX(int iXPos){
+	//added by Mike, 20240804
+    public boolean isActive() {
+        if (currentState==ACTIVE_STATE) {
+            return true;
+		}
+        else {
+			return false;
+		}
+    }
+
+    public void setX(int iXPos ){
         this.iXPos = iXPos;
     }
 
@@ -762,6 +781,16 @@ class Actor {
 	public int getStepY(){
         return iStepY;
     }
+	
+	//added by Mike, 20240804
+	public boolean checkIsCollidable() {
+		return isCollidable;
+	}
+
+	//added by Mike, 20240804
+	public void setCollidable(boolean c) {
+		 isCollidable=c;
+	}
 
 	public void update() {	
 		//edited by Mike, 20240729
@@ -932,13 +961,13 @@ class Actor {
 	}
 			
 	public void collideWith(Actor a) {
-/*
-		if ((!checkIsCollidable())||(!mdo->checkIsCollidable()))    
+
+		if ((!checkIsCollidable())||(!a.checkIsCollidable()))    
 		{
-	//    		printf(">>>>>NOT COLLIDABLE");
+			//not collidable
 			return;
 		}
-*/
+
 		if (isIntersectingRect(this, a))
 		{
 			//System.out.println("COLLISION!");
@@ -1100,6 +1129,14 @@ class RobotShip extends Actor {
 		}		
 		//added by Mike, 20240730
 		myKeysDown[KEY_D]=true;
+		
+		//added by Mike, 20240804
+		currentState=ACTIVE_STATE;
+		isCollidable=true;
+		
+		//TODO: -add: , etc.
+		iStepX=ISTEP_X_DEFAULT*2; //faster by 1 than the default
+		iStepY=ISTEP_Y_DEFAULT*2; //faster by 1 than the default
 	}
 	
 	@Override
@@ -1361,11 +1398,22 @@ class EnemyAircraft extends Actor {
 		}		
 		//added by Mike, 20240730
 		myKeysDown[KEY_D]=true;
+		
+		//added by Mike, 20240804		
+		currentState=ACTIVE_STATE;
+		isCollidable=true;
+/*		
+		setX(0);
+		setY(0);
+*/		
 	}
 	
 	@Override
 	public void hitBy(Actor a) {
 		currentState=HIDDEN_STATE;
+		isCollidable=false;
+		
+		System.out.println("HIT!!! SET TO HIDDEN STATE");
 	}
 	
 	@Override
@@ -2129,7 +2177,9 @@ class Level2D extends Actor {
 	private int iViewPortHeight;
 	
 	//added by Mike, 20240804
-	private EnemyAircraft myEnemyAircraft;
+	//private EnemyAircraft myEnemyAircraft;
+	private final int MAX_ENEMY_AIRCRAFT_COUNT=2; //5;
+	private EnemyAircraft[] myEnemyAircraftContainer;
 		
     public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
@@ -2171,9 +2221,18 @@ class Level2D extends Actor {
 	  myKeysDown = new boolean[iNumOfKeyTypes];
 		
 	  //added by Mike, 20240804
-	  myEnemyAircraft = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+	  //myEnemyAircraft = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+
+	  myEnemyAircraftContainer = new EnemyAircraft[MAX_ENEMY_AIRCRAFT_COUNT];
+	  
+	  for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
+		  myEnemyAircraftContainer[i] = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+	  }
 
 	  reset();
+	  		
+	  //added by Mike, 20240804
+	  initLevel();
 	}
 
 	//added by Mike, 20240628
@@ -2214,6 +2273,10 @@ class Level2D extends Actor {
 	
 		//start values in default view port position;
 		tileMap[1][6]=TILE_AIRCRAFT;	
+		tileMap[1][7]=TILE_AIRCRAFT;	
+		
+		//tileMap[1][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
+
 /*		
 		tileMap[1][7]=TILE_AIRCRAFT;	
 		tileMap[1][8]=TILE_AIRCRAFT;		
@@ -2227,26 +2290,19 @@ class Level2D extends Actor {
 	}
 
 	public void update() {		
-		//removed by Mike, 20240629
-		//movement
-		//setX(getX()+iStepX);
-	
+		//level continously scrolls, along with the background
 		if (myKeysDown[KEY_A])
 		{
-			setX(getX()-iStepX);
-			
-			//added by Mike, 20240730
+			//setX(getX()-iStepX);
 			currentFacingState=FACING_LEFT;			
 		}
 
 		if (myKeysDown[KEY_D])
 		{
-			setX(getX()+iStepX);
-			
-			//added by Mike, 20240730
+			//setX(getX()+iStepX);
 			currentFacingState=FACING_RIGHT;	
 		}
-
+/*
 		if (myKeysDown[KEY_W])
 		{
 			setY(getY()-iStepY);
@@ -2256,17 +2312,25 @@ class Level2D extends Actor {
 		{
 			setY(getY()+iStepY);
 		}
-		
-		//added by Mike, 20240730
-		switch(currentFacingState) {
-			case FACING_RIGHT:
-				setX(getX()+iStepX);
-				break;
-			case FACING_LEFT:
-				setX(getX()-iStepX);
-				break;			
+*/		
+
+	
+		//note: AI; not yet liberated from user inputs?
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
+		    myEnemyAircraftContainer[i].setY(myEnemyAircraftContainer[i].getY()+myEnemyAircraftContainer[i].getStepY());
+
+			switch(currentFacingState) {
+				case FACING_RIGHT:
+					myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()-myEnemyAircraftContainer[i].getStepX());
+					break;
+				case FACING_LEFT:
+					myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getStepX());
+					break;			
+			}
 		}
 		
+		
+/*		
 		//added by Mike, 20240730
 		if (!bHasStarted) {
 			myKeysDown[KEY_D]=false;
@@ -2274,6 +2338,7 @@ class Level2D extends Actor {
 		}
 		
 		//return;		
+*/		
 
 /* 	//edited by Mike, 20240706; OK
 		//animation
@@ -2291,15 +2356,7 @@ class Level2D extends Actor {
 	//added by Mike, 20240804
 	@Override
 	public void collideWith(Actor a) {
-/*
-		if ((!checkIsCollidable())||(!mdo->checkIsCollidable()))    
-		{
-	//    		printf(">>>>>NOT COLLIDABLE");
-			return;
-		}
-*/
-
-		//TODO: -add: array of enemy objects	
+/*		
 		//if (isIntersectingRect(this, a))
 		if (isIntersectingRect(myEnemyAircraft, a))		
 		{
@@ -2307,6 +2364,29 @@ class Level2D extends Actor {
 			
 			myEnemyAircraft.hitBy(a);
 			a.hitBy(myEnemyAircraft);
+		}
+*/
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
+			
+			if (!myEnemyAircraftContainer[i].isActive()) {
+				return;
+			}
+			
+/*			
+			if ((!myEnemyAircraftContainer[i].checkIsCollidable())||(!a.checkIsCollidable()))    
+			{
+				//not collidable
+				return;
+			}
+*/		
+			if (isIntersectingRect(myEnemyAircraftContainer[i], a))		
+			{
+				myEnemyAircraftContainer[i].hitBy(a);
+				a.hitBy(myEnemyAircraftContainer[i]);
+				
+				System.out.println("iEnemyAircraft i: "+i);
+				System.out.println(">>>>>>>>>>>>>>>>>");
+			}
 		}
 	}
 	
@@ -2330,72 +2410,47 @@ class Level2D extends Actor {
 	
 		return true;
 	}
-
-//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
-  @Override
-  public void draw(Graphics g) {
-	//edited by Mike, 20240727; from 20240726
-/*	
-	drawTree(g, 0, 0);
-
-	drawTree(g, iTileWidth, iTileHeight);
 	
-	drawTree(g, iTileWidth*2, iTileHeight*2);	
-*/
-
-/*	//edited by Mike, 20240729
-	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
-	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
-		if (tileMap[i][k]==TILE_TREE) {
-			drawTree(g, iTileWidth*k, iTileHeight*i);	
-		}
-	  }
-	}
-*/
-/*
-	viewPortWidth=iStageWidth;
-	viewPortHeight=iStageHeight;
-*/	
-	//identify the current tile in horizontal axis
-	iViewPortX=getX();
-	iViewPortY=getY();
-/*	
-	System.out.println("iViewPortX: "+iViewPortX);
-	System.out.println("iViewPortY: "+iViewPortY);
-*/
-	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
-	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
-	
-			int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*k);
-
-			int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
-	
-			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k,iOffsetScreenHeightTopMargin+iTileHeight*i)) {
-			
-			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {
-
-			if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {				
-	
-//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
-				
-//System.out.println("HALLO!");
-
-				if (tileMap[i][k]==TILE_AIRCRAFT) {		
-					
-					//drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
-/*					
-					myEnemyAircraft.setX(0+iOffsetScreenWidthLeftMargin);
-					myEnemyAircraft.setY(0);
+	//pre-set enemy positions, but do not draw them all yet;
+	public void initLevel() {
+		int iEnemyAircraftCount=0;
 		
-*/					
-					myEnemyAircraft.setX(0+iOffsetScreenWidthLeftMargin-iDifferenceInXPos);
-					myEnemyAircraft.setY(0+iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+		for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+			for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+				if (tileMap[i][k]==TILE_AIRCRAFT) {		
 
-					myEnemyAircraft.draw(g);
+					System.out.println("TILE_AIRCRAFT!");
+
+					//for (int iEnemyAircraftCount=0; iEnemyAircraftCount<MAX_ENEMY_AIRCRAFT_COUNT; iEnemyAircraftCount++) {
+					if (iEnemyAircraftCount<MAX_ENEMY_AIRCRAFT_COUNT) {
+						//System.out.println("isActive?"+myEnemyAircraftContainer[iEnemyAircraftCount].isActive());
+					
+						if (myEnemyAircraftContainer[iEnemyAircraftCount].isActive()) {
+							//System.out.println("iEnemyAircraftCount: "+iEnemyAircraftCount);
+							
+							myEnemyAircraftContainer[iEnemyAircraftCount].setX(0+iOffsetScreenWidthLeftMargin+iTileWidth*k);			
+							myEnemyAircraftContainer[iEnemyAircraftCount].setY(0+iOffsetScreenHeightTopMargin+iTileHeight*i);
+													
+							tileMap[i][k]=TILE_BLANK;
+							
+							iEnemyAircraftCount++;		
+							
+							//continue; //stop once an available aircraft is found in the container
+						}
+					}					
 				}
-			}	  
+			}
 	  }
 	}
+
+  @Override
+  public void draw(Graphics g) {	
+	//TODO: -draw only if in viewport
+	for (int iEnemyAircraftCount=0; iEnemyAircraftCount<MAX_ENEMY_AIRCRAFT_COUNT; iEnemyAircraftCount++) {	
+		if (myEnemyAircraftContainer[iEnemyAircraftCount].isActive()) {
+			myEnemyAircraftContainer[iEnemyAircraftCount].draw(g);			
+		}
+	}	
   }
 }  
   
