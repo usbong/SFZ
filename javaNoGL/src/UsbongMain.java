@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240803; from 20240802
+ * @last updated: 20240804; from 20240803
  * @website: www.usbong.ph
  *
  */
@@ -290,8 +290,9 @@ class MyPanel extends JPanel {
 	//added by Mike, 20240622
 	RobotShip myRobotShip;
 	
-	//added by Mike, 20240802
-	EnemyRobotShip myEnemyShip;
+	//edited by Mike, 20240804; from 20240802
+	//EnemyRobotShip myEnemyShip;
+	Level2D myLevel2D;
 
 	//added by Mike, 20240711
 	BackgroundCanvas myBackgroundCanvas;
@@ -357,11 +358,13 @@ class MyPanel extends JPanel {
 		//myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,0,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
 		myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 		
-		//added by Mike, 20240802
+		//edited by Mike, 20240804; from 20240802
+/*		
 		myEnemyShip = new EnemyRobotShip(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 		myEnemyShip.setX(0+iOffsetScreenWidthLeftMargin);
 		myEnemyShip.setY(0);
-		
+*/		
+		myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight); 
 
 		//edited by Mike, 20240719; from 20240714
 		//myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
@@ -399,8 +402,8 @@ class MyPanel extends JPanel {
 				//added by Mike, 20240729
 				myBackgroundCanvas.keyPressed(key);
 				
-				//added by Mike, 20240802
-				myEnemyShip.keyPressed(key);
+				//edited by Mike, 20240804; from 20240802
+				myLevel2D.keyPressed(key);
             }
 
 			public void keyReleased(KeyEvent key) {
@@ -409,8 +412,8 @@ class MyPanel extends JPanel {
 				//added by Mike, 20240729
 				myBackgroundCanvas.keyReleased(key);
 				
-				//added by Mike, 20240802
-				myEnemyShip.keyReleased(key);				
+				//edited by Mike, 20240804; from 20240802
+				myLevel2D.keyReleased(key);
 			}
 
             public void keyTyped(KeyEvent key) {}
@@ -464,11 +467,15 @@ class MyPanel extends JPanel {
 	  //added by Mike, 20240729
 	  myBackgroundCanvas.update();
 
-	  //added by Mike, 20240802
+	  //edited by Mike, 20240804; from 20240802
+/*
 	  myEnemyShip.update();
-
+	  
 	  //added by Mike, 20240803
 	  myRobotShip.collideWith(myEnemyShip);
+*/
+	  myLevel2D.update();
+	  myLevel2D.collideWith(myRobotShip);	  
 	}
 
 	//added by Mike, 20240719
@@ -542,10 +549,10 @@ System.out.println("iTileWidthCountMax: "+iTileWidthCountMax);
 		//Graphics2D shared;
 		myBackgroundCanvas.draw(g);
 
-		myRobotShip.draw(g);
-		
 		//added by Mike, 20240802
-		myEnemyShip.draw(g);
+		myLevel2D.draw(g);
+
+		myRobotShip.draw(g);		
     }
 }
 
@@ -591,6 +598,17 @@ class RedSquare{
 //added by Mike, 20240802
 //Reference: UsbongPagong
 class Actor {
+	//added by Mike, 20240804
+	protected final int INITIALIZING_STATE = 0;
+	protected final int MOVING_STATE = 1;
+	protected final int IN_TITLE_STATE = 2; //TODO: -verify this
+	protected final int DYING_STATE = 3;
+
+	protected final int HIDDEN_STATE = 4;
+	protected final int ACTIVE_STATE = 5;
+	
+	protected int currentState=ACTIVE_STATE;
+	
 	protected int iWidth=0;
 	protected int iHeight=0;
 	protected int iXPos=0;
@@ -635,6 +653,11 @@ class Actor {
 	//added by Mike, 20240714
 	protected int iTileWidth=0;
 	protected int iTileHeight=0;
+	
+	//added by Mike, 20240804
+	protected int[][] tileMap; 
+	protected final int MAX_TILE_MAP_HEIGHT=13;
+	protected final int MAX_TILE_MAP_WIDTH=26; 
 
 	//added by Mike, 20240714
 	protected final int FACING_UP=0;
@@ -671,12 +694,17 @@ class Actor {
 
 	  //added by Mike, 20240629
 	  myKeysDown = new boolean[iNumOfKeyTypes];
+	  
+	  //added by Mike, 20240804
+	  tileMap = new int[MAX_TILE_MAP_HEIGHT][MAX_TILE_MAP_WIDTH];
 
 	  reset();
 	}
 
 	//added by Mike, 20240628
 	public void reset() {
+		//added by Mike, 20240804
+		//reminder: trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
 		iWidth=iFrameWidth;
 		iHeight=iFrameHeight;
 
@@ -725,6 +753,14 @@ class Actor {
 
     public int getHeight(){
         return iHeight;
+    }
+	
+	public int getStepX(){
+        return iStepX;
+    }
+
+	public int getStepY(){
+        return iStepY;
     }
 
 	public void update() {	
@@ -840,6 +876,8 @@ class Actor {
 	public void hitBy(Actor a) {
 	}
 
+	//edited by Mike, 20240804
+/*	//UsbongPagong
 	public boolean isIntersectingRect(Actor a1, Actor a2) {     
 		if (a2.getY()+a2.getHeight() < a1.getY() || //is the bottom of a2 above the top of a1?
 			a2.getY() > a1.getY()+a1.getHeight() || //is the top of a2 below the bottom of a1?
@@ -850,7 +888,49 @@ class Actor {
 		
 		return true;
 	}
-	
+*/
+	//UsbongV2 
+/*	
+	if ((fTilePosX > getXPos()+getWidth()-iOffsetXPosAsPixel+getStepX()) || 
+					//tile position at left of object
+		(fTilePosX+fTileWidth < getXPos()+iOffsetXPosAsPixel -getStepX()) ||
+		//tile position at top of object
+		(fTilePosY+fTileHeight < getYPos()+iOffsetYPosAsPixel -getStepY()) || 
+					//tile position at bottom of object            
+		(fTilePosY > getYPos()+getHeight()-iOffsetYPosAsPixel +getStepY())) { 
+*/
+//Example values: iOffsetXPosAsPixel=10; iMyWidthAsPixel=64; 10/64=0.15625
+	public boolean isIntersectingRect(Actor a1, Actor a2) {
+/*		
+		if ((a2.getY()+a2.getHeight() < a1.getY()-getStepY()) || //is the bottom of a2 above the top of a1?
+			(a2.getY() > a1.getY()+a1.getHeight()+getStepY()) || //is the top of a2 below the bottom of a1?
+			(a2.getX()+a2.getWidth() < a1.getX()-getStepX())  || //is the right of a2 to the left of a1?
+			(a2.getX() > a1.getX()+a1.getWidth()+getStepX())) { //is the left of a2 to the right of a1?
+*/
+
+		//iOffsetXPosAsPixel=12; a1.getHeight()=83; 12/83=0.14457
+/*		
+		int iOffsetYPosAsPixel=new Double(a1.getHeight()*0.15625).intValue();
+		int iOffsetXPosAsPixel=new Double(a1.getWidth()*0.15625).intValue();
+*/
+		//object and object; not object and tile
+		int iOffsetYPosAsPixel=a1.getHeight()/3;//4; //diagonal hit; image has margin
+		int iOffsetXPosAsPixel=a1.getWidth()/3;//4;
+
+		//System.out.println(">>>> a1.getHeight(): "+a1.getHeight());
+		//System.out.println(">>>> iOffsetYPosAsPixel: "+iOffsetYPosAsPixel);
+
+		if ((a2.getY()+a2.getHeight() < a1.getY()+iOffsetYPosAsPixel-getStepY()) || //is the bottom of a2 above the top of a1?
+			(a2.getY() > a1.getY()+a1.getHeight()-iOffsetYPosAsPixel+getStepY()) || //is the top of a2 below the bottom of a1?
+			(a2.getX()+a2.getWidth() < a1.getX()+iOffsetXPosAsPixel-getStepX())  || //is the right of a2 to the left of a1?
+			(a2.getX() > a1.getX()+a1.getWidth()-iOffsetXPosAsPixel+getStepX())) { //is the left of a2 to the right of a1?
+
+			return false;
+		}
+		
+		return true;
+	}
+			
 	public void collideWith(Actor a) {
 /*
 		if ((!checkIsCollidable())||(!mdo->checkIsCollidable()))    
@@ -861,7 +941,7 @@ class Actor {
 */
 		if (isIntersectingRect(this, a))
 		{
-			System.out.println("COLLISION!");
+			//System.out.println("COLLISION!");
 			
 			this.hitBy(a);
 			a.hitBy(this);
@@ -989,10 +1069,16 @@ class RobotShip extends Actor {
 
 	//added by Mike, 20240628
 	@Override
-	public void reset() {
+	public void reset() {		
+		//edited by Mike, 20240804
+		//reminder: trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+/*		
 		iWidth=iFrameWidth;
 		iHeight=iFrameHeight;
-
+*/
+		iWidth=iTileWidth;
+		iHeight=iTileHeight;
+		
 		//added by Mike, 20240714
 		currentFacingState=FACING_RIGHT;
 
@@ -1224,9 +1310,9 @@ class RobotShip extends Actor {
 
 //added by Mike, 20240802
 //TODO: -add: AI; intersect, collision detection
-class EnemyRobotShip extends Actor {
+class EnemyAircraft extends Actor {
 
-    public EnemyRobotShip(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+    public EnemyAircraft(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 		
 	  try {
@@ -1243,18 +1329,26 @@ class EnemyRobotShip extends Actor {
 	//added by Mike, 20240628
 	@Override
 	public void reset() {
+		//edited by Mike, 20240804
+		//reminder: trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+/*		
 		iWidth=iFrameWidth;
 		iHeight=iFrameHeight;
+*/
+		iWidth=iTileWidth;
+		iHeight=iTileHeight;		
 
 		//added by Mike, 20240714
 		currentFacingState=FACING_RIGHT;
 
+/*		//removed by Mike, 20240804; set in Level2D
 		//edited by Mike, 20240719
 		int iStageCenterWidth=(iStageWidth/2/iTileWidth)*iTileWidth; //iTileWidth*6
 		int iStageCenterHeight=(iStageHeight/2/iTileHeight)*iTileHeight; //iTileHeight*6
 
 		setX(iOffsetScreenWidthLeftMargin+0+iStageCenterWidth);
 		setY(iOffsetScreenHeightTopMargin+0+iStageCenterHeight);
+*/		
 
 		iFrameCount=0;
 		iFrameCountDelay=0;
@@ -1267,6 +1361,11 @@ class EnemyRobotShip extends Actor {
 		}		
 		//added by Mike, 20240730
 		myKeysDown[KEY_D]=true;
+	}
+	
+	@Override
+	public void hitBy(Actor a) {
+		currentState=HIDDEN_STATE;
 	}
 	
 	@Override
@@ -1336,6 +1435,11 @@ class EnemyRobotShip extends Actor {
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   @Override
   public void draw(Graphics g) {
+	  
+	if (currentState==HIDDEN_STATE) {
+		return;
+	}
+	  
 	//TODO: -verify: if clip still has to be cleared
 	Rectangle2D rect = new Rectangle2D.Float();
 
@@ -1461,9 +1565,6 @@ class EnemyRobotShip extends Actor {
 	//g2d.dispose();
   }
 }
-
-//added by Mike, 20240803
-//TODO: -add: class Level (for Actor object positions)
 
 //added by Mike, 20240711
 class BackgroundCanvas {
@@ -2007,3 +2108,294 @@ class BackgroundCanvas {
 	drawMargins(g);	
   }
 }
+
+//added by Mike, 20240804; from 20240803
+//for Actor object positions
+class Level2D extends Actor {	
+	//added by Mike, 20240727
+	//protected int[][] tileMap; 
+	
+	private final int MAX_TILE_MAP_HEIGHT=13;
+	//TODO: -add: draw two tiles beyond the max; reduce pop-out
+	private final int MAX_TILE_MAP_WIDTH=26; 
+	private final int TILE_BLANK=0;
+	private final int TILE_AIRCRAFT=1;
+	private final int TILE_SHIP=2;
+	
+	//added by Mike, 20240729
+	private int iViewPortX;
+	private int iViewPortY;
+	private int iViewPortWidth;
+	private int iViewPortHeight;
+	
+	//added by Mike, 20240804
+	private EnemyAircraft myEnemyAircraft;
+		
+    public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		
+	  //added by Mike, 20240727
+	  //tileMap = new int[MAX_TILE_MAP_HEIGHT][MAX_TILE_MAP_WIDTH];
+	  
+/*	  
+	  for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+			tileMap[i][k]=TILE_BLANK;
+		}
+	  }
+*/
+/*
+	  try {
+		  //edited by Mike, 20240706
+		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
+		  //edited by Mike, 20240720
+		  //myBufferedImage = ImageIO.read(new File("../res/background.png"));
+		  //app executed from base directory
+		  myBufferedImage = ImageIO.read(new File("./res/background.png"));
+      } catch (IOException ex) {
+      }
+*/
+	  //added by Mike, 20240708
+	  this.iOffsetScreenWidthLeftMargin=iOffsetScreenWidthLeftMargin;
+	  this.iOffsetScreenHeightTopMargin=iOffsetScreenHeightTopMargin;
+
+	  //added by Mike, 20240628
+	  this.iStageWidth=iStageWidth;
+	  this.iStageHeight=iStageHeight;
+
+	  //added by Mike, 20240714
+	  this.iTileWidth=iTileWidth;
+	  this.iTileHeight=iTileHeight;
+
+	  //added by Mike, 20240629
+	  myKeysDown = new boolean[iNumOfKeyTypes];
+		
+	  //added by Mike, 20240804
+	  myEnemyAircraft = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+
+	  reset();
+	}
+
+	//added by Mike, 20240628
+	@Override
+	public void reset() {
+		iWidth=iFrameWidth;
+		iHeight=iFrameHeight;
+		
+		//put tileMap in Actor class; otherwise null pointer exception here
+		//tileMap[0][0]=TILE_BLANK;
+
+		//setX(0);
+/*
+		setX(iOffsetScreenWidthLeftMargin+0+iScreenWidth/2);
+		setY(iOffsetScreenHeight+0+iScreenHeight/2);
+*/
+		setX(iOffsetScreenWidthLeftMargin+0);
+		setY(iOffsetScreenHeightTopMargin+0);
+
+		iFrameCount=0;
+		iFrameCountDelay=0;
+		iRotationDegrees=0;
+
+		//added by Mike, 20240629
+		int iMyKeysDownLength = myKeysDown.length;
+		for (int i=0; i<iMyKeysDownLength; i++) {
+			myKeysDown[i]=false;
+		}
+		//added by Mike, 20240730
+		myKeysDown[KEY_D]=true;
+				
+		//added by Mike, 20240727
+	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+			tileMap[i][k]=TILE_BLANK;
+		  }
+	    }	
+	
+		//start values in default view port position;
+		tileMap[1][6]=TILE_AIRCRAFT;	
+/*		
+		tileMap[1][7]=TILE_AIRCRAFT;	
+		tileMap[1][8]=TILE_AIRCRAFT;		
+*/
+		
+		//added by Mike, 20240729
+		iViewPortX=0;
+		iViewPortY=0;
+		iViewPortWidth=iStageWidth;
+		iViewPortHeight=iStageHeight;	
+	}
+
+	public void update() {		
+		//removed by Mike, 20240629
+		//movement
+		//setX(getX()+iStepX);
+	
+		if (myKeysDown[KEY_A])
+		{
+			setX(getX()-iStepX);
+			
+			//added by Mike, 20240730
+			currentFacingState=FACING_LEFT;			
+		}
+
+		if (myKeysDown[KEY_D])
+		{
+			setX(getX()+iStepX);
+			
+			//added by Mike, 20240730
+			currentFacingState=FACING_RIGHT;	
+		}
+
+		if (myKeysDown[KEY_W])
+		{
+			setY(getY()-iStepY);
+		}
+
+		if (myKeysDown[KEY_S])
+		{
+			setY(getY()+iStepY);
+		}
+		
+		//added by Mike, 20240730
+		switch(currentFacingState) {
+			case FACING_RIGHT:
+				setX(getX()+iStepX);
+				break;
+			case FACING_LEFT:
+				setX(getX()-iStepX);
+				break;			
+		}
+		
+		//added by Mike, 20240730
+		if (!bHasStarted) {
+			myKeysDown[KEY_D]=false;
+			bHasStarted=true;
+		}
+		
+		//return;		
+
+/* 	//edited by Mike, 20240706; OK
+		//animation
+		if (iFrameCountDelay<iFrameCountDelayMax) {
+			iFrameCountDelay++;
+		}
+		else {
+			iFrameCount=(iFrameCount+1)%iFrameCountMax;
+			iFrameCountDelay=0;
+		}
+*/
+		iFrameCount=0;
+	}
+	
+	//added by Mike, 20240804
+	@Override
+	public void collideWith(Actor a) {
+/*
+		if ((!checkIsCollidable())||(!mdo->checkIsCollidable()))    
+		{
+	//    		printf(">>>>>NOT COLLIDABLE");
+			return;
+		}
+*/
+
+		//TODO: -add: array of enemy objects	
+		//if (isIntersectingRect(this, a))
+		if (isIntersectingRect(myEnemyAircraft, a))		
+		{
+			//System.out.println("COLLISION!");
+			
+			myEnemyAircraft.hitBy(a);
+			a.hitBy(myEnemyAircraft);
+		}
+	}
+	
+	//added by Mike, 20240729
+	//TODO: -add: in a "MyDynamicObject" class
+	private boolean isTileInsideViewport(int iViewPortX, int iViewPortY, int iCurrTileX, int iCurrTileY)
+{     
+	//System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
+	
+	//TODO: -verify: why we need to multiply by 2 the viewport width and height; 
+	//iViewPortWidth*2; iViewPortHeight*2
+
+		//add 1 row before making the tile disappear	
+		if (iCurrTileY+iTileHeight*2 < iViewPortY || //is above the top of iViewPortY?
+			iCurrTileY > iViewPortY+iViewPortHeight*2 || //is at the bottom of iViewPortY?
+			//add 1 column before making the tile disappear
+			iCurrTileX+iTileWidth*2 < iViewPortX || //is at the left of iViewPortX?
+			iCurrTileX > iViewPortX+iViewPortWidth*2) { //is at the right of iViewPortX?
+			return false;
+		}
+	
+		return true;
+	}
+
+//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
+  @Override
+  public void draw(Graphics g) {
+	//edited by Mike, 20240727; from 20240726
+/*	
+	drawTree(g, 0, 0);
+
+	drawTree(g, iTileWidth, iTileHeight);
+	
+	drawTree(g, iTileWidth*2, iTileHeight*2);	
+*/
+
+/*	//edited by Mike, 20240729
+	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+		if (tileMap[i][k]==TILE_TREE) {
+			drawTree(g, iTileWidth*k, iTileHeight*i);	
+		}
+	  }
+	}
+*/
+/*
+	viewPortWidth=iStageWidth;
+	viewPortHeight=iStageHeight;
+*/	
+	//identify the current tile in horizontal axis
+	iViewPortX=getX();
+	iViewPortY=getY();
+/*	
+	System.out.println("iViewPortX: "+iViewPortX);
+	System.out.println("iViewPortY: "+iViewPortY);
+*/
+	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+	
+			int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*k);
+
+			int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
+	
+			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k,iOffsetScreenHeightTopMargin+iTileHeight*i)) {
+			
+			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {
+
+			if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {				
+	
+//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+				
+//System.out.println("HALLO!");
+
+				if (tileMap[i][k]==TILE_AIRCRAFT) {		
+					
+					//drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+/*					
+					myEnemyAircraft.setX(0+iOffsetScreenWidthLeftMargin);
+					myEnemyAircraft.setY(0);
+		
+*/					
+					myEnemyAircraft.setX(0+iOffsetScreenWidthLeftMargin-iDifferenceInXPos);
+					myEnemyAircraft.setY(0+iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+
+					myEnemyAircraft.draw(g);
+				}
+			}	  
+	  }
+	}
+  }
+}  
+  
