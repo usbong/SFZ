@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240804; from 20240803
+ * @last updated: 20240805; from 20240804
  * @website: www.usbong.ph
  *
  */
@@ -791,6 +791,11 @@ class Actor {
 	public void setCollidable(boolean c) {
 		 isCollidable=c;
 	}
+	
+	//added by Mike, 20240805
+	public void setCurrentFacingState(int f) {
+		currentFacingState=f;
+	}
 
 	public void update() {	
 		//edited by Mike, 20240729
@@ -802,7 +807,7 @@ class Actor {
 		if (myKeysDown[KEY_D])
 		{
 			currentFacingState=FACING_RIGHT;
-		}		
+		}
 		
 		//added by Mike, 20240730; from 20240729
 		switch(currentFacingState) {
@@ -949,10 +954,10 @@ class Actor {
 		//System.out.println(">>>> a1.getHeight(): "+a1.getHeight());
 		//System.out.println(">>>> iOffsetYPosAsPixel: "+iOffsetYPosAsPixel);
 
-		if ((a2.getY()+a2.getHeight() < a1.getY()+iOffsetYPosAsPixel-getStepY()) || //is the bottom of a2 above the top of a1?
-			(a2.getY() > a1.getY()+a1.getHeight()-iOffsetYPosAsPixel+getStepY()) || //is the top of a2 below the bottom of a1?
-			(a2.getX()+a2.getWidth() < a1.getX()+iOffsetXPosAsPixel-getStepX())  || //is the right of a2 to the left of a1?
-			(a2.getX() > a1.getX()+a1.getWidth()-iOffsetXPosAsPixel+getStepX())) { //is the left of a2 to the right of a1?
+		if ((a2.getY()+a2.getHeight() < a1.getY()+iOffsetYPosAsPixel-a1.getStepY()) || //is the bottom of a2 above the top of a1?
+			(a2.getY() > a1.getY()+a1.getHeight()-iOffsetYPosAsPixel+a1.getStepY()) || //is the top of a2 below the bottom of a1?
+			(a2.getX()+a2.getWidth() < a1.getX()+iOffsetXPosAsPixel-a1.getStepX())  || //is the right of a2 to the left of a1?
+			(a2.getX() > a1.getX()+a1.getWidth()-iOffsetXPosAsPixel+a1.getStepX())) { //is the left of a2 to the right of a1?
 
 			return false;
 		}
@@ -1344,9 +1349,7 @@ class RobotShip extends Actor {
   }
 }
 
-
-//added by Mike, 20240802
-//TODO: -add: AI; intersect, collision detection
+//edited by Mike, 20240805; from 20240802
 class EnemyAircraft extends Actor {
 
     public EnemyAircraft(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
@@ -1375,8 +1378,8 @@ class EnemyAircraft extends Actor {
 		iWidth=iTileWidth;
 		iHeight=iTileHeight;		
 
-		//added by Mike, 20240714
-		currentFacingState=FACING_RIGHT;
+		//added by Mike, 20240805; from 20240714
+		currentFacingState=FACING_LEFT;
 
 /*		//removed by Mike, 20240804; set in Level2D
 		//edited by Mike, 20240719
@@ -1396,8 +1399,8 @@ class EnemyAircraft extends Actor {
 		for (int i=0; i<iMyKeysDownLength; i++) {
 			myKeysDown[i]=false;
 		}		
-		//added by Mike, 20240730
-		myKeysDown[KEY_D]=true;
+		//removed by Mike, 20240805; from 20240730
+		//myKeysDown[KEY_D]=true; //false;
 		
 		//added by Mike, 20240804		
 		currentState=ACTIVE_STATE;
@@ -1416,8 +1419,18 @@ class EnemyAircraft extends Actor {
 		System.out.println("HIT!!! SET TO HIDDEN STATE");
 	}
 	
+	//added by Mike, 20240805
+	@Override
+	public void keyPressed(KeyEvent key) {		
+	}
+	
+	@Override
+	public void keyReleased(KeyEvent key) {		
+	}
+		
 	@Override
 	public void update() {
+/*		
 		//removed by Mike, 20240629
 		//movement
 		//setX(getX()+iStepX);
@@ -1463,7 +1476,10 @@ class EnemyAircraft extends Actor {
 			myKeysDown[KEY_D]=false;
 			bHasStarted=true;
 		}
+*/		
 
+		currentFacingState=FACING_LEFT;	
+		//setX(getX()-getStepX());
 		
 		//return;		
 
@@ -1804,10 +1820,12 @@ class BackgroundCanvas {
 		//removed by Mike, 20240629
 		//movement
 		//setX(getX()+iStepX);
-	
+		
+		//TODO: -add: auto-movement forward; robotship, viewport
+/*	
 		if (myKeysDown[KEY_A])
 		{
-			setX(getX()-iStepX);
+			//setX(getX()-iStepX);
 			
 			//added by Mike, 20240730
 			currentFacingState=FACING_LEFT;			
@@ -1815,7 +1833,7 @@ class BackgroundCanvas {
 
 		if (myKeysDown[KEY_D])
 		{
-			setX(getX()+iStepX);
+			//setX(getX()+iStepX);
 			
 			//added by Mike, 20240730
 			currentFacingState=FACING_RIGHT;	
@@ -1831,6 +1849,7 @@ class BackgroundCanvas {
 			setY(getY()+iStepY);
 		}
 		
+		//TODO: -add: set to true myKeysDown[KEY_D], myKeysDown[KEY_A] 
 		//added by Mike, 20240730
 		switch(currentFacingState) {
 			case FACING_RIGHT:
@@ -1840,6 +1859,28 @@ class BackgroundCanvas {
 				setX(getX()-iStepX);
 				break;			
 		}
+*/
+		
+		if (myKeysDown[KEY_A])
+		{
+			setX(getX()-iStepX);
+		}
+
+		if (myKeysDown[KEY_D])
+		{
+			setX(getX()+iStepX);
+		}
+
+		if (myKeysDown[KEY_W])
+		{
+			setY(getY()-iStepY);
+		}
+
+		if (myKeysDown[KEY_S])
+		{
+			setY(getY()+iStepY);
+		}
+		
 		
 		//added by Mike, 20240730
 		if (!bHasStarted) {
@@ -2054,6 +2095,7 @@ class BackgroundCanvas {
 		//g2d.dispose();					
 	}
 
+/*	//removed by Mike, 20240805; put in Level2D	
 	//added by Mike, 20240731; from 20240730
 	public void drawMargins(Graphics g) {
 		Rectangle2D rect = new Rectangle2D.Float();
@@ -2089,6 +2131,7 @@ class BackgroundCanvas {
 		//put after the last object to be drawn
 		//g2d.dispose();		
 	}
+*/	
 	
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   public void draw(Graphics g) {
@@ -2151,9 +2194,11 @@ class BackgroundCanvas {
 			}	  
 	  }
 	}
-	
-	//added by Mike, 20240730
+/*	
+	//removed by Mike, 20240805; from 20240730
+	//put in Level2D
 	drawMargins(g);	
+*/	
   }
 }
 
@@ -2261,8 +2306,8 @@ class Level2D extends Actor {
 		for (int i=0; i<iMyKeysDownLength; i++) {
 			myKeysDown[i]=false;
 		}
-		//added by Mike, 20240730
-		myKeysDown[KEY_D]=true;
+		//edited by Mike, 20240805; from 20240730
+		//myKeysDown[KEY_D]=true;
 				
 		//added by Mike, 20240727
 	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
@@ -2273,10 +2318,13 @@ class Level2D extends Actor {
 	
 		//start values in default view port position;
 		tileMap[1][6]=TILE_AIRCRAFT;	
-		tileMap[1][7]=TILE_AIRCRAFT;	
-		
+		//tileMap[1][7]=TILE_AIRCRAFT;	
 		//tileMap[1][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
 
+		//tileMap[1][11]=TILE_AIRCRAFT;	
+		tileMap[1][14]=TILE_AIRCRAFT;	
+
+		
 /*		
 		tileMap[1][7]=TILE_AIRCRAFT;	
 		tileMap[1][8]=TILE_AIRCRAFT;		
@@ -2288,33 +2336,28 @@ class Level2D extends Actor {
 		iViewPortWidth=iStageWidth;
 		iViewPortHeight=iStageHeight;	
 	}
-
+	
+	//added by Mike, 20240805
+/*	
+	@Override
+	public void keyPressed(KeyEvent key) {		
+	}
+	
+	@Override
+	public void keyReleased(KeyEvent key) {		
+	}
+*/
+	@Override
 	public void update() {		
-		//level continously scrolls, along with the background
-		if (myKeysDown[KEY_A])
-		{
-			//setX(getX()-iStepX);
-			currentFacingState=FACING_LEFT;			
-		}
 
-		if (myKeysDown[KEY_D])
-		{
-			//setX(getX()+iStepX);
-			currentFacingState=FACING_RIGHT;	
-		}
-/*
-		if (myKeysDown[KEY_W])
-		{
-			setY(getY()-iStepY);
-		}
-
-		if (myKeysDown[KEY_S])
-		{
-			setY(getY()+iStepY);
+/*		
+		//added by Mike, 20240730
+		if (!bHasStarted) {
+			myKeysDown[KEY_D]=false;
+			bHasStarted=true;
 		}
 */		
-
-	
+/*	
 		//note: AI; not yet liberated from user inputs?
 		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
 		    myEnemyAircraftContainer[i].setY(myEnemyAircraftContainer[i].getY()+myEnemyAircraftContainer[i].getStepY());
@@ -2328,8 +2371,43 @@ class Level2D extends Actor {
 					break;			
 			}
 		}
-		
-		
+*/				
+		//note: AI; not yet liberated from user inputs?
+		//TODO: -update: movement if in viewport
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
+		    myEnemyAircraftContainer[i].update();			
+			//move leftward
+			//myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()-myEnemyAircraftContainer[i].getStepX());
+			
+			//myEnemyAircraftContainer[i].setCurrentFacingState(FACING_LEFT);
+			
+			if (myKeysDown[KEY_A])
+			{
+				//currentFacingState=FACING_LEFT;			
+				myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getStepX()); 
+			}
+
+			if (myKeysDown[KEY_D])
+			{
+				//currentFacingState=FACING_RIGHT;					
+				myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()-myEnemyAircraftContainer[i].getStepX()); 
+			}
+
+			//level continuously scrolls, along with the background
+			if (myKeysDown[KEY_W])
+			{
+				//currentFacingState=FACING_UP;				
+				myEnemyAircraftContainer[i].setY(myEnemyAircraftContainer[i].getY()+myEnemyAircraftContainer[i].getStepY());
+			}
+
+			if (myKeysDown[KEY_S])
+			{
+				//currentFacingState=FACING_DOWN;							
+				myEnemyAircraftContainer[i].setY(myEnemyAircraftContainer[i].getY()-myEnemyAircraftContainer[i].getStepY());
+			}	
+		}
+			
+			
 /*		
 		//added by Mike, 20240730
 		if (!bHasStarted) {
@@ -2369,7 +2447,9 @@ class Level2D extends Actor {
 		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
 			
 			if (!myEnemyAircraftContainer[i].isActive()) {
-				return;
+				//edited by Mike, 20240805
+				//return;
+				continue;
 			}
 			
 /*			
@@ -2442,6 +2522,42 @@ class Level2D extends Actor {
 			}
 	  }
 	}
+	
+	//added by Mike, 20240805; from 20240731
+	public void drawMargins(Graphics g) {
+		Rectangle2D rect = new Rectangle2D.Float();
+
+		//added by Mike, 20240623
+		AffineTransform identity = new AffineTransform();
+
+		Graphics2D g2d = (Graphics2D)g;
+		AffineTransform trans = new AffineTransform();
+		trans.setTransform(identity);
+		g2d.setTransform(trans);
+		
+		//added by Mike, 20240731
+		//https://stackoverflow.com/questions/1241253/inside-clipping-with-java-graphics; last accessed: 20240731
+		//answer by: Savvas Dalkitsis, 20090806T2154
+
+		//g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin+iStageHeight)));
+		g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin*2+iStageWidth, iOffsetScreenHeightTopMargin+iStageHeight)));
+
+		//edited by Mike, 20240731; from 20240730
+		//paint the margins;
+		g.setColor(Color.decode("#adb2b6")); //gray; 
+		
+		//cover the left margin
+		g.fillRect(0,0,iOffsetScreenWidthLeftMargin,iStageHeight);
+
+		//cover the right margin
+		g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthLeftMargin,iStageHeight);
+
+		//System.out.println(">>>");
+		
+		//removed by Mike, 20240711; from 20240625
+		//put after the last object to be drawn
+		//g2d.dispose();		
+	}	
 
   @Override
   public void draw(Graphics g) {	
@@ -2450,7 +2566,10 @@ class Level2D extends Actor {
 		if (myEnemyAircraftContainer[iEnemyAircraftCount].isActive()) {
 			myEnemyAircraftContainer[iEnemyAircraftCount].draw(g);			
 		}
-	}	
+	}
+
+	//added by Mike, 20240805
+	drawMargins(g);
   }
 }  
   
