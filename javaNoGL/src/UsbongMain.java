@@ -1732,16 +1732,25 @@ class BackgroundCanvas extends Actor {
 	    }	
 		
 		//start values in default view port position;
-		tileMap[0][0]=TILE_TREE;		
-		tileMap[1][1]=TILE_TREE;	
-		tileMap[2][2]=TILE_TREE;	
+		tileMap[0][2]=TILE_TREE;		
+		tileMap[1][3]=TILE_TREE;	
+		tileMap[2][4]=TILE_TREE;	
 
 		//added by Mike, 20240729
 		//tileMap[1][10]=TILE_TREE;	
 
 		tileMap[MAX_TILE_MAP_HEIGHT-1][0]=TILE_TREE;		
+		tileMap[MAX_TILE_MAP_HEIGHT-1][1]=TILE_TREE;		
+		tileMap[MAX_TILE_MAP_HEIGHT-1][2]=TILE_TREE;		
+		
 		tileMap[MAX_TILE_MAP_HEIGHT-1][13-1]=TILE_TREE;		
 		tileMap[0][13-1]=TILE_TREE;		
+
+		//added by Mike, 20240806
+		tileMap[MAX_TILE_MAP_HEIGHT-1][MAX_TILE_MAP_WIDTH-1]=TILE_TREE;		
+		tileMap[MAX_TILE_MAP_HEIGHT-1][MAX_TILE_MAP_WIDTH-2]=TILE_TREE;		
+		tileMap[MAX_TILE_MAP_HEIGHT-1][MAX_TILE_MAP_WIDTH-3]=TILE_TREE;		
+
 		
 		//added by Mike, 20240729
 		iViewPortX=0;
@@ -1825,6 +1834,25 @@ class BackgroundCanvas extends Actor {
 			setY(getY()+iStepY);
 		}
 		
+		
+		//note: however, if not in viewport, object won't move;
+		//horizontal
+		//wrap around;
+		//left-most
+		if (this.getX()+this.getWidth()<0) {
+			//OK; however, objects in previous part, not drawn;
+			//enemy ships are also continuously drawn regardless of wrap;
+			//remember robotship still has to be at the center;
+			setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth);
+		}
+		//right-most
+		if (this.getX()>0+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth) {
+			//OK; however, objects in previous part, not drawn;
+			//enemy ships are also continuously drawn regardless of wrap;
+			//remember robotship still has to be at the center;
+			setX(iOffsetScreenWidthLeftMargin-iViewPortWidth/2+iTileWidth);
+		}
+
 		
 		//added by Mike, 20240730
 		if (!bHasStarted) {
@@ -2055,27 +2083,26 @@ class BackgroundCanvas extends Actor {
 			int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*k);
 
 			int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
-	
-			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k,iOffsetScreenHeightTopMargin+iTileHeight*i)) {
-			
-			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {
 
 			if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {				
 	
 //System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
-				
 //System.out.println("HALLO!");
 
 				if (tileMap[i][k]==TILE_TREE) {		
-					//drawTree(g, iOffsetScreenWidthLeftMargin+iTileWidth*k, iOffsetScreenHeightTopMargin+iTileHeight*i);	
-					
-					//drawTree(g, iViewPortX+iTileWidth*k, iViewPortY+iTileHeight*i);
-					
-					//drawTree(g, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos, iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos);	
-					
 					drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
-					
 				}
+	
+/*				//TODO: -update: this	
+				//added by Mike, 20240806
+				if (k==0) { //left-most
+					//get the number of tiles from stageX to center
+					//iViewPortWidth/iTileWidth
+					if (tileMap[i][MAX_TILE_MAP_WIDTH-1]==TILE_TREE) {
+						drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos-((MAX_TILE_MAP_WIDTH-1)*iTileWidth), iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+					}					
+				}
+*/				
 			}	  
 	  }
 	}
@@ -2267,6 +2294,25 @@ class Level2D extends Actor {
 		iViewPortX=getX();
 		iViewPortY=getY();
 	
+		//System.out.println("iViewPortX: "+iViewPortX);	
+/*
+		if (myKeysDown[KEY_A])
+		{
+			//TODO: -reverify: this
+			//move viewport to the left					
+			this.setX(this.getX()-this.getStepX());
+		}
+
+		if (myKeysDown[KEY_D])
+		{
+			//TODO: -reverify: this
+			//move viewport to the right
+			this.setX(this.getX()+this.getStepX());
+		}
+*/		
+				
+				
+		
 		//note: AI; not yet liberated from user inputs?
 		//TODO: -update: movement if in viewport
 		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
@@ -2276,6 +2322,13 @@ class Level2D extends Actor {
 			
 			if (isActorInsideViewport(iViewPortX, iViewPortY, myEnemyAircraftContainer[i])) {		
 				myEnemyAircraftContainer[i].update();			
+			}
+			
+			//note: however, if not in viewport, object won't move;
+			//horizontal
+			//wrap around;
+			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()<0+iOffsetScreenWidthLeftMargin) {
+				myEnemyAircraftContainer[i].setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth+myEnemyAircraftContainer[i].getWidth());
 			}
 		//myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()-myEnemyAircraftContainer[i].getStepX());
 					//myEnemyAircraftContainer[i].setCurrentFacingState(FACING_LEFT);
@@ -2289,7 +2342,8 @@ class Level2D extends Actor {
 					myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()+this.getStepX());	
 
 					//TODO: -reverify: this
-					//this.setX(this.getX()+this.getStepX());
+					//move viewport to the left					
+					//this.setX(this.getX()-this.getStepX());
 				}
 
 				if (myKeysDown[KEY_D])
@@ -2299,7 +2353,8 @@ class Level2D extends Actor {
 					myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()-this.getStepX());
 					
 					//TODO: -reverify: this
-					//this.setX(this.getX()-this.getStepX());
+					//move viewport to the right
+					//this.setX(this.getX()+this.getStepX());
 				}
 
 				//level continuously scrolls, along with the background
@@ -2310,7 +2365,7 @@ class Level2D extends Actor {
 					myEnemyAircraftContainer[i].setY(myEnemyAircraftContainer[i].getY()+this.getStepY());
 					
 					//TODO: -reverify: this
-					//this.setY(this.getY()+this.getStepY());
+					//this.setY(this.getY()-this.getStepY());
 				}
 
 				if (myKeysDown[KEY_S])
@@ -2320,7 +2375,7 @@ class Level2D extends Actor {
 					myEnemyAircraftContainer[i].setY(myEnemyAircraftContainer[i].getY()-this.getStepY());					
 
 					//TODO: -reverify: this
-					//this.setY(this.getY()-this.getStepY());
+					//this.setY(this.getY()+this.getStepY());
 				}	
 		}
 			
