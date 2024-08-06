@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240806; from 20240805
+ * @last updated: 20240807; from 20240806
  * @website: www.usbong.ph
  *
  */
@@ -1736,6 +1736,10 @@ class BackgroundCanvas extends Actor {
 		tileMap[1][3]=TILE_TREE;	
 		tileMap[2][4]=TILE_TREE;	
 
+		//added by Mike, 20240807
+		tileMap[5][0]=TILE_TREE;	
+		tileMap[6][0]=TILE_TREE;	
+
 		//added by Mike, 20240729
 		//tileMap[1][10]=TILE_TREE;	
 
@@ -1843,14 +1847,19 @@ class BackgroundCanvas extends Actor {
 			//OK; however, objects in previous part, not drawn;
 			//enemy ships are also continuously drawn regardless of wrap;
 			//remember robotship still has to be at the center;
+			//edited by Mike, 20240807
 			setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth);
+			//setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth-getStepX());
+			
 		}
 		//right-most
 		if (this.getX()>0+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth) {
 			//OK; however, objects in previous part, not drawn;
 			//enemy ships are also continuously drawn regardless of wrap;
 			//remember robotship still has to be at the center;
+			//setX(iOffsetScreenWidthLeftMargin-iViewPortWidth/2+iTileWidth);
 			setX(iOffsetScreenWidthLeftMargin-iViewPortWidth/2+iTileWidth);
+			
 		}
 
 		
@@ -2157,10 +2166,22 @@ System.out.println("iCount: "+iCount);
 				//int iDifferenceInXPos=0+iTileWidth*k; //iCount
 				//int iDifferenceInXPos=0+iTileWidth*iWrapTileCountOffset+iTileWidth*k; //iCount
 				//int iDifferenceInXPos=iViewPortX+iTileWidth*iWrapTileCountOffset+iTileWidth*k; //iCount
-				int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth)-iViewPortX+iTileWidth*iWrapTileCountOffset+iTileWidth*k; //iCount
+
+				//edited by Mike, 20240807
+				//int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth)-iViewPortX+iTileWidth*iWrapTileCountOffset+iTileWidth*k+iTileWidth; //iCount
 
 				//reminder
-			//setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth);
+				//put ship in right-most part of map; ship centered in viewport
+		//setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth);
+/*		
+		System.out.println("iViewPortX: "+iViewPortX);
+		int a=iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth;
+		System.out.println("iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth: "+a);
+*/		
+		
+		//iViewPortWidth/2; better than iTileWidth*iWrapTileCountOffset
+
+int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth)-iViewPortX+iViewPortWidth/2+iTileWidth*k; //+getStepX()*4
 
 
 	//			int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
