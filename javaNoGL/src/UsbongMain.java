@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240806; from 20240805
+ * @last updated: 20240807; from 20240806
  * @website: www.usbong.ph
  *
  */
@@ -1736,6 +1736,10 @@ class BackgroundCanvas extends Actor {
 		tileMap[1][3]=TILE_TREE;	
 		tileMap[2][4]=TILE_TREE;	
 
+		//added by Mike, 20240807
+		tileMap[5][0]=TILE_TREE;	
+		tileMap[6][0]=TILE_TREE;	
+
 		//added by Mike, 20240729
 		//tileMap[1][10]=TILE_TREE;	
 
@@ -1834,6 +1838,9 @@ class BackgroundCanvas extends Actor {
 			setY(getY()+iStepY);
 		}
 		
+		//added by Mike, 20240807
+		iViewPortX=this.getX();
+		iViewPortY=this.getY();
 		
 		//note: however, if not in viewport, object won't move;
 		//horizontal
@@ -1843,14 +1850,24 @@ class BackgroundCanvas extends Actor {
 			//OK; however, objects in previous part, not drawn;
 			//enemy ships are also continuously drawn regardless of wrap;
 			//remember robotship still has to be at the center;
-			setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth);
+			//edited by Mike, 20240807
+			//setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth);
+			
+			//hallelujia; iViewPortX
+			setX(iViewPortX+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth);		
+		//setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth-getStepX());
+			
 		}
 		//right-most
 		if (this.getX()>0+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth) {
 			//OK; however, objects in previous part, not drawn;
 			//enemy ships are also continuously drawn regardless of wrap;
 			//remember robotship still has to be at the center;
-			setX(iOffsetScreenWidthLeftMargin-iViewPortWidth/2+iTileWidth);
+			//setX(iOffsetScreenWidthLeftMargin-iViewPortWidth/2+iTileWidth);
+			//edited by Mike, 20240807
+			//setX(iOffsetScreenWidthLeftMargin-iViewPortWidth/2+iTileWidth);
+			//setX(iViewPortX);
+			setX(0-this.getX()); //OK; however, flashes;			
 		}
 
 		
@@ -1908,6 +1925,15 @@ class BackgroundCanvas extends Actor {
 	//iViewPortWidth*2; iViewPortHeight*2
 
 		//add 1 row before making the tile disappear	
+/*		//edited by Mike, 20240807
+		if (iCurrTileY+iTileHeight*2 < iViewPortY || //is above the top of iViewPortY?
+			iCurrTileY > iViewPortY+iViewPortHeight*2 || //is at the bottom of iViewPortY?
+			//add 1 column before making the tile disappear
+			iCurrTileX+iTileWidth*2 < iViewPortX || //is at the left of iViewPortX?
+			iCurrTileX > iViewPortX+iViewPortWidth*2) { //is at the right of iViewPortX?
+			return false;
+		}
+*/
 		if (iCurrTileY+iTileHeight*2 < iViewPortY || //is above the top of iViewPortY?
 			iCurrTileY > iViewPortY+iViewPortHeight*2 || //is at the bottom of iViewPortY?
 			//add 1 column before making the tile disappear
@@ -2080,11 +2106,16 @@ class BackgroundCanvas extends Actor {
 	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
 	
+			//edited by Mike, 20240807
+			
 			int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*k);
-
+			
 			int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
 
-			if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {				
+			//edited by Mike, 20240807
+			if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {		
+			//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k+iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i+iDifferenceInYPos)) {		
+			
 	
 //System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
 //System.out.println("HALLO!");
@@ -2106,6 +2137,105 @@ class BackgroundCanvas extends Actor {
 			}	  
 	  }
 	}
+	
+	//added by Mike, 20240806
+	int iCount=0;
+	int iWrapTileCountOffset=10;//6; //10/13=0.7692; 76.92% of the stage width
+	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+	  for (int k=MAX_TILE_MAP_WIDTH-1-iWrapTileCountOffset; k<MAX_TILE_MAP_WIDTH; k++) {
+	
+			//going backward
+			int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin-iTileWidth*iCount);//k);
+			
+			int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
+
+//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+//System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
+
+/*
+			if (isTileInsideViewport(iViewPortX-iTileWidth*6,iViewPortY-iTileHeight*6, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {				
+*/	
+//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+//System.out.println("HALLO!");
+
+				if (tileMap[i][k]==TILE_TREE) {		
+/*				
+System.out.println("HALLO!: i: "+i+"; k: "+k);
+System.out.println("iCount: "+iCount);
+*/				
+					drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+					//drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin+iTileHeight*i);	
+					
+					iCount++;
+				}
+	  }
+	}
+
+	iCount=0;
+	//iWrapTileCountOffset=6;
+	if (iViewPortX>(MAX_TILE_MAP_WIDTH-iWrapTileCountOffset)*iTileWidth) {
+
+		//System.out.println("iViewPortX: "+iViewPortX);
+		
+		for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		  for (int k=0; k<iWrapTileCountOffset; k++) {
+		
+				//going forward
+				//int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin-iTileWidth*k); //iCount
+
+				//int iDifferenceInXPos=iViewPortX+iTileWidth*iWrapTileCountOffset+iTileWidth*k; //iCount
+				//int iDifferenceInXPos=0+iTileWidth*k; //iCount
+				//int iDifferenceInXPos=0+iTileWidth*iWrapTileCountOffset+iTileWidth*k; //iCount
+				//int iDifferenceInXPos=iViewPortX+iTileWidth*iWrapTileCountOffset+iTileWidth*k; //iCount
+
+				//edited by Mike, 20240807
+				//int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth)-iViewPortX+iTileWidth*iWrapTileCountOffset+iTileWidth*k+iTileWidth; //iCount
+
+				//reminder
+				//put ship in right-most part of map; ship centered in viewport
+		//setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth);
+/*		
+		System.out.println("iViewPortX: "+iViewPortX);
+		int a=iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth;
+		System.out.println("iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth: "+a);
+*/		
+		
+		//iViewPortWidth/2; better than iTileWidth*iWrapTileCountOffset
+
+int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth)-iViewPortX+iViewPortWidth/2+iTileWidth*k; //+getStepX()*4
+
+				//edited by Mike, 20240807
+				//int iDifferenceInYPos=(iOffsetScreenHeightTopMargin+iTileHeight*i);
+				
+				int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
+				
+	//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+	//System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
+
+	/*
+				if (isTileInsideViewport(iViewPortX-iTileWidth*6,iViewPortY-iTileHeight*6, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {				
+	*/	
+	//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+	//System.out.println("HALLO!");
+
+					if (tileMap[i][k]==TILE_TREE) {		
+					
+	//System.out.println("HALLO!: i: "+i+"; k: "+k);
+	/*
+	System.out.println("iCount: "+iCount);
+	*/				
+
+						//drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin+iTileHeight*i);	
+						
+						drawTree(g, iOffsetScreenWidthLeftMargin+iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);							
+						
+						iCount++;
+					}
+		  }
+		}
+	}
+
+	
 /*	
 	//removed by Mike, 20240805; from 20240730
 	//put in Level2D
