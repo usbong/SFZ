@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240808; from 20240807
+ * @last updated: 20240809; from 20240808
  * @website: www.usbong.ph
  *
  */
@@ -1353,7 +1353,7 @@ class EnemyAircraft extends Actor {
 	public void hitBy(Actor a) {
 		currentState=HIDDEN_STATE;
 		isCollidable=false;
-		
+
 		System.out.println("HIT!!! SET TO HIDDEN STATE");
 	}
 	
@@ -1369,6 +1369,7 @@ class EnemyAircraft extends Actor {
 	@Override
 	public void update() {
 //		System.out.println(">>>>>>>>>>>>>>DITO");
+		
 		setX(getX()-getStepX());
 		
 		currentFacingState=FACING_LEFT;	
@@ -1513,6 +1514,211 @@ class EnemyAircraft extends Actor {
     //g2d.drawImage(image, trans, this);
     //g2d.drawImage(myBufferedImage, trans, null);
     //g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
+
+	//edited by Mike, 20240714
+    g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }
+}
+
+//edited by Mike, 20240805; from 20240802
+class Wall extends Actor {
+
+    public Wall(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		
+	  try {
+		  //edited by Mike, 20240706
+		  //myBufferedImage = ImageIO.read(new File("../res/count.png"));
+		  //edited by Mike, 20240720
+		  //myBufferedImage = ImageIO.read(new File("../res/robotship.png"));
+		  //app executed from base directory
+		  //TODO: -update: this
+		  myBufferedImage = ImageIO.read(new File("./res/jeep.png"));
+      } catch (IOException ex) {
+      }
+	}
+
+	//added by Mike, 20240628
+	@Override
+	public void reset() {
+		//edited by Mike, 20240804
+		//reminder: trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+/*		
+		iWidth=iFrameWidth;
+		iHeight=iFrameHeight;
+*/
+		iWidth=iTileWidth;
+		iHeight=iTileHeight;		
+
+		//currentFacingState=FACING_LEFT;
+		currentFacingState=FACING_RIGHT;
+
+		iFrameCount=0;
+		iFrameCountDelay=0;
+		iRotationDegrees=0;
+
+		//added by Mike, 20240629
+		int iMyKeysDownLength = myKeysDown.length;
+		for (int i=0; i<iMyKeysDownLength; i++) {
+			myKeysDown[i]=false;
+		}		
+		//removed by Mike, 20240805; from 20240730
+		//myKeysDown[KEY_D]=true; //false;
+		
+		//added by Mike, 20240804		
+		currentState=ACTIVE_STATE;
+		isCollidable=true;
+/*		
+		setX(0);
+		setY(0);
+*/		
+		//added by Mike, 20240806
+		iStepX=ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
+		iStepY=ISTEP_Y_DEFAULT;//*2; //faster by 1 than the default
+
+	}
+	
+	@Override
+	public void hitBy(Actor a) {
+/*	//removed by Mike, 20240809; temporarily		
+		currentState=HIDDEN_STATE;
+		isCollidable=false;
+*/		
+		System.out.println("HIT!!! SET TO HIDDEN STATE");
+	}
+	
+	//added by Mike, 20240805
+	@Override
+	public void keyPressed(KeyEvent key) {		
+	}
+	
+	@Override
+	public void keyReleased(KeyEvent key) {		
+	}
+		
+	@Override
+	public void update() {
+//		System.out.println(">>>>>>>>>>>>>>DITO");
+		
+		//removed by Mike, 20240809; temporarily
+		//setX(getX()-getStepX());
+		
+		//currentFacingState=FACING_LEFT;	
+		//setX(getX()-getStepX());
+		
+		//return;		
+
+/* 	//edited by Mike, 20240706; OK
+		//animation
+		if (iFrameCountDelay<iFrameCountDelayMax) {
+			iFrameCountDelay++;
+		}
+		else {
+			iFrameCount=(iFrameCount+1)%iFrameCountMax;
+			iFrameCountDelay=0;
+		}
+*/
+		iFrameCount=0;
+	}	
+
+//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
+  @Override
+  public void draw(Graphics g) {
+	  
+	if (currentState==HIDDEN_STATE) {
+		return;
+	}
+	  
+	//TODO: -verify: if clip still has to be cleared
+	Rectangle2D rect = new Rectangle2D.Float();
+
+    //added by Mike, 20240623
+    AffineTransform identity = new AffineTransform();
+
+    Graphics2D g2d = (Graphics2D)g;
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+    //300 is object position;
+    //trans.translate(300-iFrameCount*128, 0);
+    //trans.translate(-iFrameCount*128, 0);
+
+	//added by Mike, 20240625
+	//note clip rect has to also be updated;
+	//trans.scale(2,2); //1.5,1.5
+	//put scale after translate position;
+
+/*  //reference: https://stackoverflow.com/questions/8721312/java-image-cut-off; last accessed: 20240623
+    //animating image doable, but shall need more computations;
+    //sin, cos; Bulalakaw Wars;
+    trans.translate(128/2,128/2);
+    trans.rotate(Math.toRadians(45)); //input in degrees
+    trans.translate(-128/2,-128/2);
+*/
+	//reminder: when objects moved in x-y coordinates, rotation's reference point also moves with the update;
+	//"compounded translate and rotate"
+	//https://stackoverflow.com/questions/32513508/rotating-java-2d-graphics-around-specified-point; last accessed: 20240625
+	//answered by: MadProgrammer, 20150911T00:48; from 20150911T00:41
+
+	//update x and y positions before rotate
+	//object position x=300, y=0;
+    //trans.translate(300,0);
+	trans.translate(getX(),getY());
+
+	//scales from top-left as reference point
+    //trans.scale(2,2);
+	//rotates using top-left as anchor
+    //trans.rotate(Math.toRadians(45)); //input in degrees
+
+/* //removed by Mike, 20240706; OK
+	//rotate at center; put translate after rotate
+	iRotationDegrees=(iRotationDegrees+10)%360;
+    trans.rotate(Math.toRadians(iRotationDegrees));
+    trans.translate(-iFrameWidth/2,-iFrameHeight/2);
+*/
+
+	//edited by Mike, 20240714; from 20240708
+/*
+	System.out.println("iTileWidth: "+iTileWidth);
+	System.out.println("iTileHeight: "+iTileHeight);
+*/
+	//scale to size of iTileWidth and iTileHeight;
+	//example: iTileWidth=83
+	//iFrameWidth=128;
+	//trans.scale(0.5,0.5);
+	//double temp = iTileWidth*1.0/iFrameWidth;
+	//System.out.println("temp: "+temp);
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+	//added by Mike, 20240714
+	//put this after scale;
+	//move the input image to the correct row of the frame
+	//TODO: -add: collision detection; UsbongV2
+	if (currentFacingState==FACING_RIGHT) {
+		//trans.translate(getX(),getY());
+	}
+	else { //FACING_LEFT
+		trans.translate(0,0-iFrameHeight);
+	}
+
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+
+	if (currentFacingState==FACING_RIGHT) {
+		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
+	    rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+	}
+	else { //FACING_LEFT
+	   rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	}
+
+	Area myClipArea = new Area(rect);
+
+    //edited by Mike, 20240625; from 20240623
+    g2d.setClip(myClipArea);
 
 	//edited by Mike, 20240714
     g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
@@ -1967,6 +2173,7 @@ class Level2D extends Actor {
 	private final int TILE_BLANK=0;
 	private final int TILE_AIRCRAFT=1;
 	private final int TILE_SHIP=2;
+	private final int TILE_WALL=3;
 	
 	//added by Mike, 20240729
 	private int iViewPortX;
@@ -1978,6 +2185,10 @@ class Level2D extends Actor {
 	//private EnemyAircraft myEnemyAircraft;
 	private final int MAX_ENEMY_AIRCRAFT_COUNT=2; //5;
 	private EnemyAircraft[] myEnemyAircraftContainer;
+	
+	//added by Mike, 20240809
+	private final int MAX_WALL_COUNT=2; 
+	private Wall[] myWallContainer;
 		
     public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
@@ -2001,6 +2212,13 @@ class Level2D extends Actor {
 	  
 	  for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
 		  myEnemyAircraftContainer[i] = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+	  }
+	  
+	  //added by Mike, 20240809
+	  myWallContainer = new Wall[MAX_WALL_COUNT];
+	  
+	  for (int i=0; i<MAX_WALL_COUNT; i++) {
+		  myWallContainer[i] = new Wall(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 	  }
 
 	  reset();
@@ -2049,6 +2267,8 @@ class Level2D extends Actor {
 		tileMap[1][7]=TILE_AIRCRAFT;	
 		tileMap[1][8]=TILE_AIRCRAFT;		
 */
+		//added by Mike, 20240809
+		tileMap[5][5]=TILE_WALL;	
 		
 		//added by Mike, 20240729
 		iViewPortX=0;
@@ -2109,6 +2329,47 @@ class Level2D extends Actor {
 				if (myKeysDown[KEY_S])
 				{		
 					myEnemyAircraftContainer[i].setY(myEnemyAircraftContainer[i].getY()-this.getStepY());					
+				}	
+		}
+		
+		//added by Mike, 20240809
+		//TODO: -add: all tile Actor objects in a container
+		for (int i=0; i<MAX_WALL_COUNT; i++) {
+		    
+			if (isActorInsideViewport(iViewPortX, iViewPortY, myWallContainer[i])) {		
+				myWallContainer[i].update();			
+			}
+			
+			//note: however, if not in viewport, object won't move;
+			//horizontal
+			//wrap around;
+			if (myWallContainer[i].getX()+myWallContainer[i].getWidth()<0+iOffsetScreenWidthLeftMargin) {
+				myWallContainer[i].setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth+myWallContainer[i].getWidth());
+			}
+						
+				//move the object in relation to Level2D
+				//edited by Mike, 20240806
+				if (myKeysDown[KEY_A])
+				{
+					//currentFacingState=FACING_LEFT;			
+					
+					myWallContainer[i].setX(myWallContainer[i].getX()+this.getStepX());	
+				}
+
+				if (myKeysDown[KEY_D])
+				{
+					myWallContainer[i].setX(myWallContainer[i].getX()-this.getStepX());
+				}
+
+				//level continuously scrolls, along with the background
+				if (myKeysDown[KEY_W])
+				{
+					myWallContainer[i].setY(myWallContainer[i].getY()+this.getStepY());
+				}
+
+				if (myKeysDown[KEY_S])
+				{		
+					myWallContainer[i].setY(myWallContainer[i].getY()-this.getStepY());					
 				}	
 		}
 			
@@ -2184,6 +2445,7 @@ class Level2D extends Actor {
 	//pre-set enemy positions, but do not draw them all yet;
 	public void initLevel() {
 		int iEnemyAircraftCount=0;
+		int iWallCount=0;
 		
 		for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 			for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
@@ -2203,6 +2465,28 @@ class Level2D extends Actor {
 							tileMap[i][k]=TILE_BLANK;
 							
 							iEnemyAircraftCount++;		
+							
+							//continue; //stop once an available aircraft is found in the container
+						}
+					}					
+				}
+				//added by Mike, 20240809
+				else if (tileMap[i][k]==TILE_WALL) {		
+
+					System.out.println("TILE_WALL!");
+
+					if (iWallCount<MAX_WALL_COUNT) {
+						//System.out.println("isActive?"+myEnemyAircraftContainer[iEnemyAircraftCount].isActive());
+					
+						if (myWallContainer[iWallCount].isActive()) {
+							//System.out.println("iEnemyAircraftCount: "+iEnemyAircraftCount);
+							
+							myWallContainer[iWallCount].setX(0+iOffsetScreenWidthLeftMargin+iTileWidth*k);			
+							myWallContainer[iWallCount].setY(0+iOffsetScreenHeightTopMargin+iTileHeight*i);
+													
+							//tileMap[i][k]=TILE_BLANK;
+							
+							iWallCount++;		
 							
 							//continue; //stop once an available aircraft is found in the container
 						}
@@ -2254,13 +2538,23 @@ class Level2D extends Actor {
 	//draw only if in viewport	
 	iViewPortX=getX();
 	iViewPortY=getY();
-	
+		
 	for (int iEnemyAircraftCount=0; iEnemyAircraftCount<MAX_ENEMY_AIRCRAFT_COUNT; iEnemyAircraftCount++) {	
 				
 		if (myEnemyAircraftContainer[iEnemyAircraftCount].isActive()) {
 			//added by Mike, 20240806
 			if (isActorInsideViewport(iViewPortX, iViewPortY, myEnemyAircraftContainer[iEnemyAircraftCount])) {
 				myEnemyAircraftContainer[iEnemyAircraftCount].draw(g);
+			}				
+		}
+	}
+
+	//added by Mike, 20240809
+	for (int iWallCount=0; iWallCount<MAX_WALL_COUNT; iWallCount++) {	
+				
+		if (myWallContainer[iWallCount].isActive()) {
+			if (isActorInsideViewport(iViewPortX, iViewPortY, myWallContainer[iWallCount])) {
+				myWallContainer[iWallCount].draw(g);
 			}				
 		}
 	}
