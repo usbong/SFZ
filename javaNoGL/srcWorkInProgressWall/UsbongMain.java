@@ -293,10 +293,10 @@ class MyPanel extends JPanel {
 	//edited by Mike, 20240804; from 20240802
 	//EnemyRobotShip myEnemyShip;
 	Level2D myLevel2D;
-
+/*
 	//added by Mike, 20240711
 	BackgroundCanvas myBackgroundCanvas;
-
+*/
 	JFrame myJFrameInstance;
 
 	//edited by Mike, 20240628
@@ -364,11 +364,11 @@ class MyPanel extends JPanel {
 		myEnemyShip.setY(0);
 */		
 		myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight); 
-
+/*
 		//edited by Mike, 20240719; from 20240714
 		//myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iScreenWidth, iScreenHeight, iTileWidth, iTileHeight);
 		myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
-
+*/
         setBorder(BorderFactory.createLineBorder(Color.black));
 
         addMouseListener(new MouseAdapter(){
@@ -402,8 +402,10 @@ class MyPanel extends JPanel {
 					myRobotShip.keyPressed(key);
 				}
 */
+/*
 				//edited by Mike, 20240809; from 20240729
 				myBackgroundCanvas.keyPressed(key);
+*/				
 /*				
 				if (!myLevel2D.isViewPortStopped()) {
 					myBackgroundCanvas.keyPressed(key);
@@ -412,6 +414,7 @@ class MyPanel extends JPanel {
 								
 				//edited by Mike, 20240809; from 20240804
 				myLevel2D.keyPressed(key);
+				
 /*
 				if (!myLevel2D.isViewPortStopped()) {
 					myLevel2D.keyPressed(key);
@@ -425,9 +428,11 @@ class MyPanel extends JPanel {
 				if (!myLevel2D.isViewPortStopped()) {
 					myRobotShip.keyReleased(key);
 				}
-*/				
+*/
+/*				
 				//edited by Mike, 20240809; from 20240729
 				myBackgroundCanvas.keyReleased(key);
+*/				
 /*
 				if (!myLevel2D.isViewPortStopped()) {
 					myBackgroundCanvas.keyReleased(key);
@@ -498,16 +503,18 @@ class MyPanel extends JPanel {
 	  myRobotShip.collideWith(myEnemyShip);
 */
 	  myLevel2D.collideWith(myRobotShip);	
-
+/*
 	  if (myLevel2D.getIsViewPortStopped()) {
 		  //myLevel2D.setViewPortStopped(false);		  
 		  return;
 	  }
-
+*/
 	  myLevel2D.update();
-	 
+
+/*
 	  //added by Mike, 20240729
 	  myBackgroundCanvas.update();	 
+*/	  
 	}
 
 	//added by Mike, 20240719
@@ -575,11 +582,13 @@ System.out.println("iTileWidthCountMax: "+iTileWidthCountMax);
 		//g.drawString("HALLO!",150,20);
 
         redSquare.paintSquare(g);
-		
+
+/*		
 		//added by Mike, 20240711
 		//put this here; uses Graphics2D; with scale, etc.
 		//Graphics2D shared;
 		myBackgroundCanvas.draw(g);
+*/		
 
 		//added by Mike, 20240802
 		myLevel2D.draw(g);
@@ -845,7 +854,27 @@ class Actor {
 	public int getCurrentFacingState() {
 		return currentFacingState;
 	}
+	
+	//added by Mike, 20240809
+	public boolean isViewPortStopped() {
+		return bIsWallTypeHit;
+	}
+	
+	public boolean getIsViewPortStopped() {
+		return bIsWallTypeHit;
+	}
+	
+	public void setViewPortStopped(boolean b) {
+		bIsWallTypeHit = b;
+	}
 
+	//added by Mike, 20240809
+	public void synchronizeKeys(boolean[] mkd) {
+		for(int i=0; i<iNumOfKeyTypes; i++) {
+			myKeysDown[i]=mkd[i];
+		}	
+	}
+	
 	public void update() {	
 		//edited by Mike, 20240729
 		if (myKeysDown[KEY_A])
@@ -889,7 +918,15 @@ class Actor {
 */		
 	}
 
-	public void keyPressed(KeyEvent key) {
+	public void keyPressed(KeyEvent key) {				
+		if (getIsViewPortStopped()) {	
+			for (int i=0; i<iNumOfKeyTypes; i++) {
+				myKeysDown[i]=false;
+			}	
+		
+			return;
+		}
+		
 		//added by Mike, 20240629
 		//horizontal movement
 		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
@@ -911,6 +948,10 @@ class Actor {
 	}
 
 	public void keyReleased(KeyEvent key) {
+		//added by Mike, 20240809
+		//TODO: -update: this; rapid button presses causes viewport to still move
+		setViewPortStopped(false);
+		
 		//added by Mike, 20240629
 		//horizontal movement
 		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
@@ -1985,7 +2026,8 @@ class BackgroundCanvas extends Actor {
 		//removed by Mike, 20240629
 		//movement
 		//setX(getX()+iStepX);
-		
+	
+	//removed to Level2D by Mike, 20240809;	
 		//TODO: -add: auto-movement forward; robotship, viewport
 		
 		if (myKeysDown[KEY_A])
@@ -2037,6 +2079,8 @@ class BackgroundCanvas extends Actor {
 			myKeysDown[KEY_D]=false;
 			bHasStarted=true;
 		}
+		
+		
 
 /* 	//edited by Mike, 20240706; OK
 		//animation
@@ -2313,6 +2357,9 @@ class Level2D extends Actor {
 	//added by Mike, 20240809
 	private final int MAX_WALL_COUNT=1; 
 	private Wall[] myWallContainer;
+	
+	//added by Mike, 20240809
+	BackgroundCanvas myBackgroundCanvas;
 		
     public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
@@ -2344,6 +2391,9 @@ class Level2D extends Actor {
 	  for (int i=0; i<MAX_WALL_COUNT; i++) {
 		  myWallContainer[i] = new Wall(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 	  }
+	  
+	  //added by Mike, 20240809
+	  myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 
 	  reset();
 	  		
@@ -2408,11 +2458,66 @@ class Level2D extends Actor {
 	
 	@Override
 	public void update() {		
-	
-		//added by Mike, 20240806
-		//identify the current tile in horizontal axis
-		iViewPortX=getX();
-		iViewPortY=getY();
+		//added by Mike, 20240809
+/*		
+		if (myKeysDown[KEY_A])
+		{
+			setX(getX()-iStepX);
+		}
+
+		if (myKeysDown[KEY_D])
+		{
+			setX(getX()+iStepX);
+		}
+
+		if (myKeysDown[KEY_W])
+		{
+			setY(getY()-iStepY);
+		}
+
+		if (myKeysDown[KEY_S])
+		{
+			setY(getY()+iStepY);
+		}
+		
+		//added by Mike, 20240807
+		iViewPortX=this.getX();
+		iViewPortY=this.getY();
+		
+		//note: however, if not in viewport, object won't move;
+		//horizontal
+		//wrap around;
+		//left-most
+		//edited by Mike, 20240808
+//		if (this.getX()+this.getWidth()<0) {
+		if (this.getX()+this.getWidth()<=0) {			
+			//hallelujia; iViewPortX
+			setX(iViewPortX+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth);
+		}
+		
+		//right-most
+		//edited by Mike, 20240808
+		//if (this.getX()>0+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth) {
+		if (this.getX()>=0+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth) {
+			//edited by Mike, 20240808
+			//setX(0-this.getX()); //OK; however, flashes;			
+			setX(0+this.getX()); //OK; fixed; +			
+		}
+		
+		//added by Mike, 20240730
+		if (!bHasStarted) {
+			myKeysDown[KEY_D]=false;
+			bHasStarted=true;
+		}
+
+		
+		myBackgroundCanvas.setX(iViewPortX);
+		myBackgroundCanvas.setY(iViewPortY);
+*/		
+
+		myBackgroundCanvas.synchronizeKeys(myKeysDown);
+		
+		//-----------------------------------------------------------
 		
 		//note: AI; not yet liberated from user inputs?
 		//TODO: -update: movement if in viewport
@@ -2429,7 +2534,7 @@ class Level2D extends Actor {
 			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()<0+iOffsetScreenWidthLeftMargin) {
 				myEnemyAircraftContainer[i].setX(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth+myEnemyAircraftContainer[i].getWidth());
 			}
-						
+
 				//move the object in relation to Level2D
 				//edited by Mike, 20240806
 				if (myKeysDown[KEY_A])
@@ -2456,13 +2561,16 @@ class Level2D extends Actor {
 				}	
 		}
 		
+								
+
+
 		//added by Mike, 20240809
 		//TODO: -add: all tile Actor objects in a container
 		for (int i=0; i<MAX_WALL_COUNT; i++) {		    
 			if (isActorInsideViewport(iViewPortX, iViewPortY, myWallContainer[i])) {		
 				myWallContainer[i].update();			
 			}
-
+			
 			//added by Mike, 20240809
 //			if (!bIsWallTypeHit) {
 				//move the object in relation to Level2D
@@ -2508,6 +2616,9 @@ class Level2D extends Actor {
 		}
 */
 		iFrameCount=0;
+		
+		//added by Mike, 20240809
+		myBackgroundCanvas.update();
 	}
 	
 	//added by Mike, 20240804
@@ -2666,12 +2777,7 @@ class Level2D extends Actor {
 			}
 	  }
 	}
-	
-	//added by Mike, 20240809
-	public boolean isViewPortStopped() {
-		return bIsWallTypeHit;
-	}
-	
+		
 	//added by Mike, 20240805; from 20240731
 	public void drawMargins(Graphics g) {
 		Rectangle2D rect = new Rectangle2D.Float();
@@ -2707,15 +2813,6 @@ class Level2D extends Actor {
 		//put after the last object to be drawn
 		//g2d.dispose();		
 	}	
-
-		//added by Mike, 20240809
-	public boolean getIsViewPortStopped() {
-		return bIsWallTypeHit;
-	}
-	
-	public void setViewPortStopped(boolean b) {
-		bIsWallTypeHit = b;
-	}
 	
     @Override
     public void draw(Graphics g) {
@@ -2723,6 +2820,9 @@ class Level2D extends Actor {
 		//draw only if in viewport	
 		iViewPortX=getX();
 		iViewPortY=getY();
+		
+		//added by Mike, 20240809
+		myBackgroundCanvas.draw(g);		
 			
 		for (int iEnemyAircraftCount=0; iEnemyAircraftCount<MAX_ENEMY_AIRCRAFT_COUNT; iEnemyAircraftCount++) {	
 					
@@ -2745,7 +2845,7 @@ class Level2D extends Actor {
 		}
 
 		//added by Mike, 20240805
-		drawMargins(g);
+		drawMargins(g);		
 	}
 }  
   
