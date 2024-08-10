@@ -942,39 +942,77 @@ class Actor {
 	}
 
 	public void keyPressed(KeyEvent key) {				
-/*	
-		if (getIsViewPortStopped()) {	
+	
+		if (getIsViewPortStopped()) {
 			for (int i=0; i<iNumOfKeyTypes; i++) {
-				myKeysDown[i]=false;
+				//myKeysDown[i]=false;
+//				if (myKeysDown[KEY_A]) {
+					
+					System.out.println("FACING_LEFT: "+FACING_LEFT);
+					System.out.println("getCurrentFacingState: "+getCurrentFacingState());
+				
+					if (FACING_LEFT==getCurrentFacingState()) {
+						//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>DITO");
+						return;
+					}
+/*					
+				}
+				if (myKeysDown[KEY_D]) {
+*/					
+					if (FACING_RIGHT==getCurrentFacingState()) {
+						return;
+					}
+/*					
+				}
+				if (myKeysDown[KEY_W]) {
+*/					
+					if (FACING_UP==getCurrentFacingState()) {
+						return;
+					}
+/*					
+				}
+				if (myKeysDown[KEY_S]) {
+*/					
+					if (FACING_DOWN==getCurrentFacingState()) {
+						return;
+					}
+/*					
+				}
+*/				
 			}	
 		
-			return;
+			setViewPortStopped(false);
+			//return;
 		}
-*/		
+		
 		//added by Mike, 20240629
 		//horizontal movement
 		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {
 			myKeysDown[KEY_A]=true;
+			setCurrentFacingState(FACING_LEFT);
 		}
 
 		if ((key.getKeyCode() == KeyEvent.VK_D) || (key.getKeyCode() == KeyEvent.VK_RIGHT)) {
 			myKeysDown[KEY_D]=true;
+			setCurrentFacingState(FACING_RIGHT);
 		}
 
 		//vertical movement
 		if ((key.getKeyCode() == KeyEvent.VK_W) || (key.getKeyCode() == KeyEvent.VK_UP)) {
 			myKeysDown[KEY_W]=true;
+			setCurrentFacingState(FACING_UP);
 		}
 
 		if ((key.getKeyCode() == KeyEvent.VK_S) || (key.getKeyCode() == KeyEvent.VK_DOWN)) {
 			myKeysDown[KEY_S]=true;
+			setCurrentFacingState(FACING_DOWN);
 		}
 	}
 
 	public void keyReleased(KeyEvent key) {
 		//added by Mike, 20240809
 		//TODO: -update: this; rapid button presses causes viewport to still move
-		//setViewPortStopped(false);
+		setViewPortStopped(false);
 		
 		//added by Mike, 20240629
 		//horizontal movement
@@ -1724,6 +1762,7 @@ class Wall extends Actor {
 		if (a.getCurrentFacingState()==FACING_LEFT) {
 			//push back the main actor, i.e. robotship
 			a.setX(a.getX()+a.getStepX()*3);
+			//a.setX(this.getX()+this.getWidth());
 
 			//if still collides;
 			if (isIntersectingRect(a, this))		
@@ -2505,6 +2544,11 @@ class Level2D extends Actor {
 	
 	@Override
 	public void update() {		
+	
+		if (getIsViewPortStopped()) {
+			return;
+		}
+	
 /*
 		//added by Mike, 20240809		
 		if (myKeysDown[KEY_A])
@@ -2614,9 +2658,16 @@ class Level2D extends Actor {
 		//added by Mike, 20240809
 		//TODO: -add: all tile Actor objects in a container
 		for (int i=0; i<MAX_WALL_COUNT; i++) {		    
+/*		
+			//TODO: -verify: this; put myWallContainerin myBackgroundCanvas?
+			//otherwise, the wall disappears when not anymore in viewport;
+			myWallContainer[i].setX(myBackgroundCanvas.getX());
+			myWallContainer[i].setY(myBackgroundCanvas.getY());			
+*/		
 			if (isActorInsideViewport(iViewPortX, iViewPortY, myWallContainer[i])) {		
 				myWallContainer[i].update();			
-			}
+			/*}
+			*/
 			
 			//added by Mike, 20240809
 //			if (!bIsWallTypeHit) {
@@ -2643,8 +2694,9 @@ class Level2D extends Actor {
 				{		
 					myWallContainer[i].setY(myWallContainer[i].getY()-this.getStepY());					
 				}	
-/*				
+				
 			}			
+/*
 			//added by Mike, 20240809
 			else {
 				bIsWallTypeHit=false;
@@ -2671,6 +2723,7 @@ class Level2D extends Actor {
 		myRobotShip.update();
 		
 		this.collideWith(myRobotShip);	
+		
 	}
 	
 	//added by Mike, 20240804
@@ -2735,8 +2788,18 @@ class Level2D extends Actor {
 				myWallContainer[i].hitBy(a);
 				//a.hitBy(myWallContainer[i]);
 
+/*
+				//TODO: -fix: viewport positions when hero is pushed back;
+				//otherwise, rapid button pressing causes change in viewport position;
+				//added by Mike, 20240810
+				this.setX(a.getX());
+				this.setY(a.getY());
+*/
+
 				//added by Mike, 20240809
-				bIsWallTypeHit=true;
+				//bIsWallTypeHit=true;
+				setViewPortStopped(true);
+				
 /*				
 				System.out.println("iWall i: "+i);
 				System.out.println(">>>>>>>>>>>>>>>>>");
