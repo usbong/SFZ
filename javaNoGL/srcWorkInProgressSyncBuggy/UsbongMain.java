@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240811; from 20240810
+ * @last updated: 20240812; from 20240811
  * @website: www.usbong.ph
  *
  */
@@ -909,13 +909,13 @@ class Actor {
 	public boolean isActorInsideViewPort(int iViewPortX, int iViewPortY, int iCurrActorX, int iCurrActorY)
 {     
 	//System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
-
+/*
 	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>");	
 	System.out.println(">>>>>>>>>>>iViewPortX: "+iViewPortX);
 	System.out.println(">>>>>>>>>>>iCurrActorX: "+iCurrActorX);
 	System.out.println(">>>>>>>>>>>iTileWidth: "+iTileWidth);
 	System.out.println(">>>>>>>>>>>iFrameWidth: "+iFrameWidth);
-	
+*/	
 	//TODO: -verify: why we need to multiply by 2 the viewport width and height; 
 	//iViewPortWidth*2; iViewPortHeight*2
 	//due to scale factor?
@@ -941,14 +941,15 @@ class Actor {
 			return false;
 		}
 */
-		if (iCurrActorY+iTileHeight < iViewPortY || //is above the top of iViewPortY?
+		//TODO: -reverify: this; meanwhile, viewport and object moving together 
+		//causes increased difference between their positions
+		if (iCurrActorY+iTileHeight+iViewPortHeight < iViewPortY || //is above the top of iViewPortY?
 			iCurrActorY > iViewPortY+iViewPortHeight*2 || //is at the bottom of iViewPortY?
 			//add 1 column before making the tile disappear
-			iCurrActorX+iTileWidth < iViewPortX || //is at the left of iViewPortX?
+			iCurrActorX+iTileWidth+iViewPortWidth < iViewPortX || //is at the left of iViewPortX?
 			iCurrActorX > iViewPortX+iViewPortWidth*2) { //is at the right of iViewPortX?
 			return false;
-		}
-		
+		}	
 /*
 //		System.out.println(">>>iViewPortY: "+iViewPortY);
 		System.out.println(">>>iViewPortX: "+iViewPortX);
@@ -1403,131 +1404,62 @@ class RobotShip extends Actor {
 	
 
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
+  //robotship
   @Override
-  public void draw(Graphics g) {
-	//TODO: -verify: if clip still has to be cleared
-	Rectangle2D rect = new Rectangle2D.Float();
-
-	//added by Mike, 20240621
-	//iFrameCount=2;
-
-	//rect.setRect(0, 0, 128, 128);
-	//rect.setRect(iFrameCount*128, 0, 128, 128);
-
-/*
-	g.setClip(myClipArea);
-	//added by Mike, 20240621
-	//g.drawImage(myBufferedImage, 0, 0, this);
-	g.drawImage(myBufferedImage, 0-iFrameCount*128, 0, null);
-*/
-    //added by Mike, 20240623
-    AffineTransform identity = new AffineTransform();
-
-    Graphics2D g2d = (Graphics2D)g;
-    AffineTransform trans = new AffineTransform();
-    trans.setTransform(identity);
-    //300 is object position;
-    //trans.translate(300-iFrameCount*128, 0);
-    //trans.translate(-iFrameCount*128, 0);
-
-	//added by Mike, 20240625
-	//note clip rect has to also be updated;
-	//trans.scale(2,2); //1.5,1.5
-	//put scale after translate position;
-
-/*  //reference: https://stackoverflow.com/questions/8721312/java-image-cut-off; last accessed: 20240623
-    //animating image doable, but shall need more computations;
-    //sin, cos; Bulalakaw Wars;
-    trans.translate(128/2,128/2);
-    trans.rotate(Math.toRadians(45)); //input in degrees
-    trans.translate(-128/2,-128/2);
-*/
-	//reminder: when objects moved in x-y coordinates, rotation's reference point also moves with the update;
-	//"compounded translate and rotate"
-	//https://stackoverflow.com/questions/32513508/rotating-java-2d-graphics-around-specified-point; last accessed: 20240625
-	//answered by: MadProgrammer, 20150911T00:48; from 20150911T00:41
-
-	//update x and y positions before rotate
-	//object position x=300, y=0;
-    //trans.translate(300,0);
-    //edited by Mike, 20240628
-	//trans.translate(300,300);
-	//edited by Mike, 20240714
-	trans.translate(getX(),getY());
-
-	//scales from top-left as reference point
-    //trans.scale(2,2);
-	//rotates using top-left as anchor
-    //trans.rotate(Math.toRadians(45)); //input in degrees
-
-/* //removed by Mike, 20240706; OK
-	//rotate at center; put translate after rotate
-	iRotationDegrees=(iRotationDegrees+10)%360;
-    trans.rotate(Math.toRadians(iRotationDegrees));
-    trans.translate(-iFrameWidth/2,-iFrameHeight/2);
-*/
-
-	//edited by Mike, 20240714; from 20240708
-/*
-	System.out.println("iTileWidth: "+iTileWidth);
-	System.out.println("iTileHeight: "+iTileHeight);
-*/
-	//scale to size of iTileWidth and iTileHeight;
-	//example: iTileWidth=83
-	//iFrameWidth=128;
-	//trans.scale(0.5,0.5);
-	//double temp = iTileWidth*1.0/iFrameWidth;
-	//System.out.println("temp: "+temp);
-	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
-
-	//added by Mike, 20240714
-	//put this after scale;
-	//move the input image to the correct row of the frame
-	//TODO: -add: collision detection; UsbongV2
-	if (currentFacingState==FACING_RIGHT) {
-		//trans.translate(getX(),getY());
-	}
-	else { //FACING_LEFT
-		trans.translate(0,0-iFrameHeight);
+  public void draw(Graphics g) {	  
+	if (currentState==HIDDEN_STATE) {
+		return;
 	}
 
-	//added by Mike, 20240625
-	g2d.setTransform(trans);
+/*	//not Background; viewportX may not be equal to actor's getX();
+	iViewPortX=getX();
+	iViewPortY=getY();
+*/
+	
+	System.out.println("iViewPortX: "+iViewPortX);
+	System.out.println("iViewPortY: "+iViewPortY);
+	System.out.println("this.getX(): "+this.getX());
+	System.out.println("this.getY(): "+this.getY());
+			
+	System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
+	System.out.println("this.getWidth(): "+this.getWidth());
+			
+/*			
+	int iDifferenceInXPos=this.getX()-iOffsetScreenWidthLeftMargin-iViewPortX;			
+	int iDifferenceInYPos=this.getY()-iOffsetScreenHeightTopMargin-iViewPortY;
+*/	
 
-	//note: clip rect has to move with object position
-    //edited by Mike, 20240623
-    //reminder:
-    //300 is object position;
-    //iFrameCount*128 is the animation frame to show;
-    //-iFrameCount*128 is move the object position to the current frame;
-    //rect.setRect(300+iFrameCount*128-iFrameCount*128, 0, 128, 128);
-	//edited by Mike, 20240714; from 20240714
-    //rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0, iFrameWidth, iFrameHeight);
+	int iDifferenceInXPos=this.getX();
+	int iDifferenceInYPos=this.getY();
+/*	
+	int iDifferenceInXPos=iOffsetScreenWidthLeftMargin+(this.getX()-iViewPortX);			
+	int iDifferenceInYPos=iOffsetScreenHeightTopMargin+(this.getY()-iViewPortY);
+*/	
 
-	if (currentFacingState==FACING_RIGHT) {
-		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
-	    rect.setRect(0, 0, iFrameWidth, iFrameHeight);
-	}
-	else { //FACING_LEFT
-	   rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
-	}
+	//int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+this.getX());//(iOffsetScreenWidthLeftMargin+iTileWidth*k);		
 
-	Area myClipArea = new Area(rect);
+//int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);	
+	//int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+this.getY());//(iOffsetScreenHeightTopMargin+iTileHeight*i);
+	
+	System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+	System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 
-    //edited by Mike, 20240625; from 20240623
-    g2d.setClip(myClipArea);
-    //g.setClip(myClipArea);
-
-    //g2d.drawImage(image, trans, this);
-    //g2d.drawImage(myBufferedImage, trans, null);
-    //g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
-
-	//edited by Mike, 20240714
-    g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
-
-	//removed by Mike, 20240711; from 20240625
-	//put after the last object to be drawn
-	//g2d.dispose();
+			//edited by Mike, 20240807
+			//if (isActorInsideViewPort(iViewPortX,iViewPortY, this.getX()-iDifferenceInXPos,this.getY()-iDifferenceInYPos)) {
+/*			
+			if (isActorInsideViewPort(iViewPortX,iViewPortY, iDifferenceInXPos,iDifferenceInYPos)) {
+*/	
+	
+//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+System.out.println("HALLO!");
+									
+				//drawActor(g, iDifferenceInXPos, iDifferenceInYPos);					
+				drawActor(g, this.getX(), this.getY());					
+				
+				//drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+/*				
+			}	  	
+*/			
   }
 }
 
@@ -1798,7 +1730,7 @@ class EnemyAircraft extends Actor {
 	iViewPortX=getX();
 	iViewPortY=getY();
 */
-	
+/*	
 	System.out.println("iViewPortX: "+iViewPortX);
 	System.out.println("iViewPortY: "+iViewPortY);
 	System.out.println("this.getX(): "+this.getX());
@@ -1806,39 +1738,48 @@ class EnemyAircraft extends Actor {
 			
 	System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
 	System.out.println("this.getWidth(): "+this.getWidth());
-			
+*/
 /*			
-	int iDifferenceInXPos=this.getX()-iOffsetScreenWidthLeftMargin-iViewPortX;			
-	int iDifferenceInYPos=this.getY()-iOffsetScreenHeightTopMargin-iViewPortY;
-*/	
-/*
 	int iDifferenceInXPos=this.getX();
 	int iDifferenceInYPos=this.getY();
-*/	
+*/
+/*	
 	int iDifferenceInXPos=iOffsetScreenWidthLeftMargin+(this.getX()-iViewPortX);			
 	int iDifferenceInYPos=iOffsetScreenHeightTopMargin+(this.getY()-iViewPortY);
-	
+*/
+
+	int iDifferenceInXPos=(this.getX()-iViewPortX);			
+	int iDifferenceInYPos=(this.getY()-iViewPortY);	
 
 	//int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+this.getX());//(iOffsetScreenWidthLeftMargin+iTileWidth*k);		
 
 //int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);	
 	//int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+this.getY());//(iOffsetScreenHeightTopMargin+iTileHeight*i);
-	
+/*	
 	System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
 	System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
-
+*/
 			//edited by Mike, 20240807
 			//if (isActorInsideViewPort(iViewPortX,iViewPortY, this.getX()-iDifferenceInXPos,this.getY()-iDifferenceInYPos)) {
 			
-			if (isActorInsideViewPort(iViewPortX,iViewPortY, iDifferenceInXPos,iDifferenceInYPos)) {
+			//TODO: -update: this; getX() and getY() should already include margin offsets;
+			//meanwhile, acceleration;
+			
+			if (isActorInsideViewPort(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iDifferenceInXPos,iOffsetScreenHeightTopMargin+iDifferenceInYPos)) {
 	
 			//if (isActorInsideViewPort(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+this.getX()-iDifferenceInXPos,iOffsetScreenHeightTopMargin+this.getY()-iDifferenceInYPos)) {		
 
 	
 //System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+/*
 System.out.println("HALLO!");
-									
-				drawActor(g, iDifferenceInXPos, iDifferenceInYPos);					
+*/				
+				this.setX(iOffsetScreenWidthLeftMargin+iDifferenceInXPos);
+				this.setY(iOffsetScreenHeightTopMargin+iDifferenceInYPos);
+				
+				//drawActor(g, iDifferenceInXPos, iDifferenceInYPos);					
+				drawActor(g, this.getX(), this.getY());					
+				
 				//drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
 			}	  	
   }
@@ -2811,6 +2752,7 @@ System.out.println("Level2D this.getWidth(): "+this.getWidth());
 		myBackgroundCanvas.setY(iViewPortY);
 */
 		myBackgroundCanvas.synchronizeViewPortWithBackground(iViewPortX,iViewPortY);		
+		myRobotShip.synchronizeViewPort(iViewPortX,iViewPortY);
 
 		myBackgroundCanvas.synchronizeKeys(myKeysDown);
 		myRobotShip.synchronizeKeys(myKeysDown);		
@@ -2944,6 +2886,7 @@ System.out.println("Level2D this.getWidth(): "+this.getWidth());
 		myRobotShip.update();
 		
 		this.collideWith(myRobotShip);
+		
 /*
 		//added by Mike, 20240811
 		this.setX(myRobotShip.getX());
@@ -2970,6 +2913,9 @@ System.out.println("Level2D this.getWidth(): "+this.getWidth());
 				return;
 			}
 */		
+			System.out.println("myEnemyAircraftContainer[i].getY(): "+myEnemyAircraftContainer[i].getY());
+			System.out.println("a.getY(): "+a.getY());
+
 			if (isIntersectingRect(myEnemyAircraftContainer[i], a))		
 			{
 				myEnemyAircraftContainer[i].hitBy(a);
