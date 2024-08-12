@@ -721,7 +721,15 @@ class Actor {
 	protected int[][] tileMap; 
 	protected final int MAX_TILE_MAP_HEIGHT=13;
 	protected final int MAX_TILE_MAP_WIDTH=26; 
-
+	
+	//added by Mike, 20240812
+	protected final int TILE_BLANK=0;
+	protected final int TILE_HERO=1;
+	protected final int TILE_AIRCRAFT=2;
+	protected final int TILE_WALL=3;
+	
+	protected int myTileType=0;
+	
 	//added by Mike, 20240714
 	protected final int FACING_UP=0;
 	protected final int FACING_DOWN=1;
@@ -733,10 +741,10 @@ class Actor {
 	protected boolean bHasStarted=false;
 	
 	//added by Mike, 20240806
-	protected int iViewPortX;
-	protected int iViewPortY;
-	protected int iViewPortWidth;
-	protected int iViewPortHeight;
+	protected int iViewPortX=0;
+	protected int iViewPortY=0;
+	protected int iViewPortWidth=0;
+	protected int iViewPortHeight=0;
 	
 	//added by Mike, 20240809
 	protected boolean bIsWallTypeHit=false;
@@ -770,6 +778,12 @@ class Actor {
 	  //added by Mike, 20240804
 	  tileMap = new int[MAX_TILE_MAP_HEIGHT][MAX_TILE_MAP_WIDTH];
 
+	  //added by Mike, 20240812
+	  iViewPortX=iOffsetScreenWidthLeftMargin+0;
+	  iViewPortY=iOffsetScreenHeightTopMargin+0;
+	  iViewPortWidth=iStageWidth;
+	  iViewPortHeight=iStageHeight;	
+		
 	  reset();
 	}
 
@@ -808,12 +822,6 @@ class Actor {
 		
 		//added by Mike, 20240809
 		bIsWallTypeHit=false;
-		
-		//added by Mike, 20240810
-		iViewPortX=0;
-		iViewPortY=0;
-		iViewPortWidth=iStageWidth;
-		iViewPortHeight=iStageHeight;	
 	}
 
 	//added by Mike, 20240804
@@ -866,6 +874,11 @@ class Actor {
         return iStepY;
     }
 	
+	//added by Mike, 20240812
+	public int getMyTileType() {
+		return myTileType;
+	}
+	
 	//added by Mike, 20240804
 	public boolean checkIsCollidable() {
 		return isCollidable;
@@ -900,9 +913,48 @@ class Actor {
 	}
 
 	//added by Mike, 20240811
-	public void synchronizeViewPort(int x, int y) {
+	public void synchronizeViewPort(int iVPX, int iVPY) {
+/*	//edited by Mike, 20240812		
 		iViewPortX=x;
 		iViewPortY=y;
+*/
+		if (getMyTileType()==TILE_HERO) {
+			iViewPortX=iVPX;
+			iViewPortY=iVPY;
+			return;
+		}
+
+		if ((iViewPortX==iVPX) && (iViewPortY==iVPY)) {
+			return;
+		}
+
+		//System.out.println("DITO>>>>>>>>>>>>>>>>>");
+/*		
+		return;
+*/	
+
+		System.out.println("sync iVPX: "+iVPX);
+		System.out.println("sync iViewPortX: "+iViewPortX);
+
+		int iDifferenceInXPos=iVPX-iViewPortX;
+		int iDifferenceInYPos=iVPY-iViewPortY;	
+		
+		System.out.println(">>>>>>>>>>>iDifferenceInXPos: "+iDifferenceInXPos);
+
+		//setX(iOffsetScreenWidthLeftMargin+this.getX());
+		//setY(iOffsetScreenHeightTopMargin+this.getY());
+
+		setX(this.getX()+iDifferenceInXPos);
+		setY(this.getY()+iDifferenceInYPos);
+		
+		iViewPortX=iVPX;
+		iViewPortY=iVPY;
+		
+/*		
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>iViewPortX: "+iViewPortX);
+		
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>getX(): "+getX());
+*/		
 	}
 	
 	//added by Mike, 20240811
@@ -1335,6 +1387,8 @@ class RobotShip extends Actor {
 		currentState=ACTIVE_STATE;
 		isCollidable=true;
 		
+		myTileType=TILE_HERO;
+		
 /*		
 		//TODO: -add: , etc.
 		iStepX=ISTEP_X_DEFAULT*2; //faster by 1 than the default
@@ -1440,9 +1494,11 @@ class RobotShip extends Actor {
 
 //int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);	
 	//int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+this.getY());//(iOffsetScreenHeightTopMargin+iTileHeight*i);
-	
+
+/*	
 	System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
 	System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
+*/
 
 			//edited by Mike, 20240807
 			//if (isActorInsideViewPort(iViewPortX,iViewPortY, this.getX()-iDifferenceInXPos,this.getY()-iDifferenceInYPos)) {
@@ -1526,13 +1582,8 @@ class EnemyAircraft extends Actor {
 		//added by Mike, 20240806
 		iStepX=ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
 		iStepY=ISTEP_Y_DEFAULT;//*2; //faster by 1 than the default
-
-		//TODO: -add: resetDefault();
-		//added by Mike, 20240811
-		iViewPortX=0;
-		iViewPortY=0;
-		iViewPortWidth=iStageWidth;
-		iViewPortHeight=iStageHeight;	
+		
+		myTileType=TILE_AIRCRAFT;
 	}
 	
 	@Override
@@ -1774,9 +1825,10 @@ class EnemyAircraft extends Actor {
 /*
 System.out.println("HALLO!");
 */				
+/*
 				this.setX(iOffsetScreenWidthLeftMargin+iDifferenceInXPos);
 				this.setY(iOffsetScreenHeightTopMargin+iDifferenceInYPos);
-				
+*/				
 				//drawActor(g, iDifferenceInXPos, iDifferenceInYPos);					
 				drawActor(g, this.getX(), this.getY());					
 				
@@ -1801,6 +1853,8 @@ class Wall extends Actor {
 		  myBufferedImage = ImageIO.read(new File("./res/wall.png"));
       } catch (IOException ex) {
       }
+	  
+	  myTileType=TILE_WALL;
 	}
 
 	//added by Mike, 20240628
@@ -2526,20 +2580,24 @@ int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidt
 class Level2D extends Actor {	
 	//added by Mike, 20240727
 	//protected int[][] tileMap; 
-	
+/*	
 	private final int MAX_TILE_MAP_HEIGHT=13;
 	//TODO: -add: draw two tiles beyond the max; reduce pop-out
 	private final int MAX_TILE_MAP_WIDTH=26; 
-	private final int TILE_BLANK=0;
-	private final int TILE_AIRCRAFT=1;
-	private final int TILE_SHIP=2;
-	private final int TILE_WALL=3;
 	
+	private final int TILE_BLANK=0;
+	private final int TILE_HERO=1;
+	private final int TILE_AIRCRAFT=2;
+	private final int TILE_WALL=3;
+*/
+	
+/*	
 	//added by Mike, 20240729
 	private int iViewPortX;
 	private int iViewPortY;
 	private int iViewPortWidth;
 	private int iViewPortHeight;
+*/
 	
 	//added by Mike, 20240804
 	//private EnemyAircraft myEnemyAircraft;
@@ -2613,7 +2671,7 @@ class Level2D extends Actor {
 		//added by Mike, 20240811
 		setWidth(iStageWidth);
 		setHeight(iStageHeight);
-
+	  		
 		iFrameCount=0;
 		iFrameCountDelay=0;
 		iRotationDegrees=0;
@@ -2700,12 +2758,12 @@ class Level2D extends Actor {
 		//added by Mike, 20240807
 		iViewPortX=this.getX();
 		iViewPortY=this.getY();
-		
+/*		
 System.out.println("MAX_TILE_MAP_WIDTH*iTileWidth: "+MAX_TILE_MAP_WIDTH*iTileWidth);
 System.out.println("Level2D this.getX(): "+this.getX());
 //System.out.println("iViewPortX: "+iViewPortX);
 System.out.println("Level2D this.getWidth(): "+this.getWidth());
-
+*/
 
 //System.out.println("this.getY(): "+this.getY());
 
@@ -2913,9 +2971,10 @@ System.out.println("Level2D this.getWidth(): "+this.getWidth());
 				return;
 			}
 */		
+/*
 			System.out.println("myEnemyAircraftContainer[i].getY(): "+myEnemyAircraftContainer[i].getY());
 			System.out.println("a.getY(): "+a.getY());
-
+*/
 			if (isIntersectingRect(myEnemyAircraftContainer[i], a))		
 			{
 				myEnemyAircraftContainer[i].hitBy(a);
