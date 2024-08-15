@@ -829,6 +829,7 @@ class Actor {
 	}
 	
 //Example values: iOffsetXPosAsPixel=10; iMyWidthAsPixel=64; 10/64=0.15625
+	//note: Hero Actor put in a2
 	public boolean isIntersectingRect(Actor a1, Actor a2) {
 		//iOffsetXPosAsPixel=12; a1.getHeight()=83; 12/83=0.14457
 
@@ -838,10 +839,10 @@ class Actor {
 		//iTileHeight
 		int iOffsetXPosAsPixel=a1.getWidth()/3;//10;//4;
 
-		if ((a2.getY()+a2.getHeight() < a1.getY()+iOffsetYPosAsPixel-a1.getStepY()) || //is the bottom of a2 above the top of a1?
-			(a2.getY() > a1.getY()+a1.getHeight()-iOffsetYPosAsPixel+a1.getStepY()) || //is the top of a2 below the bottom of a1?
-			(a2.getX()+a2.getWidth() < a1.getX()+iOffsetXPosAsPixel-a1.getStepX())  || //is the right of a2 to the left of a1?
-			(a2.getX() > a1.getX()+a1.getWidth()-iOffsetXPosAsPixel+a1.getStepX())) { //is the left of a2 to the right of a1?
+		if ((a2.getY()+a2.getHeight() <= a1.getY()+iOffsetYPosAsPixel-a1.getStepY()) || //is the bottom of a2 above the top of a1?
+			(a2.getY() >= a1.getY()+a1.getHeight()-iOffsetYPosAsPixel+a2.getStepY()) || //is the top of a2 below the bottom of a1?
+			(a2.getX()+a2.getWidth() <= a1.getX()+iOffsetXPosAsPixel-a2.getStepX())  || //is the right of a2 to the left of a1?
+			(a2.getX() >= a1.getX()+a1.getWidth()-iOffsetXPosAsPixel+a2.getStepX())) { //is the left of a2 to the right of a1?
 
 			return false;
 		}
@@ -2157,9 +2158,9 @@ class Level2D extends Actor {
 		iViewPortHeight=iStageHeight;	
 		
 		//added by Mike, 20240806
+		//TODO: -add: acceleration; setting iStepX and iStepY to zero after hitting Wall (setting to 1 reduces shake);
 		iStepX=ISTEP_X_DEFAULT*2; //faster by 1 than the default
 		iStepY=ISTEP_Y_DEFAULT*2; //faster by 1 than the default
-
 	}
 	
 	@Override
