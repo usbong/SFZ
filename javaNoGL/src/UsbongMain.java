@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240821; from 20240820
+ * @last updated: 20240822; from 20240821
  * @website: www.usbong.ph
  *
  */
@@ -1301,7 +1301,7 @@ class EnemyAircraft extends Actor {
 		iWidth=iTileWidth;
 		iHeight=iTileHeight;		
 
-		currentFacingState=FACING_RIGHT;//FACING_LEFT;
+		currentFacingState=FACING_LEFT;//FACING_RIGHT;
 
 		iFrameCount=0;
 		iFrameCountDelay=0;
@@ -1316,7 +1316,7 @@ class EnemyAircraft extends Actor {
 		currentState=ACTIVE_STATE;
 		isCollidable=true;
 
-		iStepX=ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
+		iStepX=-ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
 		iStepY=ISTEP_Y_DEFAULT;//*2; //faster by 1 than the default
 		
 		myTileType=TILE_AIRCRAFT;
@@ -2281,9 +2281,9 @@ class Level2D extends Actor {
 			//if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()<=0) {
 
 			//if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()/2<=0+iOffsetScreenWidthLeftMargin) {				
-			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()<=0)
+			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()/2<=0+iOffsetScreenWidthLeftMargin)
 			{	
-				//myEnemyAircraftContainer[i].setX(MAX_TILE_MAP_WIDTH*iTileWidth+iViewPortWidth/2-myEnemyAircraftContainer[i].getWidth());
+				myEnemyAircraftContainer[i].setX(MAX_TILE_MAP_WIDTH*iTileWidth-myEnemyAircraftContainer[i].getWidth());
 			}
 			//myEnemyAircraftContainer[i].setX(myEnemyAircraftContainer[i].getX()+MAX_TILE_MAP_WIDTH*iTileWidth-myEnemyAircraftContainer[i].getWidth());
 						
