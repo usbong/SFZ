@@ -1237,6 +1237,7 @@ class RobotShip extends Actor {
 		//edited by Mike, 20240809
 		//note: robot ship doesn't not have FACING_UP or FACING_DOWN
 		//TODO: -remove this
+/*		
 		if (myKeysDown[KEY_W])
 		{
 			currentFacingState=FACING_UP;
@@ -1245,8 +1246,8 @@ class RobotShip extends Actor {
 		if (myKeysDown[KEY_S])
 		{
 			currentFacingState=FACING_DOWN;
-		}			
-
+		}	
+*/
 		//added by Mike, 20240730
 		if (!bHasStarted) {
 			myKeysDown[KEY_D]=false;
@@ -1290,7 +1291,7 @@ class EnemyAircraft extends Actor {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 		
 	  try {		  
-		  myBufferedImage = ImageIO.read(new File("./res/robotship.png"));
+		  myBufferedImage = ImageIO.read(new File("./res/robotship2.png"));
       } catch (IOException ex) {
       }
 	}
