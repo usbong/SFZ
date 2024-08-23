@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240822; from 20240821
+ * @last updated: 20240823; from 20240822
  * @website: www.usbong.ph
  *
  */
@@ -1699,6 +1699,13 @@ class BackgroundCanvas extends Actor {
 		tileMap[MAX_TILE_MAP_HEIGHT-1][26-1]=TILE_TREE;		
 		tileMap[0][26-1]=TILE_TREE;
 		
+		//added by Mike, 20240823
+	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		  for (int k=MAX_TILE_MAP_WIDTH-10; k<MAX_TILE_MAP_WIDTH; k++) {
+			tileMap[i][k]=TILE_TREE;
+		  }
+	    }	
+		
 		//added by Mike, 20240729
 		iViewPortX=0;
 		iViewPortY=0;
@@ -1830,24 +1837,27 @@ class BackgroundCanvas extends Actor {
 			}	  
 	  }
 	}
-	
-	//added by Mike, 20240806
+		
+	//added by Mike, 20240823; from 20240806
 	int iCount=0;
 	int iWrapTileCountOffset=10;//6; //10/13=0.7692; 76.92% of the stage width
 	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+	  iCount=0;
 	  for (int k=MAX_TILE_MAP_WIDTH-1-iWrapTileCountOffset; k<MAX_TILE_MAP_WIDTH; k++) {
 	
-			//going backward
-			int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin-iTileWidth*iCount);
+		//going backward		
+		int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin-iTileWidth*iCount);
+		
+		int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
 			
-			int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
-
-			if (tileMap[i][k]==TILE_TREE) {		
-				drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);					
-				iCount++;
-			}
+		if (tileMap[i][k]==TILE_TREE) {						
+			drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);								
+			iCount++;
+		}
 	  }
 	}
+	
+//System.out.println(">>>>>>>>>>>>>iCount"+iCount);	
 
 	iCount=0;
 	//iWrapTileCountOffset=6;
@@ -1862,9 +1872,6 @@ class BackgroundCanvas extends Actor {
 		int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth)-iViewPortX+iViewPortWidth/2+iTileWidth*k; 
 		
 		int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
-		
-//System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
-//System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 
 		if (tileMap[i][k]==TILE_TREE) {								
 			drawTree(g, iOffsetScreenWidthLeftMargin+iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
