@@ -1700,8 +1700,15 @@ class BackgroundCanvas extends Actor {
 		tileMap[0][26-1]=TILE_TREE;
 		
 		//added by Mike, 20240823
+/*		
 	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 		  for (int k=MAX_TILE_MAP_WIDTH-10; k<MAX_TILE_MAP_WIDTH; k++) {
+			tileMap[i][k]=TILE_TREE;
+		  }
+	    }	
+*/		
+		for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
 			tileMap[i][k]=TILE_TREE;
 		  }
 	    }	
@@ -1746,7 +1753,7 @@ class BackgroundCanvas extends Actor {
 	//System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
 	
 	//we need to multiply by 2 the viewport width and height; 
-	//because both the viewport and the object moves,
+	//because both the viewport and the object move,
 	//thereby increasing or decreasing the distance by two;
 	//TODO: -verify: reduce excess viewport size
 	//iViewPortWidth*2; iViewPortHeight*2
@@ -1837,7 +1844,8 @@ class BackgroundCanvas extends Actor {
 			}	  
 	  }
 	}
-		
+	
+	//note: noticeable slow-down on i3
 	//added by Mike, 20240823; from 20240806
 	int iCount=0;
 	int iWrapTileCountOffset=10;//6; //10/13=0.7692; 76.92% of the stage width
@@ -1845,15 +1853,17 @@ class BackgroundCanvas extends Actor {
 	  iCount=0;
 	  for (int k=MAX_TILE_MAP_WIDTH-1-iWrapTileCountOffset; k<MAX_TILE_MAP_WIDTH; k++) {
 	
-		//going backward		
-		int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin-iTileWidth*iCount);
-		
+		//has reached left-most
+		//use distance formula?
+		int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin-iTileWidth*iCount);		
 		int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
 			
-		if (tileMap[i][k]==TILE_TREE) {						
-			drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);								
-			iCount++;
-		}
+		//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {	
+			if (tileMap[i][k]==TILE_TREE) {						
+				drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);								
+				iCount++;
+			}
+		//}			
 	  }
 	}
 	
@@ -1864,9 +1874,7 @@ class BackgroundCanvas extends Actor {
 	//edited by Mike, 20240808	
 	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 	  for (int k=0; k<iWrapTileCountOffset; k++) {	
-		//going forward
-		//reminder
-		//put ship in right-most part of map; ship centered in viewport
+		//has reached right-most
 
 		//edited by Mike, 20240808
 		int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth)-iViewPortX+iViewPortWidth/2+iTileWidth*k; 
