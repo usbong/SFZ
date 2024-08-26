@@ -1238,17 +1238,21 @@ class RobotShip extends Actor {
 		//edited by Mike, 20240809
 		//note: robot ship doesn't not have FACING_UP or FACING_DOWN
 		//TODO: -remove this
-/*		
+		
 		if (myKeysDown[KEY_W])
 		{
-			currentFacingState=FACING_UP;
+			//currentFacingState=FACING_UP;
+			iStepY=-ISTEP_Y_MAX;
+			setY(getY()+getStepY());
 		}
 
 		if (myKeysDown[KEY_S])
 		{
-			currentFacingState=FACING_DOWN;
+			//currentFacingState=FACING_DOWN;
+			iStepY=ISTEP_Y_MAX;
+			setY(getY()+getStepY());
 		}	
-*/
+
 		//added by Mike, 20240730
 		if (!bHasStarted) {
 			myKeysDown[KEY_D]=false;
@@ -2380,8 +2384,13 @@ class Level2D extends Actor {
 				}
 				else {
 					iStepY=-ISTEP_Y_MAX;
-					//setY(getY()-iStepY);
-					setY(getY()+iStepY);					
+					//edited by Mike, 20240827
+					//setY(getY()+iStepY);		
+
+					//1 tile higher than iViewPortHeight					
+					if (getY()>0+iOffsetScreenHeightTopMargin-iTileHeight) {
+						setY(getY()+iStepY);					
+					}					
 				}
 				
 				//iStepX=ISTEP_X_MAX;				
@@ -2393,7 +2402,13 @@ class Level2D extends Actor {
 				}
 				else {
 					iStepY=ISTEP_Y_MAX;
-					setY(getY()+iStepY);					
+					//edited by Mike, 20240827					
+					//setY(getY()+iStepY);					
+					
+					//1 tile lower than iViewPortHeight
+					if (getY()<iOffsetScreenHeightTopMargin+iTileHeight) {
+						setY(getY()+iStepY);					
+					}
 				}				
 				
 				//iStepX=ISTEP_X_MAX;				
@@ -2440,6 +2455,8 @@ class Level2D extends Actor {
 		//added by Mike, 20240810
 		iViewPortX=this.getX();
 		iViewPortY=this.getY();
+
+		//iViewPortY=0;
 
 		myBackgroundCanvas.synchronizeViewPortWithBackground(iViewPortX,iViewPortY);		
 		myRobotShip.synchronizeViewPort(iViewPortX,iViewPortY, getStepX(),getStepY());
