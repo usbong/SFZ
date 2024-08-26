@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240825; from 20240823
+ * @last updated: 20240826; from 20240825
  * @website: www.usbong.ph
  *
  */
@@ -1432,6 +1432,15 @@ class Plasma extends Actor {
 	private final int ISTEP_X_PLASMA=ISTEP_X_DEFAULT*10;
 	private final int ISTEP_Y_PLASMA=ISTEP_Y_DEFAULT*10;
 	
+	//added by Mike, 20240826
+	private int iXInitialDistanceTraveled=0;
+	private int iXCurrentDistanceTraveled=0;
+	private int iXDistanceTraveledMax;
+	
+	private int iYInitialDistanceTraveled=0;
+	private int iYCurrentDistanceTraveled=0;
+	private int iYDistanceTraveledMax;
+	
     public Plasma(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 		
@@ -1457,6 +1466,10 @@ class Plasma extends Actor {
 		for (int i=0; i<iMyKeysDownLength; i++) {
 			myKeysDown[i]=false;
 		}		
+		
+		//added by Mike, 20240826
+		iXDistanceTraveledMax=iViewPortWidth;
+		iYDistanceTraveledMax=iViewPortHeight;
 		
 		//default
 		currentState=HIDDEN_STATE; //ACTIVE_STATE;
@@ -1492,81 +1505,82 @@ class Plasma extends Actor {
 	
 	//reference: Usbong Game Off 2023
 	public void processMouseInput(MouseEvent e, int iHeroX, int iHeroY) {
-/*	//TODO: fix: this		
+		
 		//if hidden, i.e. not available, for use;
 		//if (getCurrentState()!=HIDDEN_STATE) {
 		if (getCurrentState()==ACTIVE_STATE) {	
 			return;
 		}
-*/
 
 		setCurrentState(ACTIVE_STATE);
-	
+
 		this.setX(iHeroX);
 		this.setY(iHeroY);
 		
-	
-		//moveSquare(e.getX(),e.getY());
-/*		
-	  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
-		  myPlasmaContainer[i] = new Plasma(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
-	  }	
-*/
-/*
-	  int iDeltaX=(e.getX()-iOffsetScreenWidthLeftMargin)-(this.getX()+this.getWidth()/2);
-      int iDeltaY=(e.getY()-iOffsetScreenHeightTopMargin)-(this.getY()+this.getHeight()/2);
-*/
-	  int iDeltaX=(e.getX())-(this.getX()+this.getWidth()/2);
-      int iDeltaY=(e.getY())-(this.getY()+this.getHeight()/2);
-
-	  iDeltaY*=-1;
-
-	  double dMainImageTileStepAngleRad=Math.atan2(iDeltaX,iDeltaY);
-
-      int iMainImageTileStepAngle=(int)(dMainImageTileStepAngleRad*(180/Math.PI));
-
-	  //clockwise
-	  iMainImageTileStepAngle=(iMainImageTileStepAngle)%360;
-	  
-	  System.out.println(">>>>>>>>>iMainImageTileStepAngle: "+iMainImageTileStepAngle);
-		  
-	  //newMainImageTileProjectilePosY=mainImageTileProjectileStepY*Math.cos(fMainImageTileStepAngleRad).toFixed(3);
-	  iStepY=(int)(ISTEP_Y_PLASMA*Math.cos(dMainImageTileStepAngleRad));//.toFixed(3);
-
-      //newMainImageTileProjectilePosY*=-1;
-	  iStepY*=-1;
-	  
-      //newMainImageTileProjectilePosX=mainImageTileProjectileStepX*Math.sin(fMainImageTileStepAngleRad).toFixed(3);
-      iStepX=(int)(ISTEP_X_PLASMA*Math.sin(dMainImageTileStepAngleRad));//.toFixed(3);
-	  
-	}
-	
+		//added by Mike, 20240826
+		iXInitialDistanceTraveled=getX();
+		iYInitialDistanceTraveled=getY();
 		
+		iXCurrentDistanceTraveled=0;
+		iYCurrentDistanceTraveled=0;
+		
+	    int iDeltaX=(e.getX())-(this.getX()+this.getWidth()/2);
+        int iDeltaY=(e.getY())-(this.getY()+this.getHeight()/2);
+
+	    iDeltaY*=-1;
+
+	    double dMainImageTileStepAngleRad=Math.atan2(iDeltaX,iDeltaY);
+
+        int iMainImageTileStepAngle=(int)(dMainImageTileStepAngleRad*(180/Math.PI));
+
+	    //clockwise
+	    iMainImageTileStepAngle=(iMainImageTileStepAngle)%360;
+	  
+	    //System.out.println(">>>>>>>>>iMainImageTileStepAngle: "+iMainImageTileStepAngle);
+		  
+	    //newMainImageTileProjectilePosY=mainImageTileProjectileStepY*Math.cos(fMainImageTileStepAngleRad).toFixed(3);
+	    iStepY=(int)(ISTEP_Y_PLASMA*Math.cos(dMainImageTileStepAngleRad));//.toFixed(3);
+
+        //newMainImageTileProjectilePosY*=-1;
+	    iStepY*=-1;
+	  
+        //newMainImageTileProjectilePosX=mainImageTileProjectileStepX*Math.sin(fMainImageTileStepAngleRad).toFixed(3);
+        iStepX=(int)(ISTEP_X_PLASMA*Math.sin(dMainImageTileStepAngleRad));//.toFixed(3);
+	}
+			
 	@Override
 	public void update() {
-/*		
-		//added by Mike, 20240825
-		if (!isIntersectingRect(this.getX(),this.getY(),iViewPortX,iViewPortY)) {
-			//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PLASMA");			
-			this.setCurrentState(HIDDEN_STATE);
-		}
-*/
-			
 		setX(getX()+getStepX());		
 		setY(getY()+getStepY());
+
+/*		//also OK		
+		//added by Mike, 20240826				
+		double dDifferenceInXPos=Math.sqrt(Math.pow((iXInitialDistanceTraveled)-getX(),2));
+		double dDifferenceInYPos=Math.sqrt(Math.pow((iYInitialDistanceTraveled)-getY(),2));
+*/
 		
-/*		
-		System.out.println("plasma getX(): "+getX());
-		System.out.println("iViewPortX: "+iViewPortX);
+		iXCurrentDistanceTraveled+=getStepX();
+		iYCurrentDistanceTraveled+=getStepY();
+
+		double dDifferenceInXPos=Math.abs(iXCurrentDistanceTraveled);
+		double dDifferenceInYPos=Math.abs(iYCurrentDistanceTraveled);
 	
-		//wrapped world causing problem; use dDifferenceInXPos, etc. in synchronizeViewPort(...)
-		if (getX()<iViewPortX) {
+		int iDifferenceInXPos=(int)dDifferenceInXPos;
+		int iDifferenceInYPos=(int)dDifferenceInYPos;
+
+		//hero always at the center of viewport
+		if (iDifferenceInXPos>iViewPortWidth/2) {
 			this.setCurrentState(HIDDEN_STATE);
 		}
-*/		
-		//System.out.println("plasma getStepX(): "+getStepX());
-				
-		
+
+		if (iDifferenceInYPos>iViewPortHeight/2) {
+			this.setCurrentState(HIDDEN_STATE);
+		}
+/*
+		System.out.println("!!!!!!!!!!!!!!!iViewPortWidth: "+iViewPortWidth);
+		System.out.println("!!!!!!!!!!!!!!!iViewPortHeight: "+iViewPortHeight);
+*/
+			
 /* 	//edited by Mike, 20240706; OK
 		//animation
 		if (iFrameCountDelay<iFrameCountDelayMax) {
@@ -2476,7 +2490,7 @@ class Level2D extends Actor {
 			myPlasmaContainer[i].synchronizeViewPort(iViewPortX,iViewPortY,getStepX(),getStepY());
 			
 			//TODO: -remove: isActorInsideViewPort(...); verified already in update(...)
-			
+/*			
 			if (isActorInsideViewPort(iViewPortX, iViewPortY, myPlasmaContainer[i])) {						
 				//System.out.println(">>>>>>>>>>>> UPDATE!!!");
 				//myPlasmaContainer[i].setCurrentState(ACTIVE_STATE);
@@ -2484,9 +2498,11 @@ class Level2D extends Actor {
 			}
 			else {
 				myPlasmaContainer[i].setCurrentState(HIDDEN_STATE);
+				System.out.println(">>>>>>>>>>>> SET TO HIDDEN STATE!!!");				
 			}
+*/
 
-//			myPlasmaContainer[i].update();			
+			myPlasmaContainer[i].update();			
 		
 			//note: however, if not in viewport, object won't move;
 			//System.out.println("myEnemyAircraftContainer[i].getX(): "+myEnemyAircraftContainer[i].getX());
@@ -2626,7 +2642,7 @@ class Level2D extends Actor {
 	}	
 	
 	//added by Mike, 20240825
-	private boolean isActorInsideViewPort(int iViewPortX, int iViewPortY, Actor a)
+	private boolean isActorInsideViewPortBUGGY2(int iViewPortX, int iViewPortY, Actor a)
 {     
 
 		System.out.println(">>>iViewPortX: "+iViewPortX);
@@ -2643,8 +2659,16 @@ class Level2D extends Actor {
 		double dDifferenceInXPos=Math.sqrt(Math.pow(iViewPortX-a.getX(),2));
 		double dDifferenceInYPos=Math.sqrt(Math.pow(iViewPortY-a.getY(),2));
 */
+/*
 		double dDifferenceInXPos=Math.sqrt(Math.pow((iViewPortX+iViewPortWidth/2)-a.getX(),2));
 		double dDifferenceInYPos=Math.sqrt(Math.pow((iViewPortY+iViewPortHeight/2)-a.getY(),2));
+*/	
+/*
+		double dDifferenceInXPos=Math.sqrt(Math.pow(a.getX()-(iViewPortX+iViewPortWidth/2),2));
+		double dDifferenceInYPos=Math.sqrt(Math.pow(a.getY()-(iViewPortY+iViewPortHeight/2),2));
+*/
+		double dDifferenceInXPos=Math.sqrt(Math.pow((iViewPortX+iViewPortWidth)-a.getX(),2));
+		double dDifferenceInYPos=Math.sqrt(Math.pow((iViewPortY+iViewPortHeight)-a.getY(),2));
 	
 		int iDifferenceInXPos=(int)dDifferenceInXPos;
 		int iDifferenceInYPos=(int)dDifferenceInYPos;
@@ -2671,17 +2695,70 @@ class Level2D extends Actor {
 		System.out.println(">>>>>>iDifferenceInYPos: "+iDifferenceInYPos);
 
 		//iOffsetScreenHeightTopMargin+
-		if (iDifferenceInYPos>iViewPortY+iViewPortHeight) {
+		//plasma from hero always comes from the center
+		//if (iDifferenceInYPos>iViewPortY+iViewPortHeight) {	
+		if (iDifferenceInYPos>iViewPortHeight/2) {	
+		
+		//iViewPortY
+		//if (iOffsetScreenHeightTopMargin+iDifferenceInYPos+a.getHeight()>0+iViewPortHeight/2) {
+		//if (iDifferenceInYPos+a.getHeight()>Math.abs(iViewPortY)) {
 			return false;
 		}
 
 		//iOffsetScreenWidthLeftMargin+
-		if (iDifferenceInXPos>iViewPortX+iViewPortWidth) { 
+		//if (iDifferenceInXPos>iViewPortX+iViewPortWidth) { 
+		//+a.getWidth()
+		if (iDifferenceInXPos>iViewPortWidth/2) { 
+		
+		//iViewPortX
+		//if (iOffsetScreenWidthLeftMargin+iDifferenceInXPos+a.getWidth()>0+iViewPortWidth/2) { 
+		//if (iDifferenceInXPos+a.getWidth()>Math.abs(iViewPortX)) { 
 			return false;
 		}			
 			
 		return true;
 	}		
+	
+	//added by Mike, 20240825
+	//TODO: -verify: this; at present, not used
+	//reminder: verify Actor class Plasma's update
+	private boolean isActorInsideViewPort(int iViewPortX, int iViewPortY, Actor a)
+{     
+
+		System.out.println(">>>iViewPortX: "+iViewPortX);
+		System.out.println(">>>iViewPortY: "+iViewPortY);
+
+		System.out.println(">>>iViewPortHeight: "+iViewPortHeight);
+		System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
+
+		System.out.println(">>>>>>a.getX(): "+a.getX());
+		System.out.println(">>>>>>a.getWidth(): "+a.getWidth());
+
+		System.out.println(">>>>>>iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
+
+		//remove negative sign
+		int a1X=Math.abs(iViewPortX);
+		int a1Y=Math.abs(iViewPortY);
+
+		int a2X=Math.abs(a.getX());
+		int a2Y=Math.abs(a.getY());
+		
+		//object and object; not object and tile
+		//iTileWidth
+		int iOffsetYPosAsPixel=0;//a1.getHeight()/3;//10;//4; //diagonal hit; image has margin
+		//iTileHeight
+		int iOffsetXPosAsPixel=0;//a1.getWidth()/3;//10;//4;
+
+		if ((a2Y+iViewPortHeight <= a1Y+iOffsetYPosAsPixel) || //is the bottom of a2 above the top of a1?
+			(a2Y >= a1Y+iViewPortHeight-iOffsetYPosAsPixel) || //is the top of a2 below the bottom of a1?
+			(a2X+iViewPortWidth <= a1X+iOffsetXPosAsPixel)  || //is the right of a2 to the left of a1?
+			(a2X >= a1X+iViewPortWidth-iOffsetXPosAsPixel)) { //is the left of a2 to the right of a1?
+
+			return false;
+		}
+			
+		return true;
+	}	
 	
 	//added by Mike, 20240818
 	private boolean isActorInsideViewPortStartEnd(int iViewPortX, int iViewPortY, Actor a)
@@ -2844,6 +2921,6 @@ class Level2D extends Actor {
 		
 		myRobotShip.draw(g);
 
-		drawMargins(g);		
+		//drawMargins(g);		
 	}
 }
