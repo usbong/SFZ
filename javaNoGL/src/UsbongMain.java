@@ -481,9 +481,9 @@ class Actor {
 	protected int iXPos=0;
 	protected int iYPos=0;
 	
-	//edited by Mike, 20240819; from 20240816
-	protected final int ISTEP_X_DEFAULT=2;
-	protected final int ISTEP_Y_DEFAULT=2;
+	//edited by Mike, 20240827; from 20240819
+	protected final int ISTEP_X_DEFAULT=1;//2;
+	protected final int ISTEP_Y_DEFAULT=1;//2;
 	
 	protected int iStepX=ISTEP_X_DEFAULT; //4;
 	protected int iStepY=ISTEP_Y_DEFAULT; //4;
@@ -913,7 +913,6 @@ class Actor {
 	}
 
 	public void keyPressed(KeyEvent key) {				
-	
 		//added by Mike, 20240629
 		//horizontal movement
 		if ((key.getKeyCode() == KeyEvent.VK_A) || (key.getKeyCode() == KeyEvent.VK_LEFT)) {						
@@ -1429,8 +1428,8 @@ class EnemyAircraft extends Actor {
 //added by Mike, 20240825
 class Plasma extends Actor {
 	
-	private final int ISTEP_X_PLASMA=ISTEP_X_DEFAULT*10;
-	private final int ISTEP_Y_PLASMA=ISTEP_Y_DEFAULT*10;
+	private final int ISTEP_X_PLASMA=ISTEP_X_DEFAULT*20;//10;
+	private final int ISTEP_Y_PLASMA=ISTEP_Y_DEFAULT*20;//10;
 	
 	//added by Mike, 20240826
 	private int iXInitialDistanceTraveled=0;
@@ -2346,7 +2345,9 @@ class Level2D extends Actor {
 	public void update() {		
 		
 		if (!getIsViewPortStopped()) {
-		
+			//added by Mike, 20240827
+			boolean bHasPressedAnyKey=false;
+			
 			if (myKeysDown[KEY_A])
 			{
 				if (iStepX==999999) { //if should go right, KEY_D
@@ -2357,7 +2358,8 @@ class Level2D extends Actor {
 					setX(getX()+iStepX);
 				}
 				
-				//iStepY=ISTEP_Y_MAX;				
+				//iStepY=ISTEP_Y_MAX;			
+				bHasPressedAnyKey=true;
 			}
 			else if (myKeysDown[KEY_D])
 			{				
@@ -2369,6 +2371,7 @@ class Level2D extends Actor {
 				}			
 
 				//iStepY=ISTEP_Y_MAX;				
+				bHasPressedAnyKey=true;				
 			}
 
 			if (myKeysDown[KEY_W])
@@ -2382,6 +2385,7 @@ class Level2D extends Actor {
 				}
 				
 				//iStepX=ISTEP_X_MAX;				
+				//bHasPressedAnyKey=true;				
 			}
 			else if (myKeysDown[KEY_S])
 			{
@@ -2393,6 +2397,20 @@ class Level2D extends Actor {
 				}				
 				
 				//iStepX=ISTEP_X_MAX;				
+				//bHasPressedAnyKey=true;
+			}
+			
+			//added by Mike, 20240827
+			if (!bHasPressedAnyKey) {
+				//reset to default
+				if (iStepX<0) {
+					iStepX=-ISTEP_X_DEFAULT;
+				}
+				else {
+					iStepX=ISTEP_X_DEFAULT;
+				}
+								
+				setX(getX()+iStepX);
 			}
 		}
 
