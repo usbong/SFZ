@@ -1569,11 +1569,12 @@ class Plasma extends Actor {
 		int iDifferenceInYPos=(int)dDifferenceInYPos;
 
 		//hero always at the center of viewport
-		if (iDifferenceInXPos>iViewPortWidth/2) {
+		//if (iDifferenceInXPos>iViewPortWidth/2) {
+		if (iDifferenceInXPos>iViewPortWidth/2+iTileWidth) {			
 			this.setCurrentState(HIDDEN_STATE);
 		}
 
-		if (iDifferenceInYPos>iViewPortHeight/2) {
+		if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight) {
 			this.setCurrentState(HIDDEN_STATE);
 		}
 /*
@@ -2175,7 +2176,7 @@ class Level2D extends Actor {
 	private Wall[] myWallContainer;
 
 	//added by Mike, 20240825
-	private final int MAX_PLASMA_COUNT=1; 
+	private final int MAX_PLASMA_COUNT=5;//1; 
 	private Plasma[] myPlasmaContainer;
 	
 	//added by Mike, 20240809
@@ -2306,10 +2307,12 @@ class Level2D extends Actor {
 		tileMap[5][MAX_TILE_MAP_WIDTH-7]=TILE_WALL;	
 		tileMap[5][MAX_TILE_MAP_WIDTH-8]=TILE_WALL;	
 */		
-		
+
+/*		//removed by Mike, 20240826		
 		//added by Mike, 20240825
-		//TODO: -update: this; debug onlys
+		//TODO: -update: this; debug only
 		tileMap[5][5]=TILE_PLASMA;
+*/
 		
 		//added by Mike, 20240817; from 20240729
 		iViewPortX=iOffsetScreenWidthLeftMargin+0;
@@ -2327,12 +2330,15 @@ class Level2D extends Actor {
 	@Override	
 	public void mousePressed(MouseEvent e) {
 		//moveSquare(e.getX(),e.getY());
-/*		
-	  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
-		  myPlasmaContainer[i] = new Plasma(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		
+	  //myPlasmaContainer[0].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
+		
+	  for (int i=0; i<MAX_PLASMA_COUNT; i++) {		  
+		  if (!myPlasmaContainer[i].isActive()) {
+			myPlasmaContainer[i].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
+			break;
+		  }
 	  }	
-*/
-	  myPlasmaContainer[0].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
 	}
 	
 	//TODO: -fix: collision detection; use TILE_WALL in Background class;
@@ -2487,21 +2493,7 @@ class Level2D extends Actor {
 		//added by Mike, 20240825
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 			
-			myPlasmaContainer[i].synchronizeViewPort(iViewPortX,iViewPortY,getStepX(),getStepY());
-			
-			//TODO: -remove: isActorInsideViewPort(...); verified already in update(...)
-/*			
-			if (isActorInsideViewPort(iViewPortX, iViewPortY, myPlasmaContainer[i])) {						
-				//System.out.println(">>>>>>>>>>>> UPDATE!!!");
-				//myPlasmaContainer[i].setCurrentState(ACTIVE_STATE);
-				myPlasmaContainer[i].update();	
-			}
-			else {
-				myPlasmaContainer[i].setCurrentState(HIDDEN_STATE);
-				System.out.println(">>>>>>>>>>>> SET TO HIDDEN STATE!!!");				
-			}
-*/
-
+			myPlasmaContainer[i].synchronizeViewPort(iViewPortX,iViewPortY,getStepX(),getStepY());			
 			myPlasmaContainer[i].update();			
 		
 			//note: however, if not in viewport, object won't move;
@@ -2518,7 +2510,7 @@ class Level2D extends Actor {
 			//went beyond left-most			
 			if (myPlasmaContainer[i].getX()+myPlasmaContainer[i].getWidth()/2<=0+iOffsetScreenWidthLeftMargin)
 			{	
-				myPlasmaContainer[i].setX(MAX_TILE_MAP_WIDTH*iTileWidth-myEnemyAircraftContainer[i].getWidth());
+				myPlasmaContainer[i].setX(MAX_TILE_MAP_WIDTH*iTileWidth-myPlasmaContainer[i].getWidth());
 			}			
 			
 			//added by Mike, 20240825
@@ -2832,6 +2824,7 @@ class Level2D extends Actor {
 						}
 					}					
 				}
+/*				//removed by Mike, 20240826
 				//added by Mike, 20240825; debug only
 				else if (tileMap[i][k]==TILE_PLASMA) {		
 					System.out.println("TILE_PLASMA!");
@@ -2851,6 +2844,7 @@ class Level2D extends Actor {
 						}
 					}					
 				}
+*/				
 			}
 	  }
 	}
@@ -2921,6 +2915,6 @@ class Level2D extends Actor {
 		
 		myRobotShip.draw(g);
 
-		//drawMargins(g);		
+		drawMargins(g);		
 	}
 }
