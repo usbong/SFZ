@@ -1242,14 +1242,14 @@ class RobotShip extends Actor {
 		if (myKeysDown[KEY_W])
 		{
 			//currentFacingState=FACING_UP;
-			iStepY=-ISTEP_Y_MAX;
+			iStepY=-ISTEP_Y_DEFAULT;//ISTEP_Y_MAX;
 			setY(getY()+getStepY());
 		}
 
 		if (myKeysDown[KEY_S])
 		{
 			//currentFacingState=FACING_DOWN;
-			iStepY=ISTEP_Y_MAX;
+			iStepY=ISTEP_Y_DEFAULT;//ISTEP_Y_MAX;
 			setY(getY()+getStepY());
 		}	
 
@@ -2383,7 +2383,9 @@ class Level2D extends Actor {
 				if (iStepY==999999) { //if should go down, KEY_S
 				}
 				else {
-					iStepY=-ISTEP_Y_MAX;
+					//edited by Mike, 20240827
+					iStepY=-ISTEP_Y_DEFAULT;//-ISTEP_Y_MAX;
+					
 					//edited by Mike, 20240827
 					//setY(getY()+iStepY);		
 
@@ -2401,7 +2403,9 @@ class Level2D extends Actor {
 				if (iStepY==-999999) { //if should go up, KEY_W
 				}
 				else {
-					iStepY=ISTEP_Y_MAX;
+					//edited by Mike, 20240827
+					iStepY=ISTEP_Y_DEFAULT;//ISTEP_Y_MAX;
+					
 					//edited by Mike, 20240827					
 					//setY(getY()+iStepY);					
 					
