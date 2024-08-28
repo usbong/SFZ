@@ -1519,6 +1519,8 @@ class Plasma extends Actor {
 		}
 
 		setCurrentState(ACTIVE_STATE);
+		//added by Mike, 20240828
+		setCollidable(true);
 
 		this.setX(iHeroX);
 		this.setY(iHeroY);
