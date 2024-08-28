@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240827; from 20240826
+ * @last updated: 20240828; from 20240827
  * @website: www.usbong.ph
  *
  */
@@ -542,6 +542,8 @@ class Actor {
 	protected final int TILE_AIRCRAFT=2;
 	protected final int TILE_WALL=3;
 	protected final int TILE_PLASMA=4;
+	protected final int TILE_TREE=5;	
+	protected final int TILE_BASE=6;	
 	
 	protected int myTileType=0;
 	
@@ -994,6 +996,7 @@ class Actor {
 	}
 	
 	//added by Mike, 20240821
+	//whole viewPort; not tile only
 	public boolean isIntersectingRect(int a1X, int a1Y, int a2X, int a2Y) {
 		//iOffsetXPosAsPixel=12; a1.getHeight()=83; 12/83=0.14457
 		
@@ -1884,9 +1887,10 @@ class Wall extends Actor {
 
 //added by Mike, 20240711
 class BackgroundCanvas extends Actor {
+/*	
 	private final int TILE_BLANK=0;
 	private final int TILE_TREE=1;
-		
+*/		
     public BackgroundCanvas(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	
 	super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
@@ -1981,11 +1985,15 @@ class BackgroundCanvas extends Actor {
 		  }
 	    }	
 */		
+/*
 		for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
 			tileMap[i][k]=TILE_TREE;
 		  }
 	    }	
+*/
+		//added by Mike, 20240827
+		tileMap[6][12]=TILE_BASE;
 		
 		//added by Mike, 20240729
 		iViewPortX=0;
@@ -1996,6 +2004,29 @@ class BackgroundCanvas extends Actor {
 		//added by Mike, 20240806
 		iStepX=ISTEP_X_DEFAULT*2; //faster by 1 than the default
 		iStepY=ISTEP_Y_DEFAULT*2; //faster by 1 than the default
+	}
+	
+	public int getTileWidth(){
+        return iTileWidth;
+    }
+
+    public int getTileHeight(){
+        return iTileHeight;
+    }
+	
+	//added by Mike, 20240827
+	@Override
+	public void hitBy(Actor a) {
+/*	//TODO: -update: this		
+		if (a.getMyTileType()==TILE_HERO) {
+			return;
+		}
+		
+		currentState=HIDDEN_STATE;
+		isCollidable=false;
+
+		System.out.println("HIT!!! SET TO HIDDEN STATE");
+*/		
 	}
 
 	@Override
@@ -2013,6 +2044,108 @@ class BackgroundCanvas extends Actor {
 */
 		iFrameCount=0;
 	}
+	
+	//added by Mike, 20240828
+	public boolean isActorIntersectingWithTile(Actor a, int tileX, int tileY) {
+		//iOffsetXPosAsPixel=12; a1.getHeight()=83; 12/83=0.14457
+		
+		//remove negative sign
+		int a1X=Math.abs(a.getX());
+		int a1Y=Math.abs(a.getY());
+
+		tileX=Math.abs(tileX);
+		tileY=Math.abs(tileY);
+		
+		System.out.println(">>>>>>>>>>>> a1X: "+a1X);
+		System.out.println(">>>>>>>>>>>> tileX: "+tileX);
+
+		System.out.println(">>>>>>>>>>>> a1Y: "+a1Y);
+		System.out.println(">>>>>>>>>>>> tileY: "+tileY);
+
+		System.out.println(">>>>>>>>>>>> iTileWidth: "+iTileWidth);
+		System.out.println(">>>>>>>>>>>> iTileHeight: "+iTileHeight);
+		
+		//object and object; not object and tile
+		//iTileWidth
+		int iOffsetYPosAsPixel=0;//a1.getHeight()/3;//10;//4; //diagonal hit; image has margin
+		//iTileHeight
+		int iOffsetXPosAsPixel=0;//a1.getWidth()/3;//10;//4;
+
+		if ((tileY+iTileHeight <= a1Y+iOffsetYPosAsPixel) || //is the bottom of tile above the top of a1?
+			(tileY >= a1Y+a.getHeight()-iOffsetYPosAsPixel) || //is the top of tile below the bottom of a1?
+			(tileX+iTileWidth <= a1X+iOffsetXPosAsPixel)  || //is the right of tile to the left of a1?
+			(tileX >= a1X+a.getWidth()-iOffsetXPosAsPixel)) { //is the left of tile to the right of a1?
+
+			return false;
+		}
+		
+		return true;
+	}	
+		
+	public void collideWithBackgroundTile(Actor a) {
+/*
+		if ((!checkIsCollidable())||(!a.checkIsCollidable()))    
+		{
+			//not collidable
+			return;
+		}		
+*/
+		//plasma actor
+		//if (!a.checkIsCollidable())
+		if (!a.isActive())
+		{
+			//not collidable
+			return;
+		}	
+		
+		//TODO: -update: this; iDifferenceInXPos; iDifferenceInYPos
+		for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+				int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*k);
+				
+				int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
+
+				//edited by Mike, 20240807
+				if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {		
+	
+//System.out.println(">>");
+
+					if (tileMap[i][k]==TILE_BASE) {		
+/*
+System.out.println(">>>");
+
+
+System.out.println(">>>>> iTileWidth*k: "+k);
+System.out.println(">>>>> iTileHeight*i: "+i);
+
+
+System.out.println("iViewPortX: "+iViewPortX);
+System.out.println("iViewPortY: "+iViewPortY);
+
+
+System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
+System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
+*/
+				int iDifferenceInXPosOfViewPortAndBG=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*0);
+				
+				int iDifferenceInYPosOfViewPortAndBG=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*0);
+
+
+						if (isActorIntersectingWithTile(a,iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPosOfViewPortAndBG,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPosOfViewPortAndBG))
+						{
+							System.out.println("COLLISION!");
+							
+							//this.hitBy(a);
+							tileMap[i][k]=TILE_BLANK;
+							
+							a.hitBy(this);
+						}
+					}
+					
+				}
+		  }
+		}
+	}	
 	
 	//added by Mike, 20240811
 	//background's x and y are iViewPortX and iViewPortY respectively
@@ -2092,6 +2225,58 @@ class BackgroundCanvas extends Actor {
 		//g2d.dispose();					
 	}
 
+	//added by Mike, 20240827
+	public void drawBase(Graphics g, int iInputTileX, int iInputTileY) {
+		Rectangle2D rect = new Rectangle2D.Float();
+		AffineTransform identity = new AffineTransform();
+
+		Graphics2D g2d = (Graphics2D)g;
+		AffineTransform trans = new AffineTransform();
+		trans.setTransform(identity);
+		trans.translate(iInputTileX,iInputTileY);
+
+		//scales from top-left as reference point	
+		//edited by Mike, 20240714; from 20240708
+		//scale to size of iTileWidth and iTileHeight;
+		//example: iTileWidth=83
+		//iFrameWidth=128;
+		//trans.scale(0.5,0.5);
+		//double temp = iTileWidth*1.0/iFrameWidth;
+		//System.out.println("temp: "+temp);
+		trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+		//2nd row in background.png
+		trans.translate(0,0-iFrameHeight);
+
+		//added by Mike, 20240625
+		g2d.setTransform(trans);
+
+		//note: clip rect has to move with object position
+		//edited by Mike, 20240623
+		//reminder:
+		//300 is object position;
+		//iFrameCount*128 is the animation frame to show;
+		//-iFrameCount*128 is move the object position to the current frame;
+		//rect.setRect(300+iFrameCount*128-iFrameCount*128, 0, 128, 128);
+		//2nd row in background.png
+		rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+
+		Area myClipArea = new Area(rect);
+
+		//edited by Mike, 20240625; from 20240623
+		g2d.setClip(myClipArea);
+		//g.setClip(myClipArea);
+
+		//g2d.drawImage(image, trans, this);
+		//g2d.drawImage(myBufferedImage, trans, null);
+		//g2d.drawImage(myBufferedImage,300-iFrameCount*128, 0, null);
+		g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
+
+		//removed by Mike, 20240711; from 20240625
+		//put after the last object to be drawn
+		//g2d.dispose();					
+	}	
+
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   @Override
   public void draw(Graphics g) {
@@ -2114,7 +2299,10 @@ class BackgroundCanvas extends Actor {
 			if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {		
 				if (tileMap[i][k]==TILE_TREE) {		
 					drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
-				}	
+				}
+				else if (tileMap[i][k]==TILE_BASE) {		
+					drawBase(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+				}				
 			}	  
 	  }
 	}
@@ -2418,7 +2606,8 @@ class Level2D extends Actor {
 				//iStepX=ISTEP_X_MAX;				
 				//bHasPressedAnyKey=true;
 			}
-			
+
+/*			
 			//added by Mike, 20240827
 			if (!bHasPressedAnyKey) {
 				//reset to default
@@ -2431,6 +2620,7 @@ class Level2D extends Actor {
 								
 				setX(getX()+iStepX);
 			}
+*/			
 		}
 
 		//added by Mike, 20240807
@@ -2555,6 +2745,9 @@ class Level2D extends Actor {
 			//added by Mike, 20240825
 			for (int k=0; k<MAX_ENEMY_AIRCRAFT_COUNT; k++) {
 				myPlasmaContainer[i].collideWith(myEnemyAircraftContainer[k]);
+				
+				//added by Mike, 20240827
+				myBackgroundCanvas.collideWithBackgroundTile(myPlasmaContainer[i]);
 			}
 		}
 			
@@ -2628,197 +2821,6 @@ class Level2D extends Actor {
 		}
 	}
 		
-		
-	//added by Mike, 20240806
-	private boolean isActorInsideViewPortBUGGY(int iViewPortX, int iViewPortY, Actor a)
-{     
-
-		System.out.println(">>>iViewPortX: "+iViewPortX);
-		System.out.println(">>>iViewPortY: "+iViewPortY);
-
-		System.out.println(">>>iViewPortHeight: "+iViewPortHeight);
-		System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
-
-		System.out.println(">>>>>>a.getX(): "+a.getX());
-		System.out.println(">>>>>>a.getWidth(): "+a.getWidth());
-
-		System.out.println(">>>>>>iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
-
-	//edited by Mike, 20240825
-		//added by Mike, 20240818
-		if (isActorInsideViewPortStartEnd(iViewPortX, iViewPortY, a)) {
-			return true;
-		}
-
-		//add 1 row before making the tile disappear	
-		if (a.getY()+a.getHeight()*2 < iViewPortY || //is above the top of iViewPortY?
-			a.getY() > iViewPortY+iViewPortHeight*2 || //is at the bottom of iViewPortY?
-			//add 1 column before making the tile disappear
-			a.getX()+a.getWidth()*2 < iViewPortX || //is at the left of iViewPortX?
-			a.getX() > iViewPortX+iViewPortWidth*2) { //is at the right of iViewPortX?
-			return false;
-		}
-		
-/*
-		//add 1 row before making the tile disappear	
-		if (a.getY()+a.getHeight() < iViewPortY || //is above the top of iViewPortY?
-			a.getY() > iViewPortY+iViewPortHeight || //is at the bottom of iViewPortY?
-			//add 1 column before making the tile disappear
-			a.getX()+a.getWidth() < iViewPortX || //is at the left of iViewPortX?
-			a.getX() > iViewPortX+iViewPortWidth) { //is at the right of iViewPortX?
-			return false;
-		}
-*/			
-		return true;
-	}	
-	
-	//added by Mike, 20240825
-	private boolean isActorInsideViewPortBUGGY2(int iViewPortX, int iViewPortY, Actor a)
-{     
-
-		System.out.println(">>>iViewPortX: "+iViewPortX);
-		System.out.println(">>>iViewPortY: "+iViewPortY);
-
-		System.out.println(">>>iViewPortHeight: "+iViewPortHeight);
-		System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
-
-		System.out.println(">>>>>>a.getX(): "+a.getX());
-		System.out.println(">>>>>>a.getWidth(): "+a.getWidth());
-
-		System.out.println(">>>>>>iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
-/*
-		double dDifferenceInXPos=Math.sqrt(Math.pow(iViewPortX-a.getX(),2));
-		double dDifferenceInYPos=Math.sqrt(Math.pow(iViewPortY-a.getY(),2));
-*/
-/*
-		double dDifferenceInXPos=Math.sqrt(Math.pow((iViewPortX+iViewPortWidth/2)-a.getX(),2));
-		double dDifferenceInYPos=Math.sqrt(Math.pow((iViewPortY+iViewPortHeight/2)-a.getY(),2));
-*/	
-/*
-		double dDifferenceInXPos=Math.sqrt(Math.pow(a.getX()-(iViewPortX+iViewPortWidth/2),2));
-		double dDifferenceInYPos=Math.sqrt(Math.pow(a.getY()-(iViewPortY+iViewPortHeight/2),2));
-*/
-		double dDifferenceInXPos=Math.sqrt(Math.pow((iViewPortX+iViewPortWidth)-a.getX(),2));
-		double dDifferenceInYPos=Math.sqrt(Math.pow((iViewPortY+iViewPortHeight)-a.getY(),2));
-	
-		int iDifferenceInXPos=(int)dDifferenceInXPos;
-		int iDifferenceInYPos=(int)dDifferenceInYPos;
-		
-/*		
-		if (a.getStepX()<0) { //actor X moving left; viewport X moving right
-			//System.out.println("ACTOR MOVING LEFTTTTTTTTTTTTTTTTT");
-			iDifferenceInXPos=iDifferenceInXPos*1;
-		}
-		else {
-			//System.out.println("ACTOR MOVING RIGHTTTTTTTT");
-			iDifferenceInXPos=iDifferenceInXPos*(-1);
-		}
-
-		if (a.getStepY()<0) { //actor Y moving down; viewport Y moving up
-			iDifferenceInYPos=iDifferenceInYPos*1;
-		}
-		else {
-			iDifferenceInYPos=iDifferenceInYPos*(-1);
-		}
-*/		
-		
-		System.out.println(">>>>>>iDifferenceInXPos: "+iDifferenceInXPos);
-		System.out.println(">>>>>>iDifferenceInYPos: "+iDifferenceInYPos);
-
-		//iOffsetScreenHeightTopMargin+
-		//plasma from hero always comes from the center
-		//if (iDifferenceInYPos>iViewPortY+iViewPortHeight) {	
-		if (iDifferenceInYPos>iViewPortHeight/2) {	
-		
-		//iViewPortY
-		//if (iOffsetScreenHeightTopMargin+iDifferenceInYPos+a.getHeight()>0+iViewPortHeight/2) {
-		//if (iDifferenceInYPos+a.getHeight()>Math.abs(iViewPortY)) {
-			return false;
-		}
-
-		//iOffsetScreenWidthLeftMargin+
-		//if (iDifferenceInXPos>iViewPortX+iViewPortWidth) { 
-		//+a.getWidth()
-		if (iDifferenceInXPos>iViewPortWidth/2) { 
-		
-		//iViewPortX
-		//if (iOffsetScreenWidthLeftMargin+iDifferenceInXPos+a.getWidth()>0+iViewPortWidth/2) { 
-		//if (iDifferenceInXPos+a.getWidth()>Math.abs(iViewPortX)) { 
-			return false;
-		}			
-			
-		return true;
-	}		
-	
-	//added by Mike, 20240825
-	//TODO: -verify: this; at present, not used
-	//reminder: verify Actor class Plasma's update
-	private boolean isActorInsideViewPort(int iViewPortX, int iViewPortY, Actor a)
-{     
-
-		System.out.println(">>>iViewPortX: "+iViewPortX);
-		System.out.println(">>>iViewPortY: "+iViewPortY);
-
-		System.out.println(">>>iViewPortHeight: "+iViewPortHeight);
-		System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
-
-		System.out.println(">>>>>>a.getX(): "+a.getX());
-		System.out.println(">>>>>>a.getWidth(): "+a.getWidth());
-
-		System.out.println(">>>>>>iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
-
-		//remove negative sign
-		int a1X=Math.abs(iViewPortX);
-		int a1Y=Math.abs(iViewPortY);
-
-		int a2X=Math.abs(a.getX());
-		int a2Y=Math.abs(a.getY());
-		
-		//object and object; not object and tile
-		//iTileWidth
-		int iOffsetYPosAsPixel=0;//a1.getHeight()/3;//10;//4; //diagonal hit; image has margin
-		//iTileHeight
-		int iOffsetXPosAsPixel=0;//a1.getWidth()/3;//10;//4;
-
-		if ((a2Y+iViewPortHeight <= a1Y+iOffsetYPosAsPixel) || //is the bottom of a2 above the top of a1?
-			(a2Y >= a1Y+iViewPortHeight-iOffsetYPosAsPixel) || //is the top of a2 below the bottom of a1?
-			(a2X+iViewPortWidth <= a1X+iOffsetXPosAsPixel)  || //is the right of a2 to the left of a1?
-			(a2X >= a1X+iViewPortWidth-iOffsetXPosAsPixel)) { //is the left of a2 to the right of a1?
-
-			return false;
-		}
-			
-		return true;
-	}	
-	
-	//added by Mike, 20240818
-	private boolean isActorInsideViewPortStartEnd(int iViewPortX, int iViewPortY, Actor a)
-{     
-/*
-		System.out.println(">>>iViewPortX: "+iViewPortX);
-		System.out.println(">>>iViewPortY: "+iViewPortY);
-
-		System.out.println(">>>iViewPortHeight: "+iViewPortHeight);
-		System.out.println(">>>iViewPortWidth: "+iViewPortWidth);
-
-		System.out.println(">>>>>>a.getX(): "+a.getX());
-		System.out.println(">>>>>>a.getWidth(): "+a.getWidth());
-
-		System.out.println(">>>>>>iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
-*/
-
-		//add 1 row before making the tile disappear	
-		if (a.getY()+a.getHeight()*2 < 0+iOffsetScreenHeightTopMargin || //is above the top of iViewPortY?
-			a.getY() > 0+iOffsetScreenHeightTopMargin+iViewPortHeight*2 || //is at the bottom of iViewPortY?
-			//add 1 column before making the tile disappear
-			a.getX()+a.getWidth()*2 < 0+iOffsetScreenWidthLeftMargin || //is at the left of iViewPortX?
-			a.getX() > 0+iOffsetScreenWidthLeftMargin+iViewPortWidth*2) { //is at the right of iViewPortX?
-			return false;
-		}
-			
-		return true;
-	}	
-	
 	//pre-set enemy positions, but do not draw them all yet;
 	public void initLevel() {
 		int iEnemyAircraftCount=0;
