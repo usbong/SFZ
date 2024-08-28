@@ -93,6 +93,12 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.AudioInputStream;
 
+//added by Mike, 20240828
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.PrintWriter;
+
 public class UsbongMain {
 
   //edited by Mike, 20240622
@@ -1473,9 +1479,9 @@ class Plasma extends Actor {
 			myKeysDown[i]=false;
 		}		
 		
-		//added by Mike, 20240826
-		iXDistanceTraveledMax=iViewPortWidth;
-		iYDistanceTraveledMax=iViewPortHeight;
+		//added by Mike, 20240828; from 20240826
+		iXDistanceTraveledMax=iViewPortWidth+iTileWidth;
+		iYDistanceTraveledMax=iViewPortHeight+iTileHeight;
 		
 		//default
 		currentState=HIDDEN_STATE; //ACTIVE_STATE;
@@ -1575,14 +1581,36 @@ class Plasma extends Actor {
 	
 		int iDifferenceInXPos=(int)dDifferenceInXPos;
 		int iDifferenceInYPos=(int)dDifferenceInYPos;
+		
+		//System.out.println(">>>>>>>>>>>>>>>>>>>>>iViewPortY: "+iViewPortY);
+		//System.out.println(">>>>>>>>>>>>>>>>>>>>>iYInitialDistanceTraveled: "+iYInitialDistanceTraveled);
 
+/*
+		int iOffsetY=Math.abs(0-iViewPortY)+Math.abs(0-iYInitialDistanceTraveled);
+		
+		if (Math.abs(0-iYInitialDistanceTraveled)<Math.abs(iViewPortHeight-iYInitialDistanceTraveled)) {
+			iOffsetY=Math.abs(0-iViewPortY)+Math.abs(iViewPortHeight-iYInitialDistanceTraveled);
+		}
+*/
+		int iOffsetY=Math.abs(0-iViewPortY);
+		int iOffsetYPlasmaGoingUp=Math.abs(0-iYInitialDistanceTraveled);
+		int iOffsetYPlasmaGoingDown=Math.abs(iViewPortHeight-iYInitialDistanceTraveled);
+
+		iOffsetY=iOffsetY+iOffsetYPlasmaGoingUp;
+		
+		if (iOffsetYPlasmaGoingUp<iOffsetYPlasmaGoingDown) {
+			iOffsetY=iOffsetY+iOffsetYPlasmaGoingDown;
+		}
+		
 		//hero always at the center of viewport
 		//if (iDifferenceInXPos>iViewPortWidth/2) {
 		if (iDifferenceInXPos>iViewPortWidth/2+iTileWidth) {			
 			this.setCurrentState(HIDDEN_STATE);
 		}
 
-		if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight) {
+		//edited by Mike, 20240828
+		//if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight) {
+		if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight+iOffsetY) {			
 			this.setCurrentState(HIDDEN_STATE);
 		}
 /*
@@ -1892,7 +1920,10 @@ class BackgroundCanvas extends Actor {
 /*	
 	private final int TILE_BLANK=0;
 	private final int TILE_TREE=1;
-*/		
+*/	
+
+	UsbongUtils myUsbongUtils;
+
     public BackgroundCanvas(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	
 	super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
@@ -1919,8 +1950,24 @@ class BackgroundCanvas extends Actor {
 
 	  //added by Mike, 20240629
 	  myKeysDown = new boolean[iNumOfKeyTypes];
+	  
+	  myUsbongUtils = new UsbongUtils();
 
 	  reset();
+	  
+	  //added by Mike, 20240828
+	  initBackground();	
+	  System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>> DITO!!!");		  
+	}
+	
+	//added by Mike, 20240828
+	public void initBackground() {
+		try {
+			myUsbongUtils.processBackgroundData(tileMap);
+		}
+		catch(Exception e) {
+			System.out.println("ERROR at initBackground(): "+e);
+		}
 	}
 
 	//added by Mike, 20240628
@@ -1944,6 +1991,8 @@ class BackgroundCanvas extends Actor {
 		//added by Mike, 20240730
 		myKeysDown[KEY_D]=true;
 		
+		//added by Mike, 20240828
+		//TODO: -put: in initBackground()
 		
 		//added by Mike, 20240727
 	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
@@ -2285,10 +2334,10 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 	//identify the current tile in horizontal axis
 	iViewPortX=getX();
 	iViewPortY=getY();
-
+/*
 	System.out.println("iViewPortX: "+iViewPortX);
 	System.out.println("iViewPortY: "+iViewPortY);
-
+*/
 	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 	  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
 	
@@ -2353,6 +2402,69 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 	  }
 	}
   }
+}
+
+//added by Mike, 20240828
+class UsbongUtils {	
+	//private static String inputDataFilename = ".\\assets\\background\\bg1";
+	private static String inputDataFilename = "./assets/background/bg1.txt";
+	private static int rowCount=0;
+	
+	public UsbongUtils() {
+	}
+	
+	//reference: Usbong SLHCC
+	//store the existing values from the assets file into Random Access Memory (RAM)
+	//private static void processBackgroundData(int fileType) throws Exception {
+	//TODO: -update: this
+	public static void processBackgroundData(int[][] tileMap) throws Exception {
+		File inputDataFile;
+		
+		inputDataFile = new File(inputDataFilename+".txt");	
+/*		
+		switch (fileType) {
+			case TREATMENT_FILE_TYPE:
+				inputDataFile = new File(inputDataFilenameTreatmentMonthlyStatistics+".txt");	
+				break;
+			case CONSULTATION_FILE_TYPE:
+				inputDataFile = new File(inputDataFilenameConsultationMonthlyStatistics+".txt");	
+				break;
+			default:// PROCEDURE_FILE_TYPE:
+				inputDataFile = new File(inputDataFilenameProcedureMonthlyStatistics+".txt");	
+				break;
+		}		
+*/
+		
+		Scanner sc = new Scanner(new FileInputStream(inputDataFile), "UTF-8");					
+		String s;		
+
+//System.out.println(">>>> fileType: " + fileType);
+
+/*		
+		s=sc.nextLine(); //process input file's YEAR row
+		String[] inputYearColumns = s.split("\t");					
+
+		if (isInDebugMode) {
+			rowCount=0;
+		}
+*/
+
+		while (sc.hasNextLine()) {
+			s=sc.nextLine();
+			
+			//if the row is blank
+			if (s.trim().equals("")) {
+				continue;
+			}
+
+//			if (isInDebugMode) {
+				rowCount++;
+//				System.out.println("rowCount: "+rowCount);
+//			}
+			
+			System.out.println("s: "+s);			
+		}
+	}
 }
 
 //added by Mike, 20240804; from 20240803
