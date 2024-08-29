@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240828; from 20240827
+ * @last updated: 20240829; from 20240828
  * @website: www.usbong.ph
  *
  */
@@ -546,9 +546,9 @@ class Actor {
 	protected final int TILE_BLANK=0;
 	protected final int TILE_HERO=1;
 	protected final int TILE_AIRCRAFT=2;
-	protected final int TILE_WALL=3;
-	protected final int TILE_PLASMA=4;
-	protected final int TILE_TREE=5;	
+	protected final int TILE_TREE=3;
+	protected final int TILE_WALL=4;
+	protected final int TILE_PLASMA=5;
 	protected final int TILE_BASE=6;	
 	
 	protected int myTileType=0;
@@ -2407,8 +2407,8 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 //added by Mike, 20240828
 class UsbongUtils {	
 	//private static String inputDataFilename = ".\\assets\\background\\bg1";
-	private static String inputDataFilename = "./assets/background/bg1.txt";
-	private static int rowCount=0;
+	private static String inputDataFilename = "./assets/background/bg1"; //.txt
+	private static int iRowCount=0;
 	
 	public UsbongUtils() {
 	}
@@ -2440,29 +2440,62 @@ class UsbongUtils {
 
 //System.out.println(">>>> fileType: " + fileType);
 
-/*		
-		s=sc.nextLine(); //process input file's YEAR row
-		String[] inputYearColumns = s.split("\t");					
-
+/*		//TODO: -add: this		
+		s=sc.nextLine(); //process input file; get width and height
+		String[] inputWidthHeight = s.split(",");					
+/*
 		if (isInDebugMode) {
 			rowCount=0;
 		}
 */
+		iRowCount=0;
 
+		//added by Mike, 20240829
+		//height
+		//System.out.println("tileMap[].length: "+tileMap.length);	
+		//width
+//		System.out.println("tileMap[].length: "+tileMap[0].length);	
+
+		int iRowLengthMax=tileMap.length;	
+		int iColumnsLengthMax=tileMap[0].length;
+	
 		while (sc.hasNextLine()) {
-			s=sc.nextLine();
 			
+			if (iRowCount>=iRowLengthMax) {
+				break;
+			}
+			
+			s=sc.nextLine();
+						
 			//if the row is blank
 			if (s.trim().equals("")) {
 				continue;
 			}
 
+			String[] inputBgColumns = s.split(",");	//\t
+
+			//System.out.println("s: "+s);	
+			
+			int iColumnsLength=inputBgColumns.length;
+			
+			if (iColumnsLength>=iColumnsLengthMax) {
+				iColumnsLength=iColumnsLengthMax-1;
+			}
+
+			for(int iColumnCount=0; iColumnCount<iColumnsLength; iColumnCount++) {
+				//System.out.println("inputBgColumns[iColumnCount]: "+inputBgColumns[iColumnCount]);
+				
+				tileMap[iRowCount][iColumnCount]=Integer.parseInt(inputBgColumns[iColumnCount]);
+				
+				//System.out.println("tileMap[iRowCount][iColumnCount]: "+tileMap[iRowCount][iColumnCount]);
+			}
+
 //			if (isInDebugMode) {
-				rowCount++;
-//				System.out.println("rowCount: "+rowCount);
+				iRowCount++;
+//				System.out.println("iRowCount: "+iRowCount);
 //			}
 			
-			System.out.println("s: "+s);			
+			
 		}
 	}
 }
