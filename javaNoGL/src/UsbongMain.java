@@ -15,36 +15,29 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240829; from 20240828
+ * @last updated: 20240830; from 20240829
  * @website: www.usbong.ph
  *
  */
 /*
  Additional Notes:
  1) compile on Windows Machine;
-	javac *.java
+	compile.bat
 
  2) Execute
-	java UsbongMain
-*/
+	run.bat
+	
+ Known Issue:
+ 1) Problem when TILE_BASE from Background class is at the other side;
+	It's not hit by plasma
+	Current solution: Don't put TILE_BASE in the part of the tilemap near 0 or the MAX_TILE_MAP_WIDTH by iViewPortWidth distance;
+	Reminder: currently, y or height not wrapped;
 
-/*
-current error; 20240608; from 20240606
-LWJGL; JVM platform Windows x86
-however, Platform available on classpath: windows/x64
-Failed to locate library: lwjgl.dll
+ References:
+ 1) https://docs.oracle.com/javase/tutorial/uiswing/painting/refining.html; last accessed: 20240622
+  SwingPaintDemo4.java; last accessed: 20240622; from 20240623
 
-answer: download Java SE 8 SDK; Windows x64
-
-https://www.oracle.com/ph/java/technologies/javase/javase8-archive-downloads.html; last accessed: 20240608
-*/
-
-/*
-//Reference:
-1) https://docs.oracle.com/javase/tutorial/uiswing/painting/refining.html; last accessed: 20240622
-SwingPaintDemo4.java; last accessed: 20240622; from 20240623
-
-2) https://github.com/usbong/game-off-2023; last accessed: 20240623
+ 2) https://github.com/usbong/game-off-2023; last accessed: 20240623
 */
 
 import javax.swing.SwingUtilities;
@@ -1957,7 +1950,6 @@ class BackgroundCanvas extends Actor {
 	  
 	  //added by Mike, 20240828
 	  initBackground();	
-	  System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>> DITO!!!");		  
 	}
 	
 	//added by Mike, 20240828
@@ -2001,6 +1993,7 @@ class BackgroundCanvas extends Actor {
 		  }
 	    }	
 		
+/*		
 		//start values in default view port position;
 		tileMap[0][2]=TILE_TREE;		
 		tileMap[1][3]=TILE_TREE;	
@@ -2027,6 +2020,7 @@ class BackgroundCanvas extends Actor {
 
 		tileMap[MAX_TILE_MAP_HEIGHT-1][26-1]=TILE_TREE;		
 		tileMap[0][26-1]=TILE_TREE;
+*/
 		
 		//added by Mike, 20240823
 /*		
@@ -2043,9 +2037,10 @@ class BackgroundCanvas extends Actor {
 		  }
 	    }	
 */
+/*
 		//added by Mike, 20240827
 		tileMap[6][12]=TILE_BASE;
-		
+*/		
 		//added by Mike, 20240729
 		iViewPortX=0;
 		iViewPortY=0;
@@ -2150,6 +2145,8 @@ class BackgroundCanvas extends Actor {
 		}	
 		
 		//TODO: -update: this; iDifferenceInXPos; iDifferenceInYPos
+		//TODO: -add: leftmost and rightmost reached
+		
 		for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
 				int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*k);
@@ -2196,6 +2193,13 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 				}
 		  }
 		}
+	
+	//added by Mike, 20240830
+	//notes: problem when TILE_BASE from background is at other side;
+	//not hit by plasma
+	//current solution: don't put TILE_BASE in the part of the tilemap near 0 or the MAX_TILE_MAP_WIDTH by iViewPortWidth distance;
+	//currently, y or height not wrapped;
+
 	}	
 	
 	//added by Mike, 20240811
@@ -2358,14 +2362,21 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 	  }
 	}
 	
-	//note: noticeable slow-down on i3
-	//added by Mike, 20240823; from 20240806
-	int iCount=0;
-	int iWrapTileCountOffset=10;//6; //10/13=0.7692; 76.92% of the stage width
-	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
-	  iCount=0;
-	  for (int k=MAX_TILE_MAP_WIDTH-1-iWrapTileCountOffset; k<MAX_TILE_MAP_WIDTH; k++) {
+	//TODO: -fix: TILE_BASE cannot be destroyed if hero has not crossed left-most or right-most
+	//TODO: -verify: why 39th column ("AM") not in tilemap
 	
+	//note: noticeable slow-down on i3; if multiple browser tabs are opened, etc.
+	//added by Mike, 20240823; from 20240806
+	int iWrapTileCountOffset=10;//6; //10/13=0.7692; 76.92% of the stage width
+	int iCount=iWrapTileCountOffset; //0
+
+	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+	  iCount=iWrapTileCountOffset;
+	  
+	  for (int k=MAX_TILE_MAP_WIDTH-1-iWrapTileCountOffset; k<MAX_TILE_MAP_WIDTH; k++) {
+
+//System.out.println(">>>>>>>>>>>>>iCount"+iCount);	
+
 		//has reached left-most
 		//use distance formula?
 		int iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin-iTileWidth*iCount);		
@@ -2374,15 +2385,24 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 		//if (isTileInsideViewport(iViewPortX,iViewPortY, iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPos,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPos)) {	
 			if (tileMap[i][k]==TILE_TREE) {						
 				drawTree(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);								
-				iCount++;
-			}
+				//iCount++;
+			}						
+			//added by Mike, 20240829
+			else if (tileMap[i][k]==TILE_BASE) {				
+				drawBase(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+			}	
+
+			//iCount++;			
+			iCount--;			
+
 		//}			
 	  }
 	}
 	
 //System.out.println(">>>>>>>>>>>>>iCount"+iCount);	
 
-	iCount=0;
+	//int iCount=0;
+	
 	//iWrapTileCountOffset=6;
 	//edited by Mike, 20240808	
 	for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
@@ -2391,16 +2411,18 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 
 		//edited by Mike, 20240808
 		int iDifferenceInXPos=(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iViewPortWidth/2-iTileWidth)-iViewPortX+iViewPortWidth/2+iTileWidth*k; 
-		
+				
 		int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
 
 		if (tileMap[i][k]==TILE_TREE) {								
 			drawTree(g, iOffsetScreenWidthLeftMargin+iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
-			
-			iCount++;
-		}
+		}			
+		//added by Mike, 20240829
+		else if (tileMap[i][k]==TILE_BASE) {						
+			drawBase(g, iOffsetScreenWidthLeftMargin+iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+		}				
 	  }
-	}
+	}	
   }
 }
 
@@ -2478,8 +2500,10 @@ class UsbongUtils {
 			
 			int iColumnsLength=inputBgColumns.length;
 			
-			if (iColumnsLength>=iColumnsLengthMax) {
-				iColumnsLength=iColumnsLengthMax-1;
+			//System.out.println("iColumnsLength: "+iColumnsLength);	
+			
+			if (iColumnsLength>iColumnsLengthMax) {
+				iColumnsLength=iColumnsLengthMax;//-1;
 			}
 
 			for(int iColumnCount=0; iColumnCount<iColumnsLength; iColumnCount++) {
