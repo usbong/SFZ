@@ -252,6 +252,8 @@ class MyPanel extends JPanel {
 
 	final int iTileWidthCountMax=13;
 	final int iTileHeightCountMax=13;
+	
+	boolean bIsHidden=false;
 
     RedSquare redSquare;
 
@@ -309,6 +311,8 @@ class MyPanel extends JPanel {
 			//added by Mike, 20240830
 			public void mouseReleased(MouseEvent e){
 				myLevel2D.mouseReleased(e);
+				
+				hideSquare();
 			}			
 		});
 
@@ -344,6 +348,7 @@ class MyPanel extends JPanel {
     }
 
     private void moveSquare(int x, int y){
+		bIsHidden=false;
 
         // Current square state, stored as final variables
         // to avoid repeat invocations of the same methods.
@@ -374,6 +379,10 @@ class MyPanel extends JPanel {
 */
         }
     }
+	
+	private void hideSquare() {
+		bIsHidden=true;
+	}
 
 	//added by Mike, 20240719
 	@Override
@@ -421,7 +430,9 @@ class MyPanel extends JPanel {
 		
 		myLevel2D.draw(g);
 		
-		redSquare.paintSquare(g);
+		if (!bIsHidden) {
+			redSquare.paintSquare(g);
+		}
     }
 }
 
