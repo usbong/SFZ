@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240831; from 20240830
+ * @last updated: 20240901; from 20240831
  * @website: www.usbong.ph
  *
  */
@@ -559,7 +559,9 @@ class Actor {
 	protected final int MAX_TILE_MAP_WIDTH=39;//26; 
 	
 	//added by Mike, 20240820
-	protected int iRightMostLevelWidth=0;
+	//set later
+	protected int iRightMostLevelWidth;
+	protected int iLeftMostLevelWidth;
 	
 	//added by Mike, 20240812
 	protected final int TILE_BLANK=0;
@@ -623,6 +625,8 @@ class Actor {
 	  
 	  //added by Mike, 20240830
 	  iRightMostLevelWidth=0+iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth;
+	  
+	  iLeftMostLevelWidth=0+iOffsetScreenWidthLeftMargin+iTileWidth;	  
 		
 	  reset();
 	}
@@ -837,13 +841,7 @@ class Actor {
 		if (!isIntersectingRect(iViewPortX,iViewPortY,iVPX,iVPY)) {
 			iViewPortX=iVPX;
 			iViewPortY=iVPY;		
-/*						
-			//added by Mike, 20240825
-			//TODO: verify: this			
-			if (getMyTileType()==TILE_PLASMA) {
-				this.setCurrentState(HIDDEN_STATE);
-			}
-*/		
+
 			return;
 		}
 		
@@ -857,8 +855,21 @@ class Actor {
 			
 			setX(0+iOffsetScreenWidthLeftMargin+iDifferentinXPosFromRightMostLevelWidth);
 		}
+		
+/*		
+		//removed by Mike, 20240901
+		//has reached left-most
+		else if (iOffsetScreenWidthLeftMargin+iDifferenceInXPos+getStepX()<=iLeftMostLevelWidth) {
+			
+			int iDifferentinXPosFromLeftMostLevelWidth=(iOffsetScreenWidthLeftMargin+iDifferenceInXPos)-iLeftMostLevelWidth;
+			
+			System.out.println("!!!! ACTOR has reached left-most!: "+iDifferentinXPosFromLeftMostLevelWidth);
+			
+			setX(0+iLeftMostLevelWidth+iDifferentinXPosFromLeftMostLevelWidth);
+		}		
+*/		
 		else {
-			setX(this.getX()+iDifferenceInXPos);
+			setX(this.getX()+iDifferenceInXPos);			
 			setY(this.getY()+iDifferenceInYPos);			
 		}
 				
@@ -2711,6 +2722,7 @@ class Level2D extends Actor {
 		//start values in default view port position;
 		//tileMap[1][6]=TILE_AIRCRAFT;	
 		tileMap[5][0]=TILE_AIRCRAFT;	
+		//tileMap[5][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
 		
 		//tileMap[1][7]=TILE_AIRCRAFT;	
 		//tileMap[1][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
@@ -2962,6 +2974,8 @@ class Level2D extends Actor {
 			//added by Mike, 20240811
 			myEnemyAircraftContainer[i].synchronizeViewPort(iViewPortX,iViewPortY,getStepX(),getStepY());
 			
+			//System.out.println(">>>>>>>>>>>>>>>>>> myEnemyAircraftContainer[i].getX(): "+myEnemyAircraftContainer[i].getX());
+			
 			//added by Mike, 20240806			
 			//if (isActorInsideViewPort(iViewPortX, iViewPortY, myEnemyAircraftContainer[i])) {						
 				//System.out.println(">>>>>>>>>>>> UPDATE!!!");
@@ -2979,12 +2993,13 @@ class Level2D extends Actor {
 				myEnemyAircraftContainer[i].setX(iOffsetScreenWidthLeftMargin+0); //OK;
 			}
 			
-			
+/*			//removed by Mike, 20240901
 			//went beyond left-most			
 			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()/2<=0+iOffsetScreenWidthLeftMargin)
 			{	
 				myEnemyAircraftContainer[i].setX(MAX_TILE_MAP_WIDTH*iTileWidth-myEnemyAircraftContainer[i].getWidth());
 			}			
+*/			
 		}
 								
 		//added by Mike, 20240809
