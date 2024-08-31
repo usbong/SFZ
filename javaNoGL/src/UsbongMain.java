@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240830; from 20240829
+ * @last updated: 20240831; from 20240830
  * @website: www.usbong.ph
  *
  */
@@ -305,14 +305,19 @@ class MyPanel extends JPanel {
 				//added by Mike, 20240825
 				myLevel2D.mousePressed(e);
 			}
+			
+			//added by Mike, 20240830
+			public void mouseReleased(MouseEvent e){
+				myLevel2D.mouseReleased(e);
+			}			
 		});
 
 		addMouseMotionListener(new MouseAdapter(){
 			public void mouseDragged(MouseEvent e){
 				moveSquare(e.getX(),e.getY());
 				
-				//added by Mike, 20240825
-				//myLevel2D.mouseDragged(e);				
+				//added by Mike, 20240830; from 20240825
+				myLevel2D.mouseDragged(e);				
 			}
 		});
 
@@ -480,6 +485,10 @@ class Actor {
 	protected int iXPos=0;
 	protected int iYPos=0;
 	
+	//added by Mike, 20240831
+	protected int iMouseXPos=0;
+	protected int iMouseYPos=0;
+		
 	//edited by Mike, 20240827; from 20240819
 	protected final int ISTEP_X_DEFAULT=1;//2;
 	protected final int ISTEP_Y_DEFAULT=1;//2;
@@ -988,6 +997,14 @@ class Actor {
 	public void mousePressed(MouseEvent e) {
 		//moveSquare(e.getX(),e.getY());
 	}
+	
+	//added by Mike, 20240830
+	public void mouseReleased(MouseEvent e) {
+	}	
+	
+	//added by Mike, 20240830
+	public void mouseDragged(MouseEvent e) {
+	}	
 	
 	//added by Mike, 20240803	
 	//reference: UsbongPagong
@@ -1509,7 +1526,8 @@ class Plasma extends Actor {
 	
 	
 	//reference: Usbong Game Off 2023
-	public void processMouseInput(MouseEvent e, int iHeroX, int iHeroY) {
+	//public void processMouseInput(MouseEvent e, int iHeroX, int iHeroY) {
+	public void processMouseInput(int iMouseXPos, int iMouseYPos, int iHeroX, int iHeroY) {
 		
 		//if hidden, i.e. not available, for use;
 		//if (getCurrentState()!=HIDDEN_STATE) {
@@ -1530,9 +1548,13 @@ class Plasma extends Actor {
 		
 		iXCurrentDistanceTraveled=0;
 		iYCurrentDistanceTraveled=0;
-		
+/*		
 	    int iDeltaX=(e.getX())-(this.getX()+this.getWidth()/2);
         int iDeltaY=(e.getY())-(this.getY()+this.getHeight()/2);
+*/
+
+	    int iDeltaX=(iMouseXPos)-(this.getX()+this.getWidth()/2);
+        int iDeltaY=(iMouseYPos)-(this.getY()+this.getHeight()/2);
 
 	    iDeltaY*=-1;
 
@@ -1599,12 +1621,22 @@ class Plasma extends Actor {
 		//if (iDifferenceInXPos>iViewPortWidth/2) {
 		if (iDifferenceInXPos>iViewPortWidth/2+iTileWidth) {			
 			this.setCurrentState(HIDDEN_STATE);
+			this.isCollidable=false;	
+			
+			//TODO: -update: this
+			this.setX(-999999);
+			this.setY(-999999);			
 		}
 
 		//edited by Mike, 20240828
 		//if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight) {
 		if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight+iOffsetY) {			
 			this.setCurrentState(HIDDEN_STATE);
+			this.isCollidable=false;
+			
+			//TODO: -update: this
+			this.setX(-999999);
+			this.setY(-999999);						
 		}
 /*
 		System.out.println("!!!!!!!!!!!!!!!iViewPortWidth: "+iViewPortWidth);
@@ -2095,13 +2127,29 @@ class BackgroundCanvas extends Actor {
 	public boolean isActorIntersectingWithTile(Actor a, int tileX, int tileY) {
 		//iOffsetXPosAsPixel=12; a1.getHeight()=83; 12/83=0.14457
 		
+		if (!a.isActive())
+		{
+			//not collidable
+			return false;
+		}	
+		
+		if (!a.checkIsCollidable())		
+		{
+			//not collidable
+			return false;
+		}
+			
+/*	    //removed by Mike, 20240831
 		//remove negative sign
 		int a1X=Math.abs(a.getX());
 		int a1Y=Math.abs(a.getY());
-
+*/		
+		int a1X=a.getX();
+		int a1Y=a.getY();
+/*
 		tileX=Math.abs(tileX);
 		tileY=Math.abs(tileY);
-		
+*/		
 		System.out.println(">>>>>>>>>>>> a1X: "+a1X);
 		System.out.println(">>>>>>>>>>>> tileX: "+tileX);
 
@@ -2144,6 +2192,12 @@ class BackgroundCanvas extends Actor {
 			return;
 		}	
 		
+		if (!a.checkIsCollidable())		
+		{
+			//not collidable
+			return;
+		}			
+		
 		//TODO: -update: this; iDifferenceInXPos; iDifferenceInYPos
 		//TODO: -add: leftmost and rightmost reached
 		
@@ -2178,6 +2232,8 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 				
 				int iDifferenceInYPosOfViewPortAndBG=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*0);
 
+System.out.println("iDifferenceInXPosOfViewPortAndBG: "+iDifferenceInXPosOfViewPortAndBG);
+System.out.println("iDifferenceInYPosOfViewPortAndBG: "+iDifferenceInYPosOfViewPortAndBG);
 
 						if (isActorIntersectingWithTile(a,iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPosOfViewPortAndBG,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPosOfViewPortAndBG))
 						{
@@ -2538,9 +2594,13 @@ class Level2D extends Actor {
 	private Wall[] myWallContainer;
 
 	//added by Mike, 20240825
-	private final int MAX_PLASMA_COUNT=5;//1; 
+	private final int MAX_PLASMA_COUNT=10;//30;//5;//1; 
 	private Plasma[] myPlasmaContainer;
 	
+	private boolean bIsFiring=false;
+	private int iFiringDelay=0;
+	private int iFiringDelayMax=300;
+		
 	//added by Mike, 20240809
 	BackgroundCanvas myBackgroundCanvas;
 	
@@ -2686,6 +2746,8 @@ class Level2D extends Actor {
 		//TODO: -add: acceleration; setting iStepX and iStepY to zero after hitting Wall (setting to 1 reduces shake);
 		iStepX=ISTEP_X_DEFAULT*2; //faster by 1 than the default
 		iStepY=ISTEP_Y_DEFAULT*2; //faster by 1 than the default
+		
+		bIsFiring=false;
 	}
 	
 	//added by Mike, 20240825	
@@ -2693,14 +2755,62 @@ class Level2D extends Actor {
 	public void mousePressed(MouseEvent e) {
 		//moveSquare(e.getX(),e.getY());
 		
-	  //myPlasmaContainer[0].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
+		//System.out.println("Pressed!");
 		
-	  for (int i=0; i<MAX_PLASMA_COUNT; i++) {		  
-		  if (!myPlasmaContainer[i].isActive()) {
-			myPlasmaContainer[i].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
-			break;
-		  }
-	  }	
+		  //myPlasmaContainer[0].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
+		 
+		//added by Mike, 20240831
+		iMouseXPos=e.getX();
+		iMouseYPos=e.getY();
+
+/*		
+		for (int i=0; i<MAX_PLASMA_COUNT; i++) {		  
+			  if (!myPlasmaContainer[i].isActive()) {
+				myPlasmaContainer[i].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
+				break;
+			  }
+		}	
+*/
+
+		for (int i=0; i<MAX_PLASMA_COUNT; i++) {		  
+			  if (!myPlasmaContainer[i].isActive()) {
+				myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
+				break;
+			  }
+		}	
+		
+		bIsFiring=true;
+	}
+	
+	//added by Mike, 20240830
+	@Override	
+	public void mouseReleased(MouseEvent e) {
+	  //System.out.println("Released!");
+		
+	  bIsFiring=false;  
+	}
+	
+	@Override	
+	public void mouseDragged(MouseEvent e) {
+		//moveSquare(e.getX(),e.getY());
+		
+		//System.out.println("Dragged!");
+		
+		  //myPlasmaContainer[0].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
+/*		  
+		for (int i=0; i<MAX_PLASMA_COUNT; i++) {		  
+			  if (!myPlasmaContainer[i].isActive()) {
+				myPlasmaContainer[i].processMouseInput(e, myRobotShip.getX(),myRobotShip.getY());
+				break;
+			  }
+		}	
+*/	  
+
+		//added by Mike, 20240831
+		iMouseXPos=e.getX();
+		iMouseYPos=e.getY();
+		
+		bIsFiring=true;
 	}
 	
 	//TODO: -fix: collision detection; use TILE_WALL in Background class;
@@ -2890,12 +3000,29 @@ class Level2D extends Actor {
 			}	
 		}
 		
-		//added by Mike, 20240825
+		//added by Mike, 20240831
+		//note effect;
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
-			
-			myPlasmaContainer[i].synchronizeViewPort(iViewPortX,iViewPortY,getStepX(),getStepY());			
-			myPlasmaContainer[i].update();			
+			if (bIsFiring) {
+				if (!myPlasmaContainer[i].isActive()) {
+				
+					iFiringDelay=(iFiringDelay+1)%iFiringDelayMax;
+				
+					if (iFiringDelay==0) {				
+				
+					  myPlasmaContainer[i].processMouseInput(iMouseXPos,iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
+					  
+					  break;
+					}
+				}
+			}
+		}			
 		
+		//added by Mike, 20240825
+		for (int i=0; i<MAX_PLASMA_COUNT; i++) {		
+			myPlasmaContainer[i].synchronizeViewPort(iViewPortX,iViewPortY,getStepX(),getStepY());			
+			myPlasmaContainer[i].update();		
+
 			//note: however, if not in viewport, object won't move;
 			//System.out.println("myEnemyAircraftContainer[i].getX(): "+myEnemyAircraftContainer[i].getX());
 			
