@@ -367,8 +367,14 @@ class MyPanel extends JPanel {
             //repaint(CURR_X,CURR_Y,CURR_W+OFFSET,CURR_H+OFFSET);
 
             // Update coordinates.
+/*			//edited by Mike, 20240831
             redSquare.setX(x);
             redSquare.setY(y);
+*/
+
+            redSquare.setX(x-CURR_W/2);
+            redSquare.setY(y-CURR_H/2);
+
 
             // Repaint the square at the new location.
 /*			//removed by Mike, 20240627;
