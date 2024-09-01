@@ -419,6 +419,7 @@ class MyPanel extends JPanel {
 
 		g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth,iStageHeight);
 
+/*	//removed by Mike, 20240901
 		g.setColor(Color.decode("#33c699")); //lubuntu, BreezeModified theme; dark terminal
 		
 		//draw horizontal line
@@ -431,6 +432,7 @@ class MyPanel extends JPanel {
 		for (int j=0; j<=iTileWidthCountMax; j++) {
 			g.drawLine(iOffsetScreenWidthLeftMargin+iTileWidth*j,0+iOffsetScreenHeightTopMargin,iOffsetScreenWidthLeftMargin+iTileWidth*j,iOffsetScreenHeightTopMargin+iStageHeight);
 		}
+*/
 
         //redSquare.paintSquare(g);
 		
@@ -1290,14 +1292,24 @@ class RobotShip extends Actor {
 		{
 			//currentFacingState=FACING_UP;
 			iStepY=-ISTEP_Y_DEFAULT;//ISTEP_Y_MAX;
-			setY(getY()+getStepY());
+
+			//setY(getY()+getStepY());
+			
+			if (getY()>0+iOffsetScreenHeightTopMargin) {
+				setY(getY()+getStepY());
+			}
 		}
 
 		if (myKeysDown[KEY_S])
 		{
 			//currentFacingState=FACING_DOWN;
 			iStepY=ISTEP_Y_DEFAULT;//ISTEP_Y_MAX;
-			setY(getY()+getStepY());
+			//setY(getY()+getStepY());
+
+			//if (getY()+getHeight()<0+iOffsetScreenHeightTopMargin+MAX_TILE_MAP_HEIGHT*iTileHeight) {
+			if (getY()+getHeight()<0+iOffsetScreenHeightTopMargin+iStageHeight) {
+				setY(getY()+getStepY());				
+			}			
 		}	
 
 		//added by Mike, 20240730
@@ -1353,7 +1365,7 @@ class EnemyAircraft extends Actor {
 		iWidth=iTileWidth;
 		iHeight=iTileHeight;		
 
-		currentFacingState=FACING_RIGHT;//FACING_LEFT;
+		currentFacingState=FACING_LEFT; //FACING_RIGHT
 
 		iFrameCount=0;
 		iFrameCountDelay=0;
@@ -1368,7 +1380,7 @@ class EnemyAircraft extends Actor {
 		currentState=ACTIVE_STATE;
 		isCollidable=true;
 
-		iStepX=ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
+		iStepX=-ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
 		iStepY=ISTEP_Y_DEFAULT;//*2; //faster by 1 than the default
 		
 		myTileType=TILE_AIRCRAFT;
@@ -2413,15 +2425,16 @@ System.out.println("iDifferenceInYPosOfViewPortAndBG: "+iDifferenceInYPosOfViewP
 
 		//removed by Mike, 20240711; from 20240625
 		//put after the last object to be drawn
-		//g2d.dispose();					
+		//g2d.dispose();	
 	}	
-
+	
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   @Override
   public void draw(Graphics g) {
 	//identify the current tile in horizontal axis
 	iViewPortX=getX();
 	iViewPortY=getY();
+
 /*
 	System.out.println("iViewPortX: "+iViewPortX);
 	System.out.println("iViewPortY: "+iViewPortY);
@@ -2721,8 +2734,8 @@ class Level2D extends Actor {
 	
 		//start values in default view port position;
 		//tileMap[1][6]=TILE_AIRCRAFT;	
-		tileMap[5][0]=TILE_AIRCRAFT;	
-		//tileMap[5][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
+		//tileMap[5][0]=TILE_AIRCRAFT;	
+		tileMap[5][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
 		
 		//tileMap[1][7]=TILE_AIRCRAFT;	
 		//tileMap[1][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
@@ -2916,8 +2929,7 @@ class Level2D extends Actor {
 				//iStepX=ISTEP_X_MAX;				
 				//bHasPressedAnyKey=true;
 			}
-
-/*			
+			
 			//added by Mike, 20240827
 			if (!bHasPressedAnyKey) {
 				//reset to default
@@ -2930,7 +2942,6 @@ class Level2D extends Actor {
 								
 				setX(getX()+iStepX);
 			}
-*/			
 		}
 
 		//added by Mike, 20240807
@@ -3258,6 +3269,110 @@ class Level2D extends Actor {
 		//g2d.dispose();		
 	}	
 	
+	//added by Mike, 20240901
+	public void drawMiniMap(Graphics g) {
+		//added by Mike, 20240901
+		int iMiniMapX=0+iOffsetScreenWidthLeftMargin+iTileWidth*4;
+		int iMiniMapY=0+iOffsetScreenHeightTopMargin+iStageHeight-iTileHeight*2;
+		int iMiniMapWidth=iTileWidth*5;
+		int iMiniMapHeight=iTileHeight*2;
+/*		
+		protected final int MAX_TILE_MAP_HEIGHT=13;
+		protected final int MAX_TILE_MAP_WIDTH=39;//26; 
+
+		int iMiniMapTileWidthCountMax=iStageWidth/iTileWidth;
+		int iMiniMapTileHeightCountMax=iStageHeight/iTileHeight;
+*/				
+		int iMiniMapTileHeight=iMiniMapHeight/MAX_TILE_MAP_HEIGHT;
+		int iMiniMapTileWidth=iMiniMapWidth/MAX_TILE_MAP_WIDTH;
+				
+		//int iMiniMapOffsetScreenWidthLeftMargin=(iMiniMapWidth-iMiniMapHeight)/2;		
+		int iMiniMapOffsetScreenWidthLeftMargin=(iMiniMapWidth-iMiniMapTileWidth*MAX_TILE_MAP_WIDTH)/2;
+
+		//update here after
+		iMiniMapHeight=iMiniMapTileHeight*MAX_TILE_MAP_HEIGHT;
+		iMiniMapWidth=iMiniMapTileWidth*MAX_TILE_MAP_WIDTH;
+
+/*
+		System.out.println(">>>>>>>>>>>>>>>>>iMiniMapWidth: "+iMiniMapWidth);
+		System.out.println(">>>>>>>>>>>>>iMiniMapTileWidth: "+iMiniMapTileWidth);		
+		System.out.println(">>>>>>>>>>>>>iMiniMapOffsetScreenWidthLeftMargin: "+iMiniMapOffsetScreenWidthLeftMargin);
+*/
+		
+		//iMiniMapTileWidth+=iMiniMapOffsetScreenWidthLeftMargin/2;
+		
+		Rectangle2D rect = new Rectangle2D.Float();
+
+		//added by Mike, 20240623
+		AffineTransform identity = new AffineTransform();
+
+		Graphics2D g2d = (Graphics2D)g;
+		AffineTransform trans = new AffineTransform();
+		trans.setTransform(identity);
+		g2d.setTransform(trans);
+		
+		//added by Mike, 20240731
+		//https://stackoverflow.com/questions/1241253/inside-clipping-with-java-graphics; last accessed: 20240731
+		//answer by: Savvas Dalkitsis, 20090806T2154
+		g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin*2+iStageWidth, iOffsetScreenHeightTopMargin+iStageHeight)));
+
+		//#1d2022; darker
+		//g.setColor(new Color(19,21,22,22)); 		
+		//g.fillRect(iMiniMapX,iMiniMapY,iMiniMapWidth,iMiniMapHeight);			
+				
+		g.setColor(Color.decode("#33c699")); //lubuntu, BreezeModified theme; dark terminal
+		
+		//draw horizontal line
+		//include the last line
+		for (int i=0; i<=MAX_TILE_MAP_HEIGHT; i++) {		
+			//g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY+iMiniMapTileHeight*i,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*MAX_TILE_MAP_WIDTH,iMiniMapY+iMiniMapTileHeight*i);
+			
+			g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY+iMiniMapTileHeight*i,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapWidth,iMiniMapY+iMiniMapTileHeight*i);			
+		}
+				
+		//draw vertical line
+		//include the last line
+		for (int j=0; j<=MAX_TILE_MAP_WIDTH; j++) {		
+			//g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY+iMiniMapTileHeight*MAX_TILE_MAP_HEIGHT);
+			
+			g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY+iMiniMapHeight);
+		}	
+				
+		//int iMiniMapHeroX=iViewPortX/iMiniMapWidth*iMiniMapTileWidth;
+		
+		//(MAX_TILE_MAP_WIDTH*iTileWidth)
+		//(MAX_TILE_MAP_WIDTH*iTileWidth)
+		
+		//iOffsetScreenWidthLeftMargin+
+		//double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+
+		//add iMiniMapTileWidth due to "missing column AM"
+		//double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth;
+		double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth+iMiniMapTileWidth/2;
+
+		//use myRobotShip.getY(), instead of myViewPortY,
+		//due to can move more vertically;
+		double dMiniMapHeroY=((myRobotShip.getY()*1.0)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
+/*
+		System.out.println("iMiniMapWidth: "+iMiniMapWidth);
+		System.out.println("iViewPortX: "+iViewPortX);
+		System.out.println("(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth): "+(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth));
+		System.out.println("dMiniMapHeroX: "+dMiniMapHeroX);
+*/
+		
+        g.setColor(Color.decode("#59A6DC"));
+        //g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapHeroX,iMiniMapY,iMiniMapTileWidth,iMiniMapTileHeight);
+        //g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY,iMiniMapTileWidth,iMiniMapTileHeight);
+		
+		g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY+(int)dMiniMapHeroY,iMiniMapTileWidth,iMiniMapTileHeight);
+
+		//System.out.println(">>>");
+		
+		//removed by Mike, 20240711; from 20240625
+		//put after the last object to be drawn
+		//g2d.dispose();		
+	}		
+	
     @Override
     public void draw(Graphics g) {
 		//draw only if in viewport	
@@ -3290,6 +3405,8 @@ class Level2D extends Actor {
 		}
 		
 		myRobotShip.draw(g);
+		
+		drawMiniMap(g);
 
 		drawMargins(g);		
 	}
