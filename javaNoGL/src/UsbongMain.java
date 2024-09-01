@@ -1353,7 +1353,7 @@ class EnemyAircraft extends Actor {
 		iWidth=iTileWidth;
 		iHeight=iTileHeight;		
 
-		currentFacingState=FACING_LEFT;//FACING_RIGHT;
+		currentFacingState=FACING_RIGHT;//FACING_LEFT;
 
 		iFrameCount=0;
 		iFrameCountDelay=0;
@@ -1368,7 +1368,7 @@ class EnemyAircraft extends Actor {
 		currentState=ACTIVE_STATE;
 		isCollidable=true;
 
-		iStepX=-ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
+		iStepX=ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
 		iStepY=ISTEP_Y_DEFAULT;//*2; //faster by 1 than the default
 		
 		myTileType=TILE_AIRCRAFT;
@@ -2989,17 +2989,22 @@ class Level2D extends Actor {
 			//wrap around;
 			//put this BEFORE "went beyond left-most"
 			//went beyond right-most;
-			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()>=iRightMostLevelWidth+iTileWidth-myEnemyAircraftContainer[i].getWidth()) {		
-				myEnemyAircraftContainer[i].setX(iOffsetScreenWidthLeftMargin+0); //OK;
+			//if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()>=iRightMostLevelWidth+iTileWidth-myEnemyAircraftContainer[i].getWidth()) {		
+			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()/2>=iRightMostLevelWidth) {		
+			
+				//myEnemyAircraftContainer[i].setX(iOffsetScreenWidthLeftMargin+0); //OK;
+				//myEnemyAircraftContainer[i].setX(iOffsetScreenWidthLeftMargin+0-myEnemyAircraftContainer[i].getWidth()/2);
+				myEnemyAircraftContainer[i].setX(iOffsetScreenWidthLeftMargin+0-myEnemyAircraftContainer[i].getWidth());				
 			}
 			
-/*			//removed by Mike, 20240901
+			//removed by Mike, 20240901
 			//went beyond left-most			
-			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()/2<=0+iOffsetScreenWidthLeftMargin)
+			//if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()/2<=0+iOffsetScreenWidthLeftMargin)
+			if (myEnemyAircraftContainer[i].getX()+myEnemyAircraftContainer[i].getWidth()/2<=0)
 			{	
-				myEnemyAircraftContainer[i].setX(MAX_TILE_MAP_WIDTH*iTileWidth-myEnemyAircraftContainer[i].getWidth());
-			}			
-*/			
+				//myEnemyAircraftContainer[i].setX(MAX_TILE_MAP_WIDTH*iTileWidth-myEnemyAircraftContainer[i].getWidth());
+				myEnemyAircraftContainer[i].setX(MAX_TILE_MAP_WIDTH*iTileWidth);				
+			}						
 		}
 								
 		//added by Mike, 20240809
