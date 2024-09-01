@@ -2124,13 +2124,18 @@ class BackgroundCanvas extends Actor {
 		iStepY=ISTEP_Y_DEFAULT*2; //faster by 1 than the default
 	}
 	
-	public int getTileWidth(){
+	public int getTileWidth() {
         return iTileWidth;
     }
 
-    public int getTileHeight(){
+    public int getTileHeight() {
         return iTileHeight;
     }
+	
+	//added by Mike, 20240901
+	public int[][] getTileMap() {
+		return tileMap;
+	}
 	
 	//added by Mike, 20240827
 	@Override
@@ -3276,15 +3281,10 @@ class Level2D extends Actor {
 		int iMiniMapY=0+iOffsetScreenHeightTopMargin+iStageHeight-iTileHeight*2;
 		int iMiniMapWidth=iTileWidth*5;
 		int iMiniMapHeight=iTileHeight*2;
-/*		
-		protected final int MAX_TILE_MAP_HEIGHT=13;
-		protected final int MAX_TILE_MAP_WIDTH=39;//26; 
-
-		int iMiniMapTileWidthCountMax=iStageWidth/iTileWidth;
-		int iMiniMapTileHeightCountMax=iStageHeight/iTileHeight;
-*/				
 		int iMiniMapTileHeight=iMiniMapHeight/MAX_TILE_MAP_HEIGHT;
 		int iMiniMapTileWidth=iMiniMapWidth/MAX_TILE_MAP_WIDTH;
+		
+		int[][] myBGTileMap=myBackgroundCanvas.getTileMap();
 				
 		//int iMiniMapOffsetScreenWidthLeftMargin=(iMiniMapWidth-iMiniMapHeight)/2;		
 		int iMiniMapOffsetScreenWidthLeftMargin=(iMiniMapWidth-iMiniMapTileWidth*MAX_TILE_MAP_WIDTH)/2;
@@ -3293,14 +3293,6 @@ class Level2D extends Actor {
 		iMiniMapHeight=iMiniMapTileHeight*MAX_TILE_MAP_HEIGHT;
 		iMiniMapWidth=iMiniMapTileWidth*MAX_TILE_MAP_WIDTH;
 
-/*
-		System.out.println(">>>>>>>>>>>>>>>>>iMiniMapWidth: "+iMiniMapWidth);
-		System.out.println(">>>>>>>>>>>>>iMiniMapTileWidth: "+iMiniMapTileWidth);		
-		System.out.println(">>>>>>>>>>>>>iMiniMapOffsetScreenWidthLeftMargin: "+iMiniMapOffsetScreenWidthLeftMargin);
-*/
-		
-		//iMiniMapTileWidth+=iMiniMapOffsetScreenWidthLeftMargin/2;
-		
 		Rectangle2D rect = new Rectangle2D.Float();
 
 		//added by Mike, 20240623
@@ -3325,34 +3317,22 @@ class Level2D extends Actor {
 		//draw horizontal line
 		//include the last line
 		for (int i=0; i<=MAX_TILE_MAP_HEIGHT; i++) {		
-			//g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY+iMiniMapTileHeight*i,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*MAX_TILE_MAP_WIDTH,iMiniMapY+iMiniMapTileHeight*i);
-			
 			g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY+iMiniMapTileHeight*i,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapWidth,iMiniMapY+iMiniMapTileHeight*i);			
 		}
 				
 		//draw vertical line
 		//include the last line
 		for (int j=0; j<=MAX_TILE_MAP_WIDTH; j++) {		
-			//g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY+iMiniMapTileHeight*MAX_TILE_MAP_HEIGHT);
-			
 			g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY+iMiniMapHeight);
 		}	
 				
-		//int iMiniMapHeroX=iViewPortX/iMiniMapWidth*iMiniMapTileWidth;
-		
-		//(MAX_TILE_MAP_WIDTH*iTileWidth)
-		//(MAX_TILE_MAP_WIDTH*iTileWidth)
-		
-		//iOffsetScreenWidthLeftMargin+
-		//double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
-
-		//add iMiniMapTileWidth due to "missing column AM"
-		//double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth;
+		//add iMiniMapTileWidth/2 due to "missing column AM"		
 		double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth+iMiniMapTileWidth/2;
 
 		//use myRobotShip.getY(), instead of myViewPortY,
 		//due to can move more vertically;
 		double dMiniMapHeroY=((myRobotShip.getY()*1.0)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
+		
 /*
 		System.out.println("iMiniMapWidth: "+iMiniMapWidth);
 		System.out.println("iViewPortX: "+iViewPortX);
@@ -3360,11 +3340,28 @@ class Level2D extends Actor {
 		System.out.println("dMiniMapHeroX: "+dMiniMapHeroX);
 */
 		
-        g.setColor(Color.decode("#59A6DC"));
-        //g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapHeroX,iMiniMapY,iMiniMapTileWidth,iMiniMapTileHeight);
-        //g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY,iMiniMapTileWidth,iMiniMapTileHeight);
-		
-		g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY+(int)dMiniMapHeroY,iMiniMapTileWidth,iMiniMapTileHeight);
+        g.setColor(Color.decode("#59A6DC")); //blue; hero
+        g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY+(int)dMiniMapHeroY,iMiniMapTileWidth,iMiniMapTileHeight);
+
+	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
+		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
+			
+			if (myBGTileMap[i][k]==TILE_BASE) {
+				//#E2536F")); //pink; //#FF7236")); //orange
+				g.setColor(Color.decode("#A6340C"));
+
+				double dTileMapY=((i*iTileHeight*1.0)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
+				
+				double dTileMapX=((k*iTileWidth*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth/2;
+/*
+				System.out.println(">>>>>>>>>>>>>>dTileMapX: "+dTileMapX);
+				System.out.println(">>>>>>>>>>>>>>dTileMapY: "+dTileMapY);
+*/								
+				g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);
+			}
+		  }
+	    }	
+
 
 		//System.out.println(">>>");
 		
