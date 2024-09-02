@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240901; from 20240831
+ * @last updated: 20240902; from 20240901
  * @website: www.usbong.ph
  *
  */
@@ -2740,7 +2740,8 @@ class Level2D extends Actor {
 		//start values in default view port position;
 		//tileMap[1][6]=TILE_AIRCRAFT;	
 		//tileMap[5][0]=TILE_AIRCRAFT;	
-		tileMap[5][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
+		//tileMap[5][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
+		tileMap[5][10]=TILE_AIRCRAFT;	
 		
 		//tileMap[1][7]=TILE_AIRCRAFT;	
 		//tileMap[1][MAX_TILE_MAP_WIDTH-10]=TILE_AIRCRAFT;	
@@ -3285,7 +3286,7 @@ class Level2D extends Actor {
 		int iMiniMapTileWidth=iMiniMapWidth/MAX_TILE_MAP_WIDTH;
 		
 		int[][] myBGTileMap=myBackgroundCanvas.getTileMap();
-				
+		
 		//int iMiniMapOffsetScreenWidthLeftMargin=(iMiniMapWidth-iMiniMapHeight)/2;		
 		int iMiniMapOffsetScreenWidthLeftMargin=(iMiniMapWidth-iMiniMapTileWidth*MAX_TILE_MAP_WIDTH)/2;
 
@@ -3352,7 +3353,7 @@ class Level2D extends Actor {
 
 				double dTileMapY=((i*iTileHeight*1.0)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
 				
-				double dTileMapX=((k*iTileWidth*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth/2;
+				double dTileMapX=((k*iTileWidth*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);//+iMiniMapTileWidth/2;
 /*
 				System.out.println(">>>>>>>>>>>>>>dTileMapX: "+dTileMapX);
 				System.out.println(">>>>>>>>>>>>>>dTileMapY: "+dTileMapY);
@@ -3361,7 +3362,40 @@ class Level2D extends Actor {
 			}
 		  }
 	    }	
+		
+/*		
+		//added by Mike, 20240902
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {							
+			//#E2536F")); //pink; //#FF7236")); //orange
+			g.setColor(Color.decode("#FF7236")); //A6340C
 
+			////System.out.println(">>>>>>>>>>>>>>iViewPortY: "+iViewPortY);
+			////System.out.println(">>>>>>>>>>>>>>myEnemyAircraftContainer[i].getY(): "+myEnemyAircraftContainer[i].getY());
+
+			//note: iViewPortY+myEnemyAircraftContainer[i].getY() to get the position Y that is unaffected by changes in hero's movement in Y; OK
+			double dTileMapY=((iViewPortY+myEnemyAircraftContainer[i].getY()*1.0)/(iOffsetScreenHeightTopMargin+MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
+
+			System.out.println(">>>>>>>>>>>>>>iViewPortX: "+iViewPortX);
+			System.out.println(">>>>>>>>>>>>>>myEnemyAircraftContainer[i].getX(): "+myEnemyAircraftContainer[i].getX());
+			
+//iViewPortX-
+//iTileWidth
+//iOffsetScreenWidthLeftMargin+
+
+			////double dTileMapX=((myEnemyAircraftContainer[i].getX()*1.0-myEnemyAircraftContainer[i].getWidth()-iTileWidth)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth/2;
+			
+			//TODO: -fix: this
+			//double dTileMapX=0;//((myEnemyAircraftContainer[i].getX()*1.0)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth+iMiniMapTileWidth/2;			
+			//note: dTileMapX position problem when hero viewPortX crosses left-most;
+			//non-minimap appears OK, however;
+			//double dTileMapX=((myEnemyAircraftContainer[i].iViewPortX+myEnemyAircraftContainer[i].getX()*1.0)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);//+iMiniMapTileWidth+iMiniMapTileWidth/2;			
+
+			////System.out.println(">>>>>>>>>>>>>>dTileMapX: "+dTileMapX);
+			////System.out.println(">>>>>>>>>>>>>>dTileMapY: "+dTileMapY);
+								
+			g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);			
+		}			
+*/
 
 		//System.out.println(">>>");
 		
