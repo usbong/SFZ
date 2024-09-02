@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240902; from 20240901
+ * @last updated: 20240903; from 20240902
  * @website: www.usbong.ph
  *
  */
@@ -558,7 +558,7 @@ class Actor {
 	//added by Mike, 20240804
 	protected int[][] tileMap; 
 	protected final int MAX_TILE_MAP_HEIGHT=13;
-	protected final int MAX_TILE_MAP_WIDTH=39;//26; 
+	protected final int MAX_TILE_MAP_WIDTH=52;//100;//39;//26; 
 	
 	//added by Mike, 20240820
 	//set later
@@ -1277,12 +1277,13 @@ class RobotShip extends Actor {
 			currentFacingState=FACING_LEFT;
 			//iStepX=-ISTEP_X_DEFAULT;
 		}
-		
-		if (myKeysDown[KEY_D])
+		//edited by Mike, 20240902
+		else if (myKeysDown[KEY_D])
 		{
 			currentFacingState=FACING_RIGHT;
 			//iStepX=ISTEP_X_DEFAULT;
 		}	
+
 		
 		//edited by Mike, 20240809
 		//note: robot ship doesn't not have FACING_UP or FACING_DOWN
@@ -3277,13 +3278,23 @@ class Level2D extends Actor {
 	
 	//added by Mike, 20240901
 	public void drawMiniMap(Graphics g) {
-		//added by Mike, 20240901
-		int iMiniMapX=0+iOffsetScreenWidthLeftMargin+iTileWidth*4;
-		int iMiniMapY=0+iOffsetScreenHeightTopMargin+iStageHeight-iTileHeight*2;
-		int iMiniMapWidth=iTileWidth*5;
+		//added by Mike, 20240903; from 20240901
+		//13x65; height x width; up to row 13; column BM		
+		int iMiniMapWidth=iTileWidth*7; //*5
 		int iMiniMapHeight=iTileHeight*2;
+		int iMiniMapX=0+iOffsetScreenWidthLeftMargin+(iStageWidth-iMiniMapWidth)/2;//iTileWidth*4;
+		int iMiniMapY=0+iOffsetScreenHeightTopMargin+iStageHeight-iTileHeight*2;
+		
+/*
+		int iMiniMapWidth=iTileWidth*8;//10;
+		int iMiniMapHeight=iTileHeight;//*2;
+
+		int iMiniMapX=0+iOffsetScreenWidthLeftMargin+(iStageWidth-iMiniMapWidth)/2;
+		int iMiniMapY=0+iOffsetScreenHeightTopMargin+iStageHeight-iTileHeight*2;
+*/		
 		int iMiniMapTileHeight=iMiniMapHeight/MAX_TILE_MAP_HEIGHT;
 		int iMiniMapTileWidth=iMiniMapWidth/MAX_TILE_MAP_WIDTH;
+		
 		
 		int[][] myBGTileMap=myBackgroundCanvas.getTileMap();
 		
@@ -3317,15 +3328,28 @@ class Level2D extends Actor {
 		
 		//draw horizontal line
 		//include the last line
-		for (int i=0; i<=MAX_TILE_MAP_HEIGHT; i++) {		
-			g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY+iMiniMapTileHeight*i,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapWidth,iMiniMapY+iMiniMapTileHeight*i);			
+/*		
+		for (int i=0; i<=MAX_TILE_MAP_HEIGHT; i++) {	
+			//if (i%5==0) {		
+				//g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY+iMiniMapTileHeight*i,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapWidth,iMiniMapY+iMiniMapTileHeight*i);	
+			//}
+		}
+*/		
+		for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {	
+			//if (i%2==0) {		
+				g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY+iMiniMapTileHeight*i,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapWidth,iMiniMapY+iMiniMapTileHeight*i);	
+			//}
 		}
 				
 		//draw vertical line
 		//include the last line
 		for (int j=0; j<=MAX_TILE_MAP_WIDTH; j++) {		
-			g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY+iMiniMapHeight);
+			//if (j%2==0) {		
+				g.drawLine(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY,iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+iMiniMapTileWidth*j,iMiniMapY+iMiniMapHeight);
+			//}
 		}	
+
+		g.drawRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY,iMiniMapWidth,iMiniMapHeight);
 				
 		//add iMiniMapTileWidth/2 due to "missing column AM"		
 		double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth+iMiniMapTileWidth/2;
