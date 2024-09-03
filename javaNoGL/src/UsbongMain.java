@@ -243,6 +243,10 @@ class MyPanel extends JPanel {
 	int iOffsetScreenWidthLeftMargin;
 	int iOffsetScreenHeightTopMargin; //added by Mike, 20240718
 
+	//added by Mike, 20240903
+	//widescreen
+	int iOffsetWidthWideScreen;
+		
     //added by Mike, 20240718
     int iStageWidth;
     int iStageHeight;
@@ -284,20 +288,36 @@ class MyPanel extends JPanel {
 
 		iTileWidth=iScreenWidth/iTileWidthCountMax;
 		iTileHeight=iScreenHeight/iTileHeightCountMax;
+		
+		//added by Mike, 20240903
+		//widescreen
+		iOffsetWidthWideScreen=0;//iTileWidth*2;//iTileWidth*2 //iOffsetScreenWidthLeftMargin*2
 
+		iOffsetScreenWidthLeftMargin-=0;//iOffsetWidthWideScreen/2;
+		iScreenWidth=iScreenHeight+iOffsetWidthWideScreen;
+		
 		iOffsetScreenHeightTopMargin=(iScreenHeight-(iTileHeight*iTileHeightCountMax))/2;
 
 		//use this as input parameter, instead of screenWidth and screenHeight
-		iStageWidth=iTileWidth*iTileWidthCountMax;
+		
+		//iStageWidth=iTileWidth*iTileWidthCountMax;
+		iStageWidth=iTileWidth*iTileWidthCountMax+iOffsetWidthWideScreen;
 		iStageHeight=iTileHeight*iTileHeightCountMax;
-
+		
+/*
+		iStageWidth=iTileWidth*iTileWidthCountMax+iTileWidth*4;
+		iStageHeight=iTileHeight*iTileHeightCountMax;
+*/
 		System.out.println("iStageWidth: "+iStageWidth);
 		System.out.println("iStageHeight: "+iStageHeight);
 
 		redSquare  = new RedSquare();
 		
-		myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight); 
+		//edited by Mike, 20240903
+		myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 
+		//myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight, iOffsetWidthWideScreen); 
+		
 		setBorder(BorderFactory.createLineBorder(Color.black));
 
 		addMouseListener(new MouseAdapter(){
@@ -542,6 +562,9 @@ class Actor {
 	//added by Mike, 20240708
 	protected int iOffsetScreenWidthLeftMargin=0;
 	protected int iOffsetScreenHeightTopMargin=0;
+	
+	//added by Mike, 20240903
+	protected int iOffsetWidthWideScreen=0;
 
 	//edited by Mike, 20240719; from 20240628
 /*
@@ -3365,9 +3388,11 @@ class Level2D extends Actor {
 		System.out.println("dMiniMapHeroX: "+dMiniMapHeroX);
 */
 		
+/*		//removed by Mike, 20240903		
         g.setColor(Color.decode("#59A6DC")); //blue; hero
         g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY+(int)dMiniMapHeroY,iMiniMapTileWidth,iMiniMapTileHeight);
-
+*/
+		
 	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
 			
@@ -3420,6 +3445,10 @@ class Level2D extends Actor {
 			g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);			
 		}			
 */
+
+		//added by Mike, 20240903
+        g.setColor(Color.decode("#59A6DC")); //blue; hero
+        g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY+(int)dMiniMapHeroY,iMiniMapTileWidth,iMiniMapTileHeight);
 
 		//System.out.println(">>>");
 		
