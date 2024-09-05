@@ -242,6 +242,7 @@ class MyPanel extends JPanel {
 	int iScreenHeight;
 	int iOffsetScreenWidthLeftMargin;
 	int iOffsetScreenHeightTopMargin; //added by Mike, 20240718
+	int iOffsetScreenWidthRightMargin;
 
 	//added by Mike, 20240903
 	//widescreen
@@ -287,14 +288,22 @@ class MyPanel extends JPanel {
 		//reminder: screen width must be greater than the screen height
 		//iScreenWidth will be set to be iScreenHeight		
 		iOffsetScreenWidthLeftMargin=(iScreenWidth-iScreenHeight)/2;
-		iScreenWidth=iScreenHeight;
+		
+		//added by Mike, 20240905
+		//update later
+		iOffsetScreenWidthRightMargin=iScreenWidth;//-iOffsetScreenWidthLeftMargin;//-iStageWidth;
+		
+		System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
+		System.out.println("iOffsetScreenWidthRightMargin: "+iOffsetScreenWidthRightMargin);
 
+
+		iScreenWidth=iScreenHeight;
 		iTileWidth=iScreenWidth/iTileWidthCountMax;
 		
 		//edited by Mike, 20240904
 		//iTileHeight=iScreenHeight/iTileHeightCountMax;
 		iTileHeight=(iScreenHeight-iTileWidth*2)/iTileHeightCountMax;
-		
+				
 		//added by Mike, 20240905
 		//bIsMaxedMonitorHeight=true;
 		
@@ -305,18 +314,19 @@ class MyPanel extends JPanel {
 			iScreenWidth=iScreenHeight+iTileWidth*2;
 			iTileWidth=iScreenWidth/iTileWidthCountMax;	
 			iTileHeight=iScreenHeight/iTileHeightCountMax;
-			bIsMaxedMonitorHeight=true;			
+			bIsMaxedMonitorHeight=true;
 		}
-
-
-//System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
 		
+		iOffsetScreenWidthRightMargin-=iOffsetScreenWidthLeftMargin;
+		
+/*		//removed by Mike, 20240905
 		//added by Mike, 20240903
 		//widescreen
 		iOffsetWidthWideScreen=0;//iTileWidth*2;//iTileWidth*2 //iOffsetScreenWidthLeftMargin*2
 
 		iOffsetScreenWidthLeftMargin-=0;//iOffsetWidthWideScreen/2;
 		iScreenWidth=iScreenHeight+iOffsetWidthWideScreen;	
+*/		
 
 		//added by Mike, 20240905
 		//iScreenHeight=iScreenHeight-iTileHeight*2;		
@@ -330,10 +340,13 @@ class MyPanel extends JPanel {
 		iStageHeight=iTileHeight*iTileHeightCountMax;
 		
 		//added by Mike, 20240905
-		if (bIsMaxedMonitorHeight) {
-			iStageHeight=iScreenHeight;
-		}
+		iOffsetScreenWidthRightMargin-=iStageWidth;
+		System.out.println(">>iOffsetScreenWidthRightMargin: "+iOffsetScreenWidthRightMargin);
 		
+		if (bIsMaxedMonitorHeight) {
+			iStageHeight=iScreenHeight;	
+		}
+			
 /*
 		iStageWidth=iTileWidth*iTileWidthCountMax+iTileWidth*4;
 		iStageHeight=iTileHeight*iTileHeightCountMax;
@@ -344,7 +357,7 @@ class MyPanel extends JPanel {
 		redSquare  = new RedSquare();
 		
 		//edited by Mike, 20240905; from 20240903
-		myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight, bIsMaxedMonitorHeight);
+		myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight, bIsMaxedMonitorHeight, iOffsetScreenWidthRightMargin);
 
 		//myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight, iOffsetWidthWideScreen); 
 		
@@ -459,7 +472,10 @@ class MyPanel extends JPanel {
         super.paintComponent(g);
 
 		//entire available screen
+		//edited by Mike, 20240905
 		g.setColor(Color.decode("#adb2b6")); //gray
+		//g.setColor(Color.BLACK);		
+
 		g.fillRect(0,0,iScreenWidth,iScreenHeight);		
 		
 		//square screen; make the excess, margins
@@ -592,6 +608,9 @@ class Actor {
 	//added by Mike, 20240708
 	protected int iOffsetScreenWidthLeftMargin=0;
 	protected int iOffsetScreenHeightTopMargin=0;
+	
+	//added by Mike, 20240905
+	protected int iOffsetScreenWidthRightMargin=0;
 	
 	//added by Mike, 20240903
 	protected int iOffsetWidthWideScreen=0;
@@ -2719,14 +2738,16 @@ class Level2D extends Actor {
 	
 	//added by Mike, 20240905
 	boolean bIsMaxedMonitorHeight;
+	int iScreenWidth;	
 	
 	//edited by Mike, 20240905
     //public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
-    public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight, boolean bIsMaxedMonitorHeight) {
+    public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight, boolean bIsMaxedMonitorHeight, int iOffsetScreenWidthRightMargin) {
 		
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 	  
 	  this.bIsMaxedMonitorHeight=bIsMaxedMonitorHeight;
+	  this.iOffsetScreenWidthRightMargin=iOffsetScreenWidthRightMargin;
 		
 	  //added by Mike, 20240708
 	  this.iOffsetScreenWidthLeftMargin=iOffsetScreenWidthLeftMargin;
@@ -2741,6 +2762,9 @@ class Level2D extends Actor {
 	  this.iTileHeight=iTileHeight;
 	  
 	  //System.out.println("iTileWidth: "+iTileWidth);
+	  
+	  //added by Mike, 20240905
+	  this.iScreenWidth=iScreenWidth;
 
 	  //added by Mike, 20240629
 	  myKeysDown = new boolean[iNumOfKeyTypes];
@@ -3333,7 +3357,7 @@ class Level2D extends Actor {
 		//answer by: Savvas Dalkitsis, 20090806T2154
 		//edited by Mike, 20240904
 		//g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin*2+iStageWidth, iOffsetScreenHeightTopMargin+iStageHeight)));
-		g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin*2+iStageWidth, iOffsetScreenHeightTopMargin+iStageHeight+iOffsetScreenHeightTopMargin)));
+		g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthRightMargin, iOffsetScreenHeightTopMargin+iStageHeight+iOffsetScreenHeightTopMargin)));
 		
 		//paint the margins;
 		//edited by Mike, 20240905
@@ -3346,10 +3370,11 @@ class Level2D extends Actor {
 		g.fillRect(0,0,iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin+iStageHeight+iOffsetScreenHeightTopMargin);
 
 		//System.out.println(">>>>>>>>>>>iOffsetScreenHeightTopMargin: "+iOffsetScreenHeightTopMargin);
+		//System.out.println(">>>>>>>>>>>iOffsetScreenWidthRightMargin: "+iOffsetScreenWidthRightMargin);
 		
 		//cover the right margin
 		//g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthLeftMargin,iStageHeight);
-		g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthLeftMargin,iStageHeight+iOffsetScreenHeightTopMargin);
+		g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthRightMargin,iStageHeight+iOffsetScreenHeightTopMargin);
 
 		//System.out.println(">>>");
 		
@@ -3360,38 +3385,6 @@ class Level2D extends Actor {
 		//BOTTOM margins
 		g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin+iStageHeight,0+iOffsetScreenWidthLeftMargin+iStageWidth,0+iOffsetScreenHeightTopMargin+iStageHeight+iOffsetScreenHeightTopMargin);	
 				
-		//removed by Mike, 20240711; from 20240625
-		//put after the last object to be drawn
-		//g2d.dispose();		
-	}	
-	
-	public void drawMarginsPrev(Graphics g) {
-		Rectangle2D rect = new Rectangle2D.Float();
-
-		//added by Mike, 20240623
-		AffineTransform identity = new AffineTransform();
-
-		Graphics2D g2d = (Graphics2D)g;
-		AffineTransform trans = new AffineTransform();
-		trans.setTransform(identity);
-		g2d.setTransform(trans);
-		
-		//added by Mike, 20240731
-		//https://stackoverflow.com/questions/1241253/inside-clipping-with-java-graphics; last accessed: 20240731
-		//answer by: Savvas Dalkitsis, 20090806T2154
-		g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin*2+iStageWidth, iOffsetScreenHeightTopMargin+iStageHeight)));
-
-		//paint the margins;
-		g.setColor(Color.decode("#adb2b6")); //gray; 
-		
-		//cover the left margin
-		g.fillRect(0,0,iOffsetScreenWidthLeftMargin,iStageHeight);
-
-		//cover the right margin
-		g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthLeftMargin,iStageHeight);
-
-		//System.out.println(">>>");
-		
 		//removed by Mike, 20240711; from 20240625
 		//put after the last object to be drawn
 		//g2d.dispose();		
