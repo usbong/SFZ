@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240903; from 20240902
+ * @last updated: 20240906; from 20240905
  * @website: www.usbong.ph
  *
  */
@@ -242,6 +242,7 @@ class MyPanel extends JPanel {
 	int iScreenHeight;
 	int iOffsetScreenWidthLeftMargin;
 	int iOffsetScreenHeightTopMargin; //added by Mike, 20240718
+	int iOffsetScreenWidthRightMargin;
 
 	//added by Mike, 20240903
 	//widescreen
@@ -254,10 +255,13 @@ class MyPanel extends JPanel {
 	int iTileWidth=64;//default
 	int iTileHeight=64;//default
 
-	final int iTileWidthCountMax=13;
+	final int iTileWidthCountMax=15;//13;
 	final int iTileHeightCountMax=13;
 	
 	boolean bIsHidden=false;
+	
+	//added by Mike, 20240905
+	boolean bIsMaxedMonitorHeight=false;
 
     RedSquare redSquare;
 
@@ -282,20 +286,51 @@ class MyPanel extends JPanel {
 
 		//edited by Mike, 20240722; from 20240718
 		//reminder: screen width must be greater than the screen height
-		//iScreenWidth will be set to be iScreenHeight
+		//iScreenWidth will be set to be iScreenHeight		
 		iOffsetScreenWidthLeftMargin=(iScreenWidth-iScreenHeight)/2;
-		iScreenWidth=iScreenHeight;
-
-		iTileWidth=iScreenWidth/iTileWidthCountMax;
-		iTileHeight=iScreenHeight/iTileHeightCountMax;
 		
+		//added by Mike, 20240905
+		//update later
+		iOffsetScreenWidthRightMargin=iScreenWidth;//-iOffsetScreenWidthLeftMargin;//-iStageWidth;
+		
+		System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
+		System.out.println("iOffsetScreenWidthRightMargin: "+iOffsetScreenWidthRightMargin);
+
+
+		iScreenWidth=iScreenHeight;
+		iTileWidth=iScreenWidth/iTileWidthCountMax;
+		
+		//edited by Mike, 20240904
+		//iTileHeight=iScreenHeight/iTileHeightCountMax;
+		iTileHeight=(iScreenHeight-iTileWidth*2)/iTileHeightCountMax;
+				
+		//added by Mike, 20240905
+		//bIsMaxedMonitorHeight=true;
+		
+		//TODO: -verify: this
+		//if not square monitor and has left margin
+		if (iOffsetScreenWidthLeftMargin!=0) {
+			iOffsetScreenWidthLeftMargin-=iTileWidth;
+			iScreenWidth=iScreenHeight+iTileWidth*2;
+			iTileWidth=iScreenWidth/iTileWidthCountMax;	
+			iTileHeight=iScreenHeight/iTileHeightCountMax;
+			bIsMaxedMonitorHeight=true;
+		}
+		
+		iOffsetScreenWidthRightMargin-=iOffsetScreenWidthLeftMargin;
+		
+/*		//removed by Mike, 20240905
 		//added by Mike, 20240903
 		//widescreen
 		iOffsetWidthWideScreen=0;//iTileWidth*2;//iTileWidth*2 //iOffsetScreenWidthLeftMargin*2
 
 		iOffsetScreenWidthLeftMargin-=0;//iOffsetWidthWideScreen/2;
-		iScreenWidth=iScreenHeight+iOffsetWidthWideScreen;
-		
+		iScreenWidth=iScreenHeight+iOffsetWidthWideScreen;	
+*/		
+
+		//added by Mike, 20240905
+		//iScreenHeight=iScreenHeight-iTileHeight*2;		
+		//iOffsetScreenHeightTopMargin=(iScreenHeight-(iTileHeight*iTileHeightCountMax))/2;
 		iOffsetScreenHeightTopMargin=(iScreenHeight-(iTileHeight*iTileHeightCountMax))/2;
 
 		//use this as input parameter, instead of screenWidth and screenHeight
@@ -304,6 +339,22 @@ class MyPanel extends JPanel {
 		iStageWidth=iTileWidth*iTileWidthCountMax+iOffsetWidthWideScreen;
 		iStageHeight=iTileHeight*iTileHeightCountMax;
 		
+		//added by Mike, 20240905
+		iOffsetScreenWidthRightMargin-=iStageWidth;
+		System.out.println(">>iOffsetScreenWidthRightMargin: "+iOffsetScreenWidthRightMargin);
+		
+		//added by Mike, 20240906
+		//iOffsetScreenWidthLeftMargin is larger than iOffsetScreenWidthRightMargin; adjust
+		int iExcess = (iOffsetScreenWidthLeftMargin-iOffsetScreenWidthRightMargin)/2;
+		
+		iOffsetScreenWidthLeftMargin-=iExcess;
+		
+		System.out.println(">>iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);		
+		
+		if (bIsMaxedMonitorHeight) {
+			iStageHeight=iScreenHeight;	
+		}
+			
 /*
 		iStageWidth=iTileWidth*iTileWidthCountMax+iTileWidth*4;
 		iStageHeight=iTileHeight*iTileHeightCountMax;
@@ -313,8 +364,8 @@ class MyPanel extends JPanel {
 
 		redSquare  = new RedSquare();
 		
-		//edited by Mike, 20240903
-		myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		//edited by Mike, 20240905; from 20240903
+		myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight, bIsMaxedMonitorHeight, iOffsetScreenWidthRightMargin);
 
 		//myLevel2D = new Level2D(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight, iOffsetWidthWideScreen); 
 		
@@ -429,7 +480,10 @@ class MyPanel extends JPanel {
         super.paintComponent(g);
 
 		//entire available screen
+		//edited by Mike, 20240905
 		g.setColor(Color.decode("#adb2b6")); //gray
+		//g.setColor(Color.BLACK);		
+
 		g.fillRect(0,0,iScreenWidth,iScreenHeight);		
 		
 		//square screen; make the excess, margins
@@ -563,6 +617,9 @@ class Actor {
 	protected int iOffsetScreenWidthLeftMargin=0;
 	protected int iOffsetScreenHeightTopMargin=0;
 	
+	//added by Mike, 20240905
+	protected int iOffsetScreenWidthRightMargin=0;
+	
 	//added by Mike, 20240903
 	protected int iOffsetWidthWideScreen=0;
 
@@ -581,6 +638,8 @@ class Actor {
 	//added by Mike, 20240804
 	protected int[][] tileMap; 
 	protected final int MAX_TILE_MAP_HEIGHT=13;
+	
+	//reminder: the last column overlaps the first column
 	protected final int MAX_TILE_MAP_WIDTH=52;//100;//39;//26; 
 	
 	//added by Mike, 20240820
@@ -844,7 +903,7 @@ class Actor {
 		else {
 			iDifferenceInYPos=iDifferenceInYPos*(-1);
 		}
-		
+/*		
 		System.out.println("iViewPortX: "+iViewPortX);
 		System.out.println("iViewPortY: "+iViewPortY);
 		
@@ -853,14 +912,18 @@ class Actor {
 		
 		System.out.println("iDifferenceInXPos: "+iDifferenceInXPos);
 		System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
+*/
+		
 /*
 		System.out.println("dDifferenceInXPos: "+dDifferenceInXPos);
 		System.out.println("dDifferenceInYPos: "+dDifferenceInYPos);
 */
-		
+
+/*		
 		System.out.println("iRightMostLevelWidth: "+iRightMostLevelWidth);
 
 		System.out.println("iOffsetScreenWidthLeftMargin: "+iOffsetScreenWidthLeftMargin);
+*/
 
 		//added by Mike, 20240821			
 		if (!isIntersectingRect(iViewPortX,iViewPortY,iVPX,iVPY)) {
@@ -1735,6 +1798,9 @@ class Plasma extends Actor {
 	trans.translate(iInputX,iInputY);
 
 	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+	
+	//added by Mike, 20240903
+	//trans.scale(0.25,0.25);
 
 	if (currentFacingState==FACING_RIGHT) {
 		//trans.translate(getX(),getY());
@@ -2219,6 +2285,7 @@ class BackgroundCanvas extends Actor {
 		tileX=Math.abs(tileX);
 		tileY=Math.abs(tileY);
 */		
+/*
 		System.out.println(">>>>>>>>>>>> a1X: "+a1X);
 		System.out.println(">>>>>>>>>>>> tileX: "+tileX);
 
@@ -2227,7 +2294,7 @@ class BackgroundCanvas extends Actor {
 
 		System.out.println(">>>>>>>>>>>> iTileWidth: "+iTileWidth);
 		System.out.println(">>>>>>>>>>>> iTileHeight: "+iTileHeight);
-		
+*/		
 		//object and object; not object and tile
 		//iTileWidth
 		int iOffsetYPosAsPixel=0;//a1.getHeight()/3;//10;//4; //diagonal hit; image has margin
@@ -2300,10 +2367,10 @@ System.out.println("iDifferenceInYPos: "+iDifferenceInYPos);
 				int iDifferenceInXPosOfViewPortAndBG=iViewPortX-(iOffsetScreenWidthLeftMargin+iTileWidth*0);
 				
 				int iDifferenceInYPosOfViewPortAndBG=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*0);
-
+/*
 System.out.println("iDifferenceInXPosOfViewPortAndBG: "+iDifferenceInXPosOfViewPortAndBG);
 System.out.println("iDifferenceInYPosOfViewPortAndBG: "+iDifferenceInYPosOfViewPortAndBG);
-
+*/
 						if (isActorIntersectingWithTile(a,iOffsetScreenWidthLeftMargin+iTileWidth*k-iDifferenceInXPosOfViewPortAndBG,iOffsetScreenHeightTopMargin+iTileHeight*i-iDifferenceInYPosOfViewPortAndBG))
 						{
 							System.out.println("COLLISION!");
@@ -2676,9 +2743,19 @@ class Level2D extends Actor {
 	
 	//added by Mike, 20240810
 	RobotShip myRobotShip;	
+	
+	//added by Mike, 20240905
+	boolean bIsMaxedMonitorHeight;
+	int iScreenWidth;	
+	
+	//edited by Mike, 20240905
+    //public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+    public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight, boolean bIsMaxedMonitorHeight, int iOffsetScreenWidthRightMargin) {
 		
-    public Level2D(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+	  
+	  this.bIsMaxedMonitorHeight=bIsMaxedMonitorHeight;
+	  this.iOffsetScreenWidthRightMargin=iOffsetScreenWidthRightMargin;
 		
 	  //added by Mike, 20240708
 	  this.iOffsetScreenWidthLeftMargin=iOffsetScreenWidthLeftMargin;
@@ -2693,6 +2770,9 @@ class Level2D extends Actor {
 	  this.iTileHeight=iTileHeight;
 	  
 	  //System.out.println("iTileWidth: "+iTileWidth);
+	  
+	  //added by Mike, 20240905
+	  this.iScreenWidth=iScreenWidth;
 
 	  //added by Mike, 20240629
 	  myKeysDown = new boolean[iNumOfKeyTypes];
@@ -3137,7 +3217,8 @@ class Level2D extends Actor {
 			iFrameCountDelay=0;
 		}
 */
-		iFrameCount=0;
+		//removed by Mike, 20240904
+		//iFrameCount=0;
 		
 		//added by Mike, 20240809
 		myBackgroundCanvas.update();
@@ -3267,6 +3348,7 @@ class Level2D extends Actor {
 	}
 		
 	//added by Mike, 20240805; from 20240731
+//added by Mike, 20240805; from 20240731
 	public void drawMargins(Graphics g) {
 		Rectangle2D rect = new Rectangle2D.Float();
 
@@ -3281,19 +3363,36 @@ class Level2D extends Actor {
 		//added by Mike, 20240731
 		//https://stackoverflow.com/questions/1241253/inside-clipping-with-java-graphics; last accessed: 20240731
 		//answer by: Savvas Dalkitsis, 20090806T2154
-		g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin*2+iStageWidth, iOffsetScreenHeightTopMargin+iStageHeight)));
-
+		//edited by Mike, 20240904
+		//g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin*2+iStageWidth, iOffsetScreenHeightTopMargin+iStageHeight)));
+		g2d.setClip(new Area(new Rectangle2D.Double(0, 0, iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthRightMargin, iOffsetScreenHeightTopMargin+iStageHeight+iOffsetScreenHeightTopMargin)));
+		
 		//paint the margins;
-		g.setColor(Color.decode("#adb2b6")); //gray; 
+		//edited by Mike, 20240905
+		//g.setColor(Color.decode("#adb2b6")); //gray
+		g.setColor(Color.BLACK);		
 		
 		//cover the left margin
-		g.fillRect(0,0,iOffsetScreenWidthLeftMargin,iStageHeight);
+		//g.fillRect(0,0,iOffsetScreenWidthLeftMargin,iStageHeight);
+		
+		g.fillRect(0,0,iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin+iStageHeight+iOffsetScreenHeightTopMargin);
 
+		//System.out.println(">>>>>>>>>>>iOffsetScreenHeightTopMargin: "+iOffsetScreenHeightTopMargin);
+		//System.out.println(">>>>>>>>>>>iOffsetScreenWidthRightMargin: "+iOffsetScreenWidthRightMargin);
+		
 		//cover the right margin
-		g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthLeftMargin,iStageHeight);
+		//g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthLeftMargin,iStageHeight);
+		g.fillRect(0+iOffsetScreenWidthLeftMargin+iStageWidth,0,0+iOffsetScreenWidthLeftMargin+iStageWidth+iOffsetScreenWidthRightMargin,iStageHeight+iOffsetScreenHeightTopMargin);
 
 		//System.out.println(">>>");
 		
+		//added by Mike, 20240904
+		//TOP margins
+		g.fillRect(0+iOffsetScreenWidthLeftMargin,0,0+iOffsetScreenWidthLeftMargin+iStageWidth,0+iOffsetScreenHeightTopMargin);
+		
+		//BOTTOM margins
+		g.fillRect(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin+iStageHeight,0+iOffsetScreenWidthLeftMargin+iStageWidth,0+iOffsetScreenHeightTopMargin+iStageHeight+iOffsetScreenHeightTopMargin);	
+				
 		//removed by Mike, 20240711; from 20240625
 		//put after the last object to be drawn
 		//g2d.dispose();		
@@ -3308,16 +3407,10 @@ class Level2D extends Actor {
 		int iMiniMapX=0+iOffsetScreenWidthLeftMargin+(iStageWidth-iMiniMapWidth)/2;//iTileWidth*4;
 		int iMiniMapY=0+iOffsetScreenHeightTopMargin+iStageHeight-iTileHeight*2;
 		
-/*
-		int iMiniMapWidth=iTileWidth*8;//10;
-		int iMiniMapHeight=iTileHeight;//*2;
-
-		int iMiniMapX=0+iOffsetScreenWidthLeftMargin+(iStageWidth-iMiniMapWidth)/2;
-		int iMiniMapY=0+iOffsetScreenHeightTopMargin+iStageHeight-iTileHeight*2;
-*/		
-		int iMiniMapTileHeight=iMiniMapHeight/MAX_TILE_MAP_HEIGHT;
 		int iMiniMapTileWidth=iMiniMapWidth/MAX_TILE_MAP_WIDTH;
-		
+		//edited by Mike, 20240905
+		//int iMiniMapTileHeight=iMiniMapHeight/MAX_TILE_MAP_HEIGHT;
+		int iMiniMapTileHeight=(iMiniMapHeight-iMiniMapTileWidth*2)/MAX_TILE_MAP_HEIGHT;
 		
 		int[][] myBGTileMap=myBackgroundCanvas.getTileMap();
 		
@@ -3379,7 +3472,15 @@ class Level2D extends Actor {
 
 		//use myRobotShip.getY(), instead of myViewPortY,
 		//due to can move more vertically;
-		double dMiniMapHeroY=((myRobotShip.getY()*1.0)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
+		//double dMiniMapHeroY=((myRobotShip.getY()*1.0)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);//+iMiniMapTileHeight;
+		double dMiniMapHeroY=((myRobotShip.getY()*1.0)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight)-iMiniMapTileHeight;	
+		
+		//added by Mike, 20240905
+		if (bIsMaxedMonitorHeight) {
+			dMiniMapHeroX+=iMiniMapTileWidth*2;
+			dMiniMapHeroY+=iMiniMapTileHeight;
+		}
+		
 		
 /*
 		System.out.println("iMiniMapWidth: "+iMiniMapWidth);
@@ -3392,6 +3493,17 @@ class Level2D extends Actor {
         g.setColor(Color.decode("#59A6DC")); //blue; hero
         g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY+(int)dMiniMapHeroY,iMiniMapTileWidth,iMiniMapTileHeight);
 */
+		
+		//iFrameCount=(iFrameCount+1)%iFrameCountMax;
+		if (iFrameCountDelay<iFrameCountDelayMax/6) {
+			iFrameCountDelay++;
+		}
+		else {
+			iFrameCount=(iFrameCount+1)%iFrameCountMax;
+			iFrameCountDelay=0;
+		}		
+		
+		//System.out.println(">>>>>>>>>>>>>>>>>>>>>iFrameCount: "+iFrameCount);
 		
 	    for (int i=0; i<MAX_TILE_MAP_HEIGHT; i++) {
 		  for (int k=0; k<MAX_TILE_MAP_WIDTH; k++) {
@@ -3407,7 +3519,14 @@ class Level2D extends Actor {
 				System.out.println(">>>>>>>>>>>>>>dTileMapX: "+dTileMapX);
 				System.out.println(">>>>>>>>>>>>>>dTileMapY: "+dTileMapY);
 */								
-				g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);
+				//TODO: -add: blinking
+				
+				if (iFrameCount==0) {
+					g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX-iMiniMapTileWidth/2,iMiniMapY+(int)dTileMapY-iMiniMapTileHeight/2,iMiniMapTileWidth+iMiniMapTileWidth,iMiniMapTileHeight+iMiniMapTileHeight);
+				}
+				else {
+					g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);
+				}
 			}
 		  }
 	    }	
