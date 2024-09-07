@@ -258,7 +258,7 @@ class MyPanel extends JPanel {
 	final int iTileWidthCountMax=15;//13;
 	final int iTileHeightCountMax=13;
 	
-	boolean bIsHidden=false;
+	boolean bIsHidden=true;//false;
 	
 	//added by Mike, 20240905
 	boolean bIsMaxedMonitorHeight=false;
@@ -655,6 +655,7 @@ class Actor {
 	protected final int TILE_WALL=4;
 	protected final int TILE_PLASMA=5;
 	protected final int TILE_BASE=6;	
+	protected final int TILE_TEXT=7;	
 	
 	protected int myTileType=0;
 	
@@ -1574,6 +1575,132 @@ class EnemyAircraft extends Actor {
 	drawActor(g, this.getX(), this.getY());
   }
 }
+
+//added by Mike, 20240907
+//TODO: -update: actual font; currently using Arial Bold in Gimp Studio
+class UsbongText extends Actor {
+	
+    public UsbongText(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		
+	  try {		  
+	      //512x512; 128x128 each tile;
+		  //TODO: -add: letters
+		  myBufferedImage = ImageIO.read(new File("./res/count.png"));
+      } catch (IOException ex) {
+      }
+	  
+	  reset();
+	}
+
+	@Override
+	public void reset() {		
+		iWidth=iTileWidth;
+		iHeight=iTileHeight;		
+
+		iFrameCount=0;
+		iFrameCountDelay=0;
+		iRotationDegrees=0;
+		
+		currentState=ACTIVE_STATE;
+				
+		iFrameWidth=128;
+		iFrameHeight=128;
+				
+		//OK
+		setX(0+iOffsetScreenWidthLeftMargin);//+iTileWidth*2);
+		setY(0+iOffsetScreenHeightTopMargin);//+iTileHeight*2);
+		
+		myTileType=TILE_TEXT;
+	}
+	
+	@Override
+	public void keyPressed(KeyEvent key) {		
+	}
+	
+	@Override
+	public void keyReleased(KeyEvent key) {		
+	}
+		
+	@Override
+	public void update() {		
+/* 	//edited by Mike, 20240706; OK
+		//animation
+		if (iFrameCountDelay<iFrameCountDelayMax) {
+			iFrameCountDelay++;
+		}
+		else {
+			iFrameCount=(iFrameCount+1)%iFrameCountMax;
+			iFrameCountDelay=0;
+		}
+*/
+		iFrameCount=0;
+	}	
+
+  //added by Mike, 20240811
+  @Override
+  public void drawActor(Graphics g, int iInputX, int iInputY) {  
+	Rectangle2D rect = new Rectangle2D.Float();
+
+    //added by Mike, 20240623
+    AffineTransform identity = new AffineTransform();
+
+    Graphics2D g2d = (Graphics2D)g;
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+    
+	trans.translate(iInputX,iInputY);
+
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);	
+
+	int iNumber=8;
+	int iRow=iNumber/4;
+	int iColumn=(iNumber-iRow*4);
+	
+	//iFrameCount=0; //number 1
+	//iFrameCount=3; //number 4
+	
+	System.out.println("iRow: "+iRow);
+	System.out.println("iColumn: "+iColumn);
+			
+	iFrameCount=iNumber;
+			
+	//trans.translate(0,0-iFrameHeight);
+	trans.translate(0,0-iFrameHeight*iRow);
+	
+	g2d.setTransform(trans);
+
+	//note: clip rect has to move with object position
+    //edited by Mike, 20240623
+    //reminder:
+    //300 is object position;
+    //iFrameCount*128 is the animation frame to show;
+    //rect.setRect(300+iFrameCount*128, 0, 128, 128);
+
+	//rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+	rect.setRect(0, 0+iFrameHeight*iRow, iFrameWidth, iFrameHeight);
+	
+	Area myClipArea = new Area(rect);
+
+    g2d.setClip(myClipArea);    
+    g2d.drawImage(myBufferedImage,-iColumn*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }
+  
+//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
+  @Override
+  public void draw(Graphics g) {	  
+	if (currentState==HIDDEN_STATE) {
+		return;
+	}
+
+	drawActor(g, this.getX(), this.getY());
+  }
+}
+
 
 //added by Mike, 20240825
 class Plasma extends Actor {
@@ -2744,6 +2871,9 @@ class Level2D extends Actor {
 	//added by Mike, 20240810
 	RobotShip myRobotShip;	
 	
+	//added by Mike, 20240907
+	UsbongText myUsbongText;
+	
 	//added by Mike, 20240905
 	boolean bIsMaxedMonitorHeight;
 	int iScreenWidth;	
@@ -2801,7 +2931,10 @@ class Level2D extends Actor {
 	  myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 
 	  //added by Mike, 20240810
-	  myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);	
+	  myRobotShip = new RobotShip(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+	  
+	  //added by Mike, 20240907
+	  myUsbongText = new UsbongText(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 	  
 	  reset();
 	  		
@@ -3611,6 +3744,9 @@ class Level2D extends Actor {
 		
 		drawMiniMap(g);
 
-		drawMargins(g);		
+		drawMargins(g);
+		
+		//added by Mike, 20240907
+		myUsbongText.draw(g);
 	}
 }
