@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240906; from 20240905
+ * @last updated: 20240908; from 20240906
  * @website: www.usbong.ph
  *
  */
@@ -310,6 +310,9 @@ class MyPanel extends JPanel {
 		//TODO: -verify: this
 		//if not square monitor and has left margin
 		if (iOffsetScreenWidthLeftMargin!=0) {
+			
+System.out.println(">>>>>>>>>>>>>iTileWidth: "+iTileWidth);			
+			
 			iOffsetScreenWidthLeftMargin-=iTileWidth;
 			iScreenWidth=iScreenHeight+iTileWidth*2;
 			iTileWidth=iScreenWidth/iTileWidthCountMax;	
@@ -345,7 +348,7 @@ class MyPanel extends JPanel {
 		
 		//added by Mike, 20240906
 		//iOffsetScreenWidthLeftMargin is larger than iOffsetScreenWidthRightMargin; adjust
-		int iExcess = (iOffsetScreenWidthLeftMargin-iOffsetScreenWidthRightMargin)/2;
+		int iExcess = (iOffsetScreenWidthLeftMargin-iOffsetScreenWidthRightMargin);///2;
 		
 		iOffsetScreenWidthLeftMargin-=iExcess;
 		
@@ -3601,7 +3604,9 @@ class Level2D extends Actor {
 		g.drawRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX,iMiniMapY,iMiniMapWidth,iMiniMapHeight);
 				
 		//add iMiniMapTileWidth/2 due to "missing column AM"		
-		double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth+iMiniMapTileWidth/2;
+		double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);//+iMiniMapTileWidth+iMiniMapTileWidth/2;
+		
+		System.out.println("iViewPortX: "+iViewPortX);
 
 		//use myRobotShip.getY(), instead of myViewPortY,
 		//due to can move more vertically;
@@ -3610,7 +3615,15 @@ class Level2D extends Actor {
 		
 		//added by Mike, 20240905
 		if (bIsMaxedMonitorHeight) {
-			dMiniMapHeroX+=iMiniMapTileWidth*2;
+			//goes to the negative -248
+			double dAdditionalOffset=((iViewPortWidth/2-iOffsetScreenWidthLeftMargin*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+			
+			//dMiniMapHeroX+=iViewPortWidth/2-iMiniMapTileWidth*2;
+			
+			dMiniMapHeroX+=dAdditionalOffset;//-iMiniMapTileWidth;
+			
+			System.out.println(">>>>>>>>>>>>>>>>>>>additional offset: "+dAdditionalOffset);
+			
 			dMiniMapHeroY+=iMiniMapTileHeight;
 		}
 		
