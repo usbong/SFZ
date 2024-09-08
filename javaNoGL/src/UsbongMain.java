@@ -1581,9 +1581,9 @@ class EnemyAircraft extends Actor {
 
 //added by Mike, 20240907
 //TODO: -update: actual font; currently using Arial Bold in Gimp Studio
-class UsbongText extends Actor {
+class UsbongFontNumber extends Actor {
 
-    public UsbongText(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+    public UsbongFontNumber(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 
 	  try {
@@ -1771,6 +1771,7 @@ class UsbongFont extends Actor {
 		iFrameCount=0;
 	}
 
+/*
   //added by Mike, 20240908
   //reference: Usbong pagongHalang
   //reminder: 512X512 font.png; 40X64; width x height;  
@@ -1807,10 +1808,9 @@ class UsbongFont extends Actor {
 
 	System.out.println("iRow: "+iRow);
 	System.out.println("iColumn: "+iColumn);
-/*	
-	System.out.println("iRow: "+iRow);
-	System.out.println("iColumn: "+iColumn);
-*/	
+	
+////	System.out.println("iRow: "+iRow);
+////	System.out.println("iColumn: "+iColumn);
 	
 	//iFrameCount=0;
 
@@ -1838,6 +1838,88 @@ class UsbongFont extends Actor {
 	//put after the last object to be drawn
 	//g2d.dispose();
   }
+*/
+  
+  //reference: Usbong pagongHalang
+  //reminder: 512X512 font.png; 40X64; width x height;  
+  public void drawChar(Graphics g, int iInputX, int iInputY, char cInput) { 
+	Rectangle2D rect = new Rectangle2D.Float();
+
+    //added by Mike, 20240623
+    AffineTransform identity = new AffineTransform();
+
+    Graphics2D g2d = (Graphics2D)g;
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+
+	trans.translate(iInputX,iInputY);
+	
+	//removed by Mike, 20240908
+	//trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+	
+/*
+	//String sFontString="A"; //output in int: 65
+	String sFontString="M"; //output in int: 65
+
+	char cFontChar=sFontString.charAt(0);
+*/	
+	char cFontChar=cInput;
+	
+	int iFontCharInAscii=(int)cFontChar;
+	
+	System.out.println("iFontCharInAscii: "+iFontCharInAscii);		
+	
+	int iNumber=iFontCharInAscii-32;
+	int iRow=iNumber/12;
+	int iColumn=(iNumber-iRow*12);
+
+	//iFrameCount=0; //number 1
+	//iFrameCount=3; //number 4
+/*
+	System.out.println("iRow: "+iRow);
+	System.out.println("iColumn: "+iColumn);
+*/	
+////	System.out.println("iRow: "+iRow);
+////	System.out.println("iColumn: "+iColumn);
+	
+	//iFrameCount=0;
+
+	//trans.translate(0,0-iFrameHeight);
+	trans.translate(0,0-iFrameHeight*iRow);
+
+	g2d.setTransform(trans);
+
+	//note: clip rect has to move with object position
+    //edited by Mike, 20240623
+    //reminder:
+    //300 is object position;
+    //iFrameCount*128 is the animation frame to show;
+    //rect.setRect(300+iFrameCount*128, 0, 128, 128);
+
+	//rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+	rect.setRect(0, 0+iFrameHeight*iRow, iFrameWidth, iFrameHeight);
+
+	Area myClipArea = new Area(rect);
+
+    g2d.setClip(myClipArea);
+    g2d.drawImage(myBufferedImage,-iColumn*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }
+  
+  public void drawString(Graphics g, int iInputX, int iInputY, String sInput) {
+	  int iStringInputLength=sInput.length();
+	  
+	  for (int i=0; i<iStringInputLength; i++) {
+		char cFontChar=sInput.charAt(i);	
+		//System.out.println(">>>>>>>>>>>>>> cFontChar["+i+"]: "+cFontChar);
+	    
+		//drawChar(g, iInputX, iInputY, cFontChar);
+		drawChar(g, iInputX+iFrameWidth*i, iInputY, cFontChar);
+	  }
+  }
 
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   @Override
@@ -1846,7 +1928,88 @@ class UsbongFont extends Actor {
 		return;
 	}
 
-	drawActor(g, this.getX(), this.getY());
+	//drawActor(g, this.getX(), this.getY());
+	
+	String sFontString="INSERT COIN";
+	drawString(g, this.getX(), this.getY(), sFontString);
+  }
+}
+
+
+//added by Mike, 20240908
+//TODO: -update: actual font; currently using Arial Bold in Gimp Studio
+class UsbongText extends Actor {
+	UsbongFont myUsbongFont;
+
+    public UsbongText(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+
+	  myUsbongFont = new UsbongFont(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+
+	  reset();
+	}
+
+	@Override
+	public void reset() {
+		iWidth=iTileWidth;
+		iHeight=iTileHeight;
+
+		iFrameCount=0;
+		iFrameCountDelay=0;
+		iRotationDegrees=0;
+
+		currentState=ACTIVE_STATE;
+
+/*
+		iFrameWidth=128;
+		iFrameHeight=128;
+*/		
+	  	
+		//512X512 font.png; 40X64; width x height;
+		iFrameWidth=40;
+		iFrameHeight=64;		
+
+		//OK
+		setX(0+iOffsetScreenWidthLeftMargin);//+iTileWidth*2);
+		setY(0+iOffsetScreenHeightTopMargin);//+iTileHeight*2);
+
+		myTileType=TILE_TEXT;
+	}
+
+	@Override
+	public void keyPressed(KeyEvent key) {
+	}
+
+	@Override
+	public void keyReleased(KeyEvent key) {
+	}
+
+	@Override
+	public void update() {
+/* 	//edited by Mike, 20240706; OK
+		//animation
+		if (iFrameCountDelay<iFrameCountDelayMax) {
+			iFrameCountDelay++;
+		}
+		else {
+			iFrameCount=(iFrameCount+1)%iFrameCountMax;
+			iFrameCountDelay=0;
+		}
+*/
+		iFrameCount=0;
+	}
+
+
+//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
+  @Override
+  public void draw(Graphics g) {
+	if (currentState==HIDDEN_STATE) {
+		return;
+	}
+
+	//drawActor(g, this.getX(), this.getY());
+	
+	myUsbongFont.draw(g);
   }
 }
 
@@ -3023,7 +3186,7 @@ class Level2D extends Actor {
 	UsbongText myUsbongText;
 	
 	//added by Mike, 20240908
-	UsbongFont myUsbongFont;
+	//UsbongFont myUsbongFont;
 
 	//added by Mike, 20240905
 	boolean bIsMaxedMonitorHeight;
@@ -3088,7 +3251,7 @@ class Level2D extends Actor {
 	  myUsbongText = new UsbongText(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 	  
 	  //added by Mike, 20240908
-	  myUsbongFont = new UsbongFont(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+	  //myUsbongFont = new UsbongFont(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 
 	  reset();
 
@@ -3911,9 +4074,9 @@ class Level2D extends Actor {
 		drawMargins(g);
 
 		//added by Mike, 20240907
-		//myUsbongText.draw(g);
+		myUsbongText.draw(g);
 		
 		//added by Mike, 20240908
-		myUsbongFont.draw(g); 
+		//myUsbongFont.draw(g); 
 	}
 }
