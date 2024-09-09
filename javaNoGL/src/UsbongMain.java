@@ -1930,7 +1930,7 @@ class UsbongFont extends Actor {
 
 	//drawActor(g, this.getX(), this.getY());
 	
-	String sFontString="INSERT COIN";
+	String sFontString="0123456789";//"INSERT COIN";
 	drawString(g, this.getX(), this.getY(), sFontString);
   }
 }
