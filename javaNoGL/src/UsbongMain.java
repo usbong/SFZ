@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240908; from 20240906
+ * @last updated: 20240910; from 20240908
  * @website: www.usbong.ph
  *
  */
@@ -2027,7 +2027,7 @@ class Plasma extends Actor {
 	private int iYCurrentDistanceTraveled=0;
 	private int iYDistanceTraveledMax;
 	
-	private boolean bIsPlasmaChargeReleased=false;
+	private boolean bIsChargedPlasma=false;
 
     public Plasma(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
@@ -2036,6 +2036,10 @@ class Plasma extends Actor {
 		  myBufferedImage = ImageIO.read(new File("./res/plasma.png"));
       } catch (IOException ex) {
       }
+	}
+	
+	public void setChargedPlasma(boolean b) {
+		bIsChargedPlasma=b;
 	}
 
 	@Override
@@ -2093,15 +2097,13 @@ class Plasma extends Actor {
 
 	//reference: Usbong Game Off 2023
 	//public void processMouseInput(MouseEvent e, int iHeroX, int iHeroY) {
-	public void processMouseInput(int iMouseXPos, int iMouseYPos, int iHeroX, int iHeroY, boolean bIsPlasmaChargeReleased) {
+	public void processMouseInput(int iMouseXPos, int iMouseYPos, int iHeroX, int iHeroY) {
 
 		//if hidden, i.e. not available, for use;
 		//if (getCurrentState()!=HIDDEN_STATE) {
 		if (getCurrentState()==ACTIVE_STATE) {
 			return;
 		}
-		
-		this.bIsPlasmaChargeReleased=bIsPlasmaChargeReleased;
 
 		setCurrentState(ACTIVE_STATE);
 		//added by Mike, 20240828
@@ -2191,6 +2193,7 @@ class Plasma extends Actor {
 		if (iDifferenceInXPos>iXDistanceTraveledMax) {
 			this.setCurrentState(HIDDEN_STATE);
 			this.isCollidable=false;
+			this.setChargedPlasma(false);
 
 			//TODO: -update: this
 			this.setX(-999999);
@@ -2203,6 +2206,7 @@ class Plasma extends Actor {
 		if (iDifferenceInYPos>iYDistanceTraveledMax+iOffsetY) {
 			this.setCurrentState(HIDDEN_STATE);
 			this.isCollidable=false;
+			this.setChargedPlasma(false);
 
 			//TODO: -update: this
 			this.setX(-999999);
@@ -2252,15 +2256,6 @@ class Plasma extends Actor {
 		trans.translate(0,0-iFrameHeight);
 	}
 */
-/*	//TODO: -update: this
-	if (bIsPlasmaChargeReleased) {
-		trans.translate(0,0+iFrameHeight);
-	}
-	else {
-		//default
-	}
-*/
-	
 	g2d.setTransform(trans);
 
 	//note: clip rect has to move with object position
@@ -2272,7 +2267,7 @@ class Plasma extends Actor {
     //rect.setRect(300+iFrameCount*128-iFrameCount*128, 0, 128, 128);
 	//edited by Mike, 20240714; from 20240714
     //rect.setRect(0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth, 0, iFrameWidth, iFrameHeight);
-
+/*
 	if (currentFacingState==FACING_RIGHT) {
 		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
 	    rect.setRect(0, 0, iFrameWidth, iFrameHeight);
@@ -2280,6 +2275,30 @@ class Plasma extends Actor {
 	else { //FACING_LEFT
 	   rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
 	}
+*/	
+
+	//added by Mike, 20240714
+	//put this after scale;
+	//move the input image to the correct row of the frame
+
+	if (!bIsChargedPlasma) {
+		//trans.translate(getX(),getY());
+	}
+	else { //FACING_LEFT
+		trans.translate(0,0-iFrameHeight);
+	}
+
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+
+	if (!bIsChargedPlasma) {
+		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
+	    rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+	}
+	else { //FACING_LEFT
+	   rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	}
+
 
 	Area myClipArea = new Area(rect);
 
@@ -3192,8 +3211,8 @@ class Level2D extends Actor {
 	
 	//added by Mike, 20240910
 	private int iPlasmaCharge=0;
-	private int iPlasmaChargeMax=20;
-	private boolean bIsPlasmaChargeReleased=false;
+	private int iPlasmaChargeMax=100;
+	private boolean bIsPlasmaChargeReleased=true;
 
 	//added by Mike, 20240809
 	BackgroundCanvas myBackgroundCanvas;
@@ -3395,11 +3414,7 @@ class Level2D extends Actor {
 
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 			  if (!myPlasmaContainer[i].isActive()) {
-				myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY(),bIsPlasmaChargeReleased);
-							
-				if (iPlasmaCharge<iPlasmaChargeMax) {
-					iPlasmaCharge++;
-				}
+				myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
 				
 				bIsFiring=true;
 	
@@ -3415,17 +3430,27 @@ class Level2D extends Actor {
 	@Override
 	public void mouseReleased(MouseEvent e) {
 	  //System.out.println("Released!");
+
+	  bIsFiring=false;
 	  
 	  //added by Mike, 20240910
 	  if (iPlasmaCharge==iPlasmaChargeMax) {
 		  bIsPlasmaChargeReleased=true;
 		  
-		System.out.println("Plasma Charge Released!");		  
+		  System.out.println("Plasma Charge Released!: "+iPlasmaCharge);	  
+		  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
+			  if (!myPlasmaContainer[i].isActive()) {
+				myPlasmaContainer[i].setChargedPlasma(true);
+				  
+			    myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
+					
+			    bIsFiring=true;		
+			    break;
+		    }
+		  }		  
 	  }
 
-	  iPlasmaCharge=0;
-	
-	  bIsFiring=false;
+	  iPlasmaCharge=0;	
 	}
 
 	@Override
@@ -3447,12 +3472,6 @@ class Level2D extends Actor {
 		//added by Mike, 20240831
 		iMouseXPos=e.getX();
 		iMouseYPos=e.getY();
-
-		//put charge
-		//System.out.println("CHARGED!"); //Dragged
-		if (iPlasmaCharge<iPlasmaChargeMax) {
-			iPlasmaCharge++;
-		}
 
 		bIsFiring=false; //true;
 		bIsPlasmaChargeReleased=false;
@@ -3651,6 +3670,7 @@ class Level2D extends Actor {
 			}
 		}
 
+/*
 		//added by Mike, 20240831
 		//note effect;
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
@@ -3668,9 +3688,22 @@ class Level2D extends Actor {
 				}
 			}
 		}
+*/
 
 		//added by Mike, 20240825
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
+			//added by Mike, 20240910
+			//put charge
+			//System.out.println("CHARGED!");
+			if (!bIsPlasmaChargeReleased) {
+				if (iPlasmaCharge<iPlasmaChargeMax) {
+					iPlasmaCharge++;
+				}
+			}
+			else {
+				iPlasmaCharge=0;
+			}			
+			
 			myPlasmaContainer[i].synchronizeViewPort(iViewPortX,iViewPortY,getStepX(),getStepY());
 			myPlasmaContainer[i].update();
 
