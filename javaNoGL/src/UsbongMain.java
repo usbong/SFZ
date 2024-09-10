@@ -1867,7 +1867,7 @@ class UsbongFont extends Actor {
 	
 	int iFontCharInAscii=(int)cFontChar;
 	
-	System.out.println("iFontCharInAscii: "+iFontCharInAscii);		
+	//System.out.println("iFontCharInAscii: "+iFontCharInAscii);		
 	
 	int iNumber=iFontCharInAscii-32;
 	int iRow=iNumber/12;
@@ -1930,7 +1930,7 @@ class UsbongFont extends Actor {
 
 	//drawActor(g, this.getX(), this.getY());
 	
-	String sFontString="0123456789";//"INSERT COIN";
+	String sFontString="INSERT COIN";//0123456789";
 	drawString(g, this.getX(), this.getY(), sFontString);
   }
 }
@@ -2015,7 +2015,6 @@ class UsbongText extends Actor {
 
 //added by Mike, 20240825
 class Plasma extends Actor {
-
 	private final int ISTEP_X_PLASMA=ISTEP_X_DEFAULT*20;//10;
 	private final int ISTEP_Y_PLASMA=ISTEP_Y_DEFAULT*20;//10;
 
@@ -2027,6 +2026,8 @@ class Plasma extends Actor {
 	private int iYInitialDistanceTraveled=0;
 	private int iYCurrentDistanceTraveled=0;
 	private int iYDistanceTraveledMax;
+	
+	private boolean bIsPlasmaChargeReleased=false;
 
     public Plasma(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
@@ -2054,8 +2055,8 @@ class Plasma extends Actor {
 			myKeysDown[i]=false;
 		}
 
-		//added by Mike, 20240828; from 20240826
-		iXDistanceTraveledMax=iViewPortWidth+iTileWidth;
+		//added by Mike, 20240910; from 20240828
+		iXDistanceTraveledMax=iViewPortWidth/2+iTileWidth*2;
 		iYDistanceTraveledMax=iViewPortHeight+iTileHeight;
 
 		//default
@@ -2092,13 +2093,15 @@ class Plasma extends Actor {
 
 	//reference: Usbong Game Off 2023
 	//public void processMouseInput(MouseEvent e, int iHeroX, int iHeroY) {
-	public void processMouseInput(int iMouseXPos, int iMouseYPos, int iHeroX, int iHeroY) {
+	public void processMouseInput(int iMouseXPos, int iMouseYPos, int iHeroX, int iHeroY, boolean bIsPlasmaChargeReleased) {
 
 		//if hidden, i.e. not available, for use;
 		//if (getCurrentState()!=HIDDEN_STATE) {
 		if (getCurrentState()==ACTIVE_STATE) {
 			return;
 		}
+		
+		this.bIsPlasmaChargeReleased=bIsPlasmaChargeReleased;
 
 		setCurrentState(ACTIVE_STATE);
 		//added by Mike, 20240828
@@ -2184,7 +2187,8 @@ class Plasma extends Actor {
 
 		//hero always at the center of viewport
 		//if (iDifferenceInXPos>iViewPortWidth/2) {
-		if (iDifferenceInXPos>iViewPortWidth/2+iTileWidth) {
+		//if (iDifferenceInXPos>iViewPortWidth/2+iTileWidth) {
+		if (iDifferenceInXPos>iXDistanceTraveledMax) {
 			this.setCurrentState(HIDDEN_STATE);
 			this.isCollidable=false;
 
@@ -2195,7 +2199,8 @@ class Plasma extends Actor {
 
 		//edited by Mike, 20240828
 		//if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight) {
-		if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight+iOffsetY) {
+		//if (iDifferenceInYPos>iViewPortHeight/2+iTileHeight+iOffsetY) {
+		if (iDifferenceInYPos>iYDistanceTraveledMax+iOffsetY) {
 			this.setCurrentState(HIDDEN_STATE);
 			this.isCollidable=false;
 
@@ -2239,14 +2244,23 @@ class Plasma extends Actor {
 
 	//added by Mike, 20240903
 	//trans.scale(0.25,0.25);
-
+/*
 	if (currentFacingState==FACING_RIGHT) {
 		//trans.translate(getX(),getY());
 	}
 	else { //FACING_LEFT
 		trans.translate(0,0-iFrameHeight);
 	}
-
+*/
+/*	//TODO: -update: this
+	if (bIsPlasmaChargeReleased) {
+		trans.translate(0,0+iFrameHeight);
+	}
+	else {
+		//default
+	}
+*/
+	
 	g2d.setTransform(trans);
 
 	//note: clip rect has to move with object position
@@ -3169,12 +3183,17 @@ class Level2D extends Actor {
 	private Wall[] myWallContainer;
 
 	//added by Mike, 20240825
-	private final int MAX_PLASMA_COUNT=10;//30;//5;//1;
+	private final int MAX_PLASMA_COUNT=3;//10;//30;//5;//1;
 	private Plasma[] myPlasmaContainer;
 
 	private boolean bIsFiring=false;
 	private int iFiringDelay=0;
 	private int iFiringDelayMax=300;
+	
+	//added by Mike, 20240910
+	private int iPlasmaCharge=0;
+	private int iPlasmaChargeMax=20;
+	private boolean bIsPlasmaChargeReleased=false;
 
 	//added by Mike, 20240809
 	BackgroundCanvas myBackgroundCanvas;
@@ -3376,19 +3395,36 @@ class Level2D extends Actor {
 
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 			  if (!myPlasmaContainer[i].isActive()) {
-				myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
+				myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY(),bIsPlasmaChargeReleased);
+							
+				if (iPlasmaCharge<iPlasmaChargeMax) {
+					iPlasmaCharge++;
+				}
+				
+				bIsFiring=true;
+	
 				break;
 			  }
 		}
 
-		bIsFiring=true;
+		//bIsFiring=true;
+		bIsPlasmaChargeReleased=false;
 	}
 
 	//added by Mike, 20240830
 	@Override
 	public void mouseReleased(MouseEvent e) {
 	  //System.out.println("Released!");
+	  
+	  //added by Mike, 20240910
+	  if (iPlasmaCharge==iPlasmaChargeMax) {
+		  bIsPlasmaChargeReleased=true;
+		  
+		System.out.println("Plasma Charge Released!");		  
+	  }
 
+	  iPlasmaCharge=0;
+	
 	  bIsFiring=false;
 	}
 
@@ -3412,7 +3448,14 @@ class Level2D extends Actor {
 		iMouseXPos=e.getX();
 		iMouseYPos=e.getY();
 
-		bIsFiring=true;
+		//put charge
+		//System.out.println("CHARGED!"); //Dragged
+		if (iPlasmaCharge<iPlasmaChargeMax) {
+			iPlasmaCharge++;
+		}
+
+		bIsFiring=false; //true;
+		bIsPlasmaChargeReleased=false;
 	}
 
 	//TODO: -fix: collision detection; use TILE_WALL in Background class;
@@ -3618,7 +3661,7 @@ class Level2D extends Actor {
 
 					if (iFiringDelay==0) {
 
-					  myPlasmaContainer[i].processMouseInput(iMouseXPos,iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
+					  myPlasmaContainer[i].processMouseInput(iMouseXPos,iMouseYPos, myRobotShip.getX(),myRobotShip.getY(), bIsPlasmaChargeReleased);
 
 					  break;
 					}
@@ -3991,7 +4034,7 @@ class Level2D extends Actor {
 		  }
 	    }
 
-/*
+/*	//still work-in-progress
 		//added by Mike, 20240902
 		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
 			//#E2536F")); //pink; //#FF7236")); //orange
@@ -4014,14 +4057,34 @@ class Level2D extends Actor {
 
 			//TODO: -fix: this
 			//double dTileMapX=0;//((myEnemyAircraftContainer[i].getX()*1.0)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth)+iMiniMapTileWidth+iMiniMapTileWidth/2;
+			
 			//note: dTileMapX position problem when hero viewPortX crosses left-most;
 			//non-minimap appears OK, however;
-			//double dTileMapX=((myEnemyAircraftContainer[i].iViewPortX+myEnemyAircraftContainer[i].getX()*1.0)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);//+iMiniMapTileWidth+iMiniMapTileWidth/2;
+			double dTileMapX=((iViewPortX+myEnemyAircraftContainer[i].getX()*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+			
+			//+myEnemyAircraftContainer[i].getX()
+			//+iMiniMapTileWidth+iMiniMapTileWidth/2;
 
 			////System.out.println(">>>>>>>>>>>>>>dTileMapX: "+dTileMapX);
 			////System.out.println(">>>>>>>>>>>>>>dTileMapY: "+dTileMapY);
+			
+			if (bIsMaxedMonitorHeight) {
+				//dTileMapX-=iTileWidth;
 
-			g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);
+				//goes to the negative -248
+				double dAdditionalOffset=((iViewPortWidth/2-iOffsetScreenWidthLeftMargin*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+
+
+				dTileMapX+=dAdditionalOffset;
+								
+				//-iMiniMapTileWidth;
+	//System.out.println(">>>>>>>>>>>>>>>>>>>additional offset: "+dAdditionalOffset);
+
+				//dMiniMapHeroY+=iMiniMapTileHeight;
+		}
+		
+
+			g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX-iTileWidth*2,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);
 		}
 */
 
