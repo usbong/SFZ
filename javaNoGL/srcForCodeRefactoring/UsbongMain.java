@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240914; from 20240913
+ * @last updated: 20240915; from 20240914
  * @website: www.usbong.ph
  *
  */
@@ -4338,7 +4338,17 @@ class Level2D extends Actor {
 
 		//add iMiniMapTileWidth/2 due to "missing column AM"
 		//note we use iViewPortX, because hero x is set at center of screen
-		double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);//+iMiniMapTileWidth+iMiniMapTileWidth/2;
+		//double dMiniMapHeroX=((iViewPortX*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+
+		//double dMiniMapHeroX=((iViewPortX*1.0-iMiniMapTileWidth*2)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+
+		//one for the missing column now A, and half of the width of hero ship which is at size TileWidth/2;
+		//TODO: -verify explanation if correct;
+		//double dMiniMapHeroX=((iViewPortX-iMiniMapTileWidth*2.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+		
+		double dMiniMapHeroX=((iViewPortX-iOffsetScreenWidthLeftMargin-iMiniMapTileWidth*1.5)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+		
+		//+iMiniMapTileWidth+iMiniMapTileWidth/2;
 
 		//System.out.println("iViewPortX: "+iViewPortX);
 
@@ -4349,12 +4359,17 @@ class Level2D extends Actor {
 		
 		//added by Mike, 20240905
 		if (bIsMaxedMonitorHeight) {
+			
 			//goes to the negative -248
-			double dAdditionalOffset=((iViewPortWidth/2-iOffsetScreenWidthLeftMargin*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+			//double dAdditionalOffset=((iViewPortWidth/2-iOffsetScreenWidthLeftMargin*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+			double dAdditionalOffset=((iViewPortWidth/2*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
 
 			//dMiniMapHeroX+=iViewPortWidth/2-iMiniMapTileWidth*2;
 
 			dMiniMapHeroX+=dAdditionalOffset;//-iMiniMapTileWidth;
+
+			
+			//dMiniMapHeroX+=-iMiniMapTileWidth;
 
 			//System.out.println(">>>>>>>>>>>>>>>>>>>additional offset: "+dAdditionalOffset);
 
@@ -4428,7 +4443,7 @@ class Level2D extends Actor {
 			//note: iViewPortY+myEnemyAircraftContainer[i].getY() to get the position Y that is unaffected by changes in hero's movement in Y; OK
 			//double dTileMapY=((iViewPortY+myEnemyAircraftContainer[i].getY()*1.0)/(iOffsetScreenHeightTopMargin+MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
 			
-			double dTileMapY=((myEnemyAircraftContainer[i].getY()*1.0)/(iOffsetScreenHeightTopMargin+MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
+			double dTileMapY=((myEnemyAircraftContainer[i].getY()*1.0-iOffsetScreenHeightTopMargin)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
 			
 /*			
 			System.out.println(">>>>>>>>>>>>>>iViewPortX: "+iViewPortX);
@@ -4439,22 +4454,28 @@ class Level2D extends Actor {
 			
 			//double dTileMapX=((iViewPortX+myEnemyAircraftContainer[i].getX()*1.0-iViewPortWidth/2)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
 
-			double dTileMapX=((myEnemyAircraftContainer[i].getX()*1.0)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+			double dTileMapX=((myEnemyAircraftContainer[i].getX()*1.0-iOffsetScreenWidthLeftMargin)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
 
 			
 			double dMiniMapOffsetLeftMargin=((iOffsetScreenWidthLeftMargin)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
 			
-/*			
+			//added by Mike, 20240914
+			//TODO: -verify: cause
 			if (bIsMaxedMonitorHeight) {
 				//goes to the negative -248
-				double dAdditionalOffset=((iViewPortWidth/2-iOffsetScreenWidthLeftMargin*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+/*				
 
+				double dAdditionalOffset=((iViewPortWidth/2-iOffsetScreenWidthLeftMargin*1.0)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+				
 				//dMiniMapHeroX+=iViewPortWidth/2-iMiniMapTileWidth*2;
 
 				dTileMapX+=dAdditionalOffset;
+*/				
+				//iViewPortWidth/2
+				//dTileMapX+=-iMiniMapTileWidth*2;
+
 				//dTileMapY+=iMiniMapTileHeight;
-			}
-*/			
+			}			
 
 				System.out.println(">>>>>>iViewPortX: "+iViewPortX);
 
