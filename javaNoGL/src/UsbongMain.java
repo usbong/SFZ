@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240919; from 20240918
+ * @last updated: 20240924; from 20240919
  * @website: www.usbong.ph
  *
  */
@@ -574,7 +574,8 @@ class Actor {
 	protected int iFrameCount=0;
 	protected int iFrameCountMax=4;
 	protected int iFrameCountDelay=0;
-	protected int iFrameCountDelayMax=20;
+	//edited by Mike, 20240924; aircraft turn animation, faster
+	protected int iFrameCountDelayMax=12;//20;
 
 	//added by Mike, 20240626
 	protected int iRotationDegrees=0;
@@ -642,13 +643,16 @@ class Actor {
 
 	//added by Mike, 20240730
 	protected boolean bHasStarted=false;
+	
+	//added by Mike, 202340924
+	protected boolean bIsChangingDirection=false;
 
 	//added by Mike, 20240806
 	protected int iViewPortX=0;
 	protected int iViewPortY=0;
 	protected int iViewPortWidth=0;
 	protected int iViewPortHeight=0;
-
+	
 	//added by Mike, 20240809
 	protected boolean bIsWallTypeHit=false;
 
@@ -723,6 +727,9 @@ class Actor {
 
 		//added by Mike, 20240809
 		bIsWallTypeHit=false;
+		
+		//added by Mike, 20240924
+		bIsChangingDirection=false;
 	}
 
 	//added by Mike, 20240804
@@ -1341,17 +1348,50 @@ class RobotShip extends Actor {
 		//setX(getX()+getStepX());
 
 		if (myKeysDown[KEY_A])
-		{
-			currentFacingState=FACING_LEFT;
-			//iStepX=-ISTEP_X_DEFAULT;
+		{			
+			//edited by Mike, 20240924	
+			//if already facing left
+			if (currentFacingState==FACING_LEFT) {
+				//bIsChangingDirection=false;				
+			}
+			else {
+				currentFacingState=FACING_LEFT;
+				
+				if (bIsChangingDirection) {
+					bIsChangingDirection=false;		
+				}
+				else {
+					bIsChangingDirection=true;		
+					iFrameCountDelay=0;				
+				}
+			}
+	
+			//currentFacingState=FACING_LEFT;
+			////iStepX=-ISTEP_X_DEFAULT;
 		}
 		//edited by Mike, 20240902
 		else if (myKeysDown[KEY_D])
 		{
-			currentFacingState=FACING_RIGHT;
-			//iStepX=ISTEP_X_DEFAULT;
-		}
+			//edited by Mike, 20240924	
+			//if already facing left
+			if (currentFacingState==FACING_RIGHT) {
+				//bIsChangingDirection=false;
+			}
+			else {
+				currentFacingState=FACING_RIGHT;
 
+				if (bIsChangingDirection) {
+					bIsChangingDirection=false;		
+				}
+				else {
+					bIsChangingDirection=true;		
+					iFrameCountDelay=0;				
+				}
+			}
+			
+			//currentFacingState=FACING_RIGHT;
+			////iStepX=ISTEP_X_DEFAULT;
+		}
 
 		//edited by Mike, 20240809
 		//note: robot ship doesn't not have FACING_UP or FACING_DOWN
@@ -1387,21 +1427,136 @@ class RobotShip extends Actor {
 			bHasStarted=true;
 		}
 
-		return;
+		//return;
 
-/* 	//edited by Mike, 20240706; OK
+		//edited by Mike, 20240706; OK
 		//animation
 		if (iFrameCountDelay<iFrameCountDelayMax) {
 			iFrameCountDelay++;
 		}
 		else {
 			iFrameCount=(iFrameCount+1)%iFrameCountMax;
-			iFrameCountDelay=0;
+			//iFrameCountDelay=0;
+			
+			bIsChangingDirection=false;				
 		}
-		iFrameCount=0;
-*/
+		//iFrameCount=0;
+
+		return;
 	}
 
+  //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
+  //edited by Mike, 20240924
+  @Override
+  public void drawActor(Graphics g, int iInputX, int iInputY) {
+	Rectangle2D rect = new Rectangle2D.Float();
+    AffineTransform identity = new AffineTransform();
+    Graphics2D g2d = (Graphics2D)g;
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+	trans.translate(iInputX,iInputY);
+
+	//scale to size of iTileWidth and iTileHeight;
+	//example: iTileWidth=83
+	//iFrameWidth=128;
+	//trans.scale(0.5,0.5);
+	//double temp = iTileWidth*1.0/iFrameWidth;
+	//System.out.println("temp: "+temp);
+	//edited by Mike, 20240811
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+	//added by Mike, 20240714
+	//put this after scale;
+	//move the input image to the correct row of the frame
+/*
+	if (currentFacingState==FACING_RIGHT) {
+		//trans.translate(getX(),getY());
+		
+		trans.translate(0-iFrameWidth,0);
+		
+	}
+	else { //FACING_LEFT
+		trans.translate(0,0-iFrameHeight);
+	}
+
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+*/
+
+	iFrameCount=0;//1;
+/*
+	if (bIsChangingDirection) {
+		
+		if (currentFacingState==FACING_LEFT) {
+			iFrameCount=1;
+		}
+		else if (currentFacingState==FACING_RIGHT) {
+			iFrameCount=1;
+		}		
+
+		if (currentFacingState==FACING_RIGHT) {
+			trans.translate(0-(iFrameCount+1)*iFrameWidth,0);			
+		}
+		else { //FACING_LEFT
+			trans.translate(0-(iFrameCount+1)*iFrameWidth,0-iFrameHeight);
+		}
+
+		//iFrameCount=1;
+		bIsChangingDirection=false;
+	}
+*/	
+
+	if (bIsChangingDirection) {		
+/*	
+		if (currentFacingState==FACING_LEFT) {
+			iFrameCount=1;
+		}
+		else if (currentFacingState==FACING_RIGHT) {
+			iFrameCount=1;
+		}		
+*/		
+		iFrameCount=1;
+		//bIsChangingDirection=false;
+	}
+	
+	
+	if (currentFacingState==FACING_RIGHT) {
+		//trans.translate(getX(),getY());
+		trans.translate(0-(iFrameCount)*iFrameWidth,0);			
+	}
+	else { //FACING_LEFT
+		//trans.translate(0,0-iFrameHeight);
+		trans.translate(0-(iFrameCount)*iFrameWidth,0-iFrameHeight);
+	}
+	
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+
+	
+	if (currentFacingState==FACING_RIGHT) {
+		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
+	    //rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+		
+	    rect.setRect(0+(iFrameCount)*iFrameWidth,0, iFrameWidth,iFrameHeight);		
+	}
+	else { //FACING_LEFT
+	   //rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	   rect.setRect(0+(iFrameCount)*iFrameWidth, 0+iFrameHeight, iFrameWidth,iFrameHeight);	   
+	}
+
+	Area myClipArea = new Area(rect);
+
+    //edited by Mike, 20240625; from 20240623
+    g2d.setClip(myClipArea);
+
+	//edited by Mike, 20240924; from 20240714
+    //g2d.drawImage(myBufferedImage,-(iFrameCount)*iFrameWidth, 0, null);
+    g2d.drawImage(myBufferedImage,-(0)*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }
 
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   //robotship
