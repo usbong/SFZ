@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240924; from 20240919
+ * @last updated: 20240925; from 20240924
  * @website: www.usbong.ph
  *
  */
@@ -1507,16 +1507,18 @@ class RobotShip extends Actor {
 */	
 
 	if (bIsChangingDirection) {		
-/*	
-		if (currentFacingState==FACING_LEFT) {
-			iFrameCount=1;
-		}
-		else if (currentFacingState==FACING_RIGHT) {
-			iFrameCount=1;
-		}		
-*/		
 		iFrameCount=1;
 		//bIsChangingDirection=false;
+	}
+	else {
+		//moving up
+		if (myKeysDown[KEY_W]) {
+			iFrameCount=2;
+		}
+		//moving down
+		else if (myKeysDown[KEY_S]) {
+			iFrameCount=3;
+		}		
 	}
 	
 	
