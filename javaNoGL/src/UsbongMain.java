@@ -15,7 +15,8 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240926; from 20240925
+ * @last updated: 20240927; from 20240926
+ * @last updated: 20240927; from 20240926
  * @website: www.usbong.ph
  *
  */
@@ -3135,12 +3136,14 @@ class Level2D extends Actor {
 	private Plasma[] myPlasmaContainer;
 
 	private boolean bIsFiring=false;
+	private boolean bHasPressedFiring=false;
+	
 	private int iFiringDelay=0;
 	private int iFiringDelayMax=300;
 	
 	//added by Mike, 20240910
 	private int iPlasmaCharge=0;
-	private int iPlasmaChargeMax=100;
+	private int iPlasmaChargeMax=200;//100;
 	private boolean bIsPlasmaChargeReleased=true;
 
 	//added by Mike, 20240809
@@ -3272,6 +3275,7 @@ class Level2D extends Actor {
 		iStepY=ISTEP_Y_DEFAULT*2; //faster by 1 than the default
 
 		bIsFiring=false;
+		bHasPressedFiring=false;
 	}
 
 	//added by Mike, 20240825
@@ -3286,16 +3290,20 @@ class Level2D extends Actor {
 		//added by Mike, 20240831
 		iMouseXPos=e.getX();
 		iMouseYPos=e.getY();
-
+/*
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 			  if (!myPlasmaContainer[i].isActive()) {
 				myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
 				
-				bIsFiring=true;
+				//removed by Mike, 20240927
+				//bIsFiring=true;
 	
 				break;
 			  }
 		}
+*/		
+		bIsFiring=false;
+		bHasPressedFiring=true;
 
 		//bIsFiring=true;
 		bIsPlasmaChargeReleased=false;
@@ -3306,30 +3314,39 @@ class Level2D extends Actor {
 	public void mouseReleased(MouseEvent e) {
 	  //System.out.println("Released!");
 
-	  bIsFiring=false;
+	  //bIsFiring=false;
 
 	  //added by Mike, 20240927
 	  iMouseXPos=e.getX();
 	  iMouseYPos=e.getY();
 	  
-	  //added by Mike, 20240910
-	  if (iPlasmaCharge==iPlasmaChargeMax) {
-		  bIsPlasmaChargeReleased=true;
-		  
-		  System.out.println("Plasma Charge Released!: "+iPlasmaCharge);	  
 		  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 			  if (!myPlasmaContainer[i].isActive()) {
-				myPlasmaContainer[i].setChargedPlasma(true);
+				  
+				//added by Mike, 20240910
+				if (iPlasmaCharge==iPlasmaChargeMax) {
+				  myPlasmaContainer[i].setChargedPlasma(true);
+				  bIsPlasmaChargeReleased=true;
+					  
+				  System.out.println("Plasma Charge Released!: "+iPlasmaCharge);  
+				}
 				  
 			    myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
 					
 			    bIsFiring=true;		
 			    break;
 		    }
-		  }		  
-	  }
+		  }		  	  
+	  
 
+/*
+	  //added by Mike, 20240927
+	  else {
+		  bIsFiring=true;
+	  }
+*/
 	  iPlasmaCharge=0;	
+	  bHasPressedFiring=false;
 	}
 
 	@Override
@@ -3500,14 +3517,17 @@ class Level2D extends Actor {
 			//added by Mike, 20240910
 			//put charge
 			//System.out.println("CHARGED!");
-			if (!bIsPlasmaChargeReleased) {
-				if (iPlasmaCharge<iPlasmaChargeMax) {
-					iPlasmaCharge++;
+			
+			if (bHasPressedFiring) {
+				if (!bIsPlasmaChargeReleased) {
+					if (iPlasmaCharge<iPlasmaChargeMax) {
+						iPlasmaCharge++;
+					}
 				}
+				else {
+					iPlasmaCharge=0;
+				}			
 			}
-			else {
-				iPlasmaCharge=0;
-			}			
 			
 			if (!myPlasmaContainer[i].isActive()) {
 				continue;
