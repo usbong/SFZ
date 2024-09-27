@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240925; from 20240924
+ * @last updated: 20240926; from 20240925
  * @website: www.usbong.ph
  *
  */
@@ -1467,44 +1467,35 @@ class RobotShip extends Actor {
 
 	//added by Mike, 20240714
 	//put this after scale;
-	//move the input image to the correct row of the frame
-/*
-	if (currentFacingState==FACING_RIGHT) {
-		//trans.translate(getX(),getY());
-		
-		trans.translate(0-iFrameWidth,0);
-		
-	}
-	else { //FACING_LEFT
-		trans.translate(0,0-iFrameHeight);
-	}
 
-	//added by Mike, 20240625
-	g2d.setTransform(trans);
-*/
+/*	//note effect; noticeable lag;
+	//reference: https://stackoverflow.com/questions/4248104/applying-a-tint-to-an-image-in-java; last accessed: 20240926
+	
+	for (int x = 0; x < myBufferedImage.getWidth(); x++) {
+        for (int y = 0; y < myBufferedImage.getHeight(); y++) {
 
-	iFrameCount=0;//1;
-/*
-	if (bIsChangingDirection) {
-		
-		if (currentFacingState==FACING_LEFT) {
-			iFrameCount=1;
-		}
-		else if (currentFacingState==FACING_RIGHT) {
-			iFrameCount=1;
-		}		
+            //Color color = new Color(myBufferedImage.getRGB(x, y));
+            Color color = new Color(myBufferedImage.getRGB(x, y));
 
-		if (currentFacingState==FACING_RIGHT) {
-			trans.translate(0-(iFrameCount+1)*iFrameWidth,0);			
-		}
-		else { //FACING_LEFT
-			trans.translate(0-(iFrameCount+1)*iFrameWidth,0-iFrameHeight);
-		}
+			//reference: https://stackoverflow.com/questions/8978228/java-bufferedimage-how-to-know-if-a-pixel-is-transparent; last accessed: 20240926
+			int pixel = myBufferedImage.getRGB(x,y);
+			//transparent
+			if( (pixel>>24) == 0x00 ) {
+		      continue;
+			}
+			
+            // do something with the color :) (change the hue, saturation and/or brightness)
+            // float[] hsb = new float[3];
+            // Color.RGBtoHSB(color.getRed(), old.getGreen(), old.getBlue(), hsb);
 
-		//iFrameCount=1;
-		bIsChangingDirection=false;
-	}
+            // or just call brighter to just tint it
+            Color brighter = color.brighter();
+
+            myBufferedImage.setRGB(x, y, brighter.getRGB());
+       }
+    }		
 */	
+	iFrameCount=0;//1;
 
 	if (bIsChangingDirection) {		
 		iFrameCount=1;
@@ -3316,6 +3307,10 @@ class Level2D extends Actor {
 	  //System.out.println("Released!");
 
 	  bIsFiring=false;
+
+	  //added by Mike, 20240927
+	  iMouseXPos=e.getX();
+	  iMouseYPos=e.getY();
 	  
 	  //added by Mike, 20240910
 	  if (iPlasmaCharge==iPlasmaChargeMax) {
