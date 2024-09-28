@@ -67,6 +67,7 @@ import javax.imageio.ImageIO;
 
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.awt.Polygon;
 
 import java.util.TimerTask;
 import java.util.Timer;
@@ -1623,6 +1624,7 @@ class EnemyAircraft extends Actor {
 
 	@Override
 	public void update() {
+/*		
 		//no wrap around yet
 		setX(getX()+getStepX());
 		
@@ -1652,6 +1654,7 @@ class EnemyAircraft extends Actor {
 				}
 			}
 		}
+*/		
 
 
 /*
@@ -3878,7 +3881,29 @@ class Level2D extends Actor {
 			double dMiniMapOffsetLeftMargin=((iOffsetScreenWidthLeftMargin)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
 			
 			g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);
+			
+			//note isosceles triangle too large;
+/*			
+			//added by Mike, 20240928
+			//https://stackoverflow.com/questions/675878/how-to-fill-color-on-triangle/675888#675888; last accessed: 20240928
+			
+			int[] x = new int[3];
+			int[] y = new int[3];
+		
+			//triangle
+			x[0]=iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX; 
+			x[1]=iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX+(iMiniMapTileWidth*3)/1; 
+			x[2]=iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX;
+			
+			y[0]=iMiniMapY+(int)(dTileMapY+iMiniMapTileHeight/2)-(iMiniMapTileHeight)/1; 
+			y[1]=iMiniMapY+(int)(dTileMapY+iMiniMapTileHeight/2); 
+			y[2]=iMiniMapY+(int)(dTileMapY+iMiniMapTileHeight/2)+(iMiniMapTileHeight)/1;
+			int n = 3;
 
+			Polygon p = new Polygon(x, y, n);
+			g.setColor(Color.decode("#ff0000")); 
+			g.fillPolygon(p);
+*/			
 		}
 
         g.setColor(Color.decode("#59A6DC")); //blue; hero
