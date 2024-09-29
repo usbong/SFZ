@@ -15,8 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240927; from 20240926
- * @last updated: 20240927; from 20240926
+ * @last updated: 20240929; from 20240927
  * @website: www.usbong.ph
  *
  */
@@ -1624,8 +1623,8 @@ class EnemyAircraft extends Actor {
 
 	@Override
 	public void update() {
-/*		
-		//no wrap around yet
+		//TODO: -update: this; AI
+		
 		setX(getX()+getStepX());
 		
 		if (!bHasStarted) {
@@ -1642,6 +1641,9 @@ class EnemyAircraft extends Actor {
 				else {
 					iStepY=-ISTEP_Y_DEFAULT;
 				}
+				
+				myKeysDown[KEY_W]=false;
+				myKeysDown[KEY_S]=true;
 			}
 
 			//going up
@@ -1652,9 +1654,12 @@ class EnemyAircraft extends Actor {
 				else {
 					iStepY=ISTEP_Y_DEFAULT;						
 				}
+
+				myKeysDown[KEY_W]=true;
+				myKeysDown[KEY_S]=false;
 			}
 		}
-*/		
+		
 
 
 /*
@@ -1675,6 +1680,7 @@ class EnemyAircraft extends Actor {
 		iFrameCount=0;
 	}
 
+/* //previously...; edited by Mike, 20240929
   //added by Mike, 20240811
   @Override
   public void drawActor(Graphics g, int iInputX, int iInputY) {
@@ -1723,6 +1729,85 @@ class EnemyAircraft extends Actor {
 
     g2d.setClip(myClipArea);
     g2d.drawImage(myBufferedImage,-iFrameCount*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }
+*/  
+
+//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
+  //edited by Mike, 20240924
+  @Override
+  public void drawActor(Graphics g, int iInputX, int iInputY) {
+	Rectangle2D rect = new Rectangle2D.Float();
+    AffineTransform identity = new AffineTransform();
+    Graphics2D g2d = (Graphics2D)g;
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+	trans.translate(iInputX,iInputY);
+
+	//scale to size of iTileWidth and iTileHeight;
+	//example: iTileWidth=83
+	//iFrameWidth=128;
+	//trans.scale(0.5,0.5);
+	//double temp = iTileWidth*1.0/iFrameWidth;
+	//System.out.println("temp: "+temp);
+	//edited by Mike, 20240811
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+	//added by Mike, 20240714
+	//put this after scale;
+
+	iFrameCount=0;//1;
+
+	if (bIsChangingDirection) {		
+		iFrameCount=1;
+		//bIsChangingDirection=false;
+	}
+	else {
+		//moving up
+		if (myKeysDown[KEY_W]) {
+			iFrameCount=2;
+		}
+		//moving down
+		else if (myKeysDown[KEY_S]) {
+			iFrameCount=3;
+		}		
+	}
+	
+	if (currentFacingState==FACING_RIGHT) {
+		//trans.translate(getX(),getY());
+		trans.translate(0-(iFrameCount)*iFrameWidth,0);			
+	}
+	else { //FACING_LEFT
+		//trans.translate(0,0-iFrameHeight);
+		trans.translate(0-(iFrameCount)*iFrameWidth,0-iFrameHeight);
+	}
+	
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+
+	
+	if (currentFacingState==FACING_RIGHT) {
+		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
+	    //rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+		
+	    rect.setRect(0+(iFrameCount)*iFrameWidth,0, iFrameWidth,iFrameHeight);		
+	}
+	else { //FACING_LEFT
+	   //rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	   rect.setRect(0+(iFrameCount)*iFrameWidth, 0+iFrameHeight, iFrameWidth,iFrameHeight);	   
+	}
+
+	Area myClipArea = new Area(rect);
+
+    //edited by Mike, 20240625; from 20240623
+    g2d.setClip(myClipArea);
+
+	//edited by Mike, 20240924; from 20240714
+    //g2d.drawImage(myBufferedImage,-(iFrameCount)*iFrameWidth, 0, null);
+    g2d.drawImage(myBufferedImage,-(0)*iFrameWidth, 0, null);
 
 	//removed by Mike, 20240711; from 20240625
 	//put after the last object to be drawn
