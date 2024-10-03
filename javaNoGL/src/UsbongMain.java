@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20240929; from 20240927
+ * @last updated: 20241003; from 20240929
  * @website: www.usbong.ph
  *
  */
@@ -2350,6 +2350,9 @@ class Plasma extends Actor {
 	    iStepY*=-1;
 		
         iStepX=(int)(ISTEP_X_PLASMA*Math.sin(dMainImageTileStepAngleRad));
+		
+		//added by Mike, 20241003
+		iRotationDegrees=iMainImageTileStepAngle;
 	}
 
 	@Override
@@ -2431,14 +2434,29 @@ class Plasma extends Actor {
 
     Graphics2D g2d = (Graphics2D)g;
     AffineTransform trans = new AffineTransform();
-    trans.setTransform(identity);
-
+    trans.setTransform(identity);	
+	
 	trans.translate(iInputX,iInputY);
 
+	//added by Mike, 20241003
+	//Part 1.put rotate anchor to CENTER
+	trans.translate(getWidth()/2,getHeight()/2);
+	
+	//rotate at center; put translate after rotate
+	//note effect;
+	//iRotationDegrees=(iRotationDegrees+10)%360;
+	
+    trans.rotate(Math.toRadians(iRotationDegrees));
+
+	//Part 2.puts anchor to TOP-LEFT; 
+	//combined with Part 1, projectile launched from center
+	trans.translate(-getWidth()/2,-getHeight()/2);
+	
+	
 	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
-
+	
 	g2d.setTransform(trans);
-
+	
 	//note: clip rect has to move with object position
     
 	//added by Mike, 20240714
