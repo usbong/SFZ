@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20241003; from 20240929
+ * @last updated: 20241010; from 20241003
  * @website: www.usbong.ph
  *
  */
@@ -577,7 +577,10 @@ class Actor {
 	protected int iFrameCountDelay=0;
 	//edited by Mike, 20240924; aircraft turn animation, faster
 	protected int iFrameCountDelayMax=12;//20;
-
+	
+	//added by Mike, 20241010
+	protected int iDeathFrameCount=0;
+	
 	//added by Mike, 20240626
 	protected int iRotationDegrees=0;
 	protected int iFrameWidth=128;
@@ -588,6 +591,9 @@ class Actor {
 	protected double dImageScaleOffsetHeight=0;
 
 	protected BufferedImage myBufferedImage;
+	
+	//added by Mike, 20241010
+	protected BufferedImage explosionBufferedImage;
 
 	//added by Mike, 20240708
 	protected int iOffsetScreenWidthLeftMargin=0;
@@ -660,6 +666,8 @@ class Actor {
     public Actor(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
 	  try {
 		  myBufferedImage = ImageIO.read(new File("./res/robotship.png"));
+		  
+		  explosionBufferedImage = ImageIO.read(new File("./res/effects.png"));
       } catch (IOException ex) {
       }
 
@@ -1289,6 +1297,55 @@ class Actor {
 	//put after the last object to be drawn
 	//g2d.dispose();
   }
+  
+  public void drawExplosion(Graphics g, int iInputX, int iInputY) {
+
+	Rectangle2D rect = new Rectangle2D.Float();
+    AffineTransform identity = new AffineTransform();
+
+    Graphics2D g2d = (Graphics2D)g;
+	
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+	trans.translate(iInputX,iInputY);
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+/*	
+	//added by Mike, 20240714
+	//put this after scale;
+	//move the input image to the correct row of the frame
+
+	if (currentFacingState==FACING_RIGHT) {
+		//trans.translate(getX(),getY());
+	}
+	else { //FACING_LEFT
+		trans.translate(0,0-iFrameHeight);
+	}
+*/
+
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+
+/*	
+	if (currentFacingState==FACING_RIGHT) {
+		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
+	    rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+	}
+	else { //FACING_LEFT
+	   rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	}
+*/
+	rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	
+	Area myClipArea = new Area(rect);
+
+    g2d.setClip(myClipArea);
+    g2d.drawImage(explosionBufferedImage,-iFrameCount*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }
 
   //added by Mike, 20240811
   public void draw(Graphics g) {
@@ -1667,17 +1724,22 @@ class EnemyAircraft extends Actor {
 		System.out.println("EnemyAircraft.getStepX(): "+getStepX());
 */
 
-/* 	//edited by Mike, 20240706; OK
+		//edited by Mike, 20241010; from 20240706; OK
 		//animation
-		if (iFrameCountDelay<iFrameCountDelayMax) {
+		//System.out.println("iFrameCountDelay: "+iFrameCountDelay);
+		//iFrameCountDelayMax=10;
+		//if (iFrameCountDelay<iFrameCountDelayMax) {
+		if (iFrameCountDelay<iFrameCountDelayMax/2) {
 			iFrameCountDelay++;
 		}
 		else {
-			iFrameCount=(iFrameCount+1)%iFrameCountMax;
+			//iFrameCount=(iFrameCount+1)%iFrameCountMax;			
+			iDeathFrameCount=(iDeathFrameCount+1)%iFrameCountMax;
+			
 			iFrameCountDelay=0;
 		}
-*/
-		iFrameCount=0;
+
+		//iFrameCount=0;
 	}
 
 /* //previously...; edited by Mike, 20240929
@@ -1736,9 +1798,101 @@ class EnemyAircraft extends Actor {
   }
 */  
 
-//Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
-  //edited by Mike, 20240924
+  //edited by Mike, 20241010
   @Override
+  public void drawExplosion(Graphics g, int iInputX, int iInputY) {
+	Rectangle2D rect = new Rectangle2D.Float();
+    AffineTransform identity = new AffineTransform();
+    Graphics2D g2d = (Graphics2D)g;
+	
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+	trans.translate(iInputX,iInputY);
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+	//added by Mike, 20240714
+	//put this after scale;
+/*
+	iFrameCount=0;//1;
+
+	if (bIsChangingDirection) {		
+		iFrameCount=1;
+		//bIsChangingDirection=false;
+	}
+	else {
+		//moving up
+		if (myKeysDown[KEY_W]) {
+			iFrameCount=2;
+		}
+		//moving down
+		else if (myKeysDown[KEY_S]) {
+			iFrameCount=3;
+		}		
+	}
+	
+	if (currentFacingState==FACING_RIGHT) {
+		//trans.translate(getX(),getY());
+		trans.translate(0-(iFrameCount)*iFrameWidth,0);			
+	}
+	else { //FACING_LEFT
+		//trans.translate(0,0-iFrameHeight);
+		trans.translate(0-(iFrameCount)*iFrameWidth,0-iFrameHeight);
+	}
+*/
+	
+/*	
+	//animation
+	if (iFrameCountDelay<iFrameCountDelayMax) {
+		iFrameCountDelay++;
+	}
+	else {
+		iFrameCount=(iFrameCount+1)%iFrameCountMax;
+		iFrameCountDelay=0;
+	}	
+	//iFrameCount=0;
+*/	
+	
+	trans.translate(0-(iDeathFrameCount)*iFrameWidth,0);	
+	
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+
+/*	
+	if (currentFacingState==FACING_RIGHT) {
+		//no animation yet; 0+iFrameCount*iFrameWidth-iFrameCount*iFrameWidth
+	    //rect.setRect(0, 0, iFrameWidth, iFrameHeight);
+		
+	    rect.setRect(0+(iFrameCount)*iFrameWidth,0, iFrameWidth,iFrameHeight);		
+	}
+	else { //FACING_LEFT
+	   //rect.setRect(0, 0+iFrameHeight, iFrameWidth, iFrameHeight);
+	   rect.setRect(0+(iFrameCount)*iFrameWidth, 0+iFrameHeight, iFrameWidth,iFrameHeight);	   
+	}
+*/
+	
+	rect.setRect(0+(iDeathFrameCount)*iFrameWidth,0, iFrameWidth,iFrameHeight);	
+	
+	//TODO: -update: this; add in translate; make not looped
+	//second row in input image
+	//rect.setRect(0+(iDeathFrameCount)*iFrameWidth,0+iFrameHeight, iFrameWidth,iFrameHeight);	
+
+	
+	Area myClipArea = new Area(rect);
+
+    //edited by Mike, 20240625; from 20240623
+    g2d.setClip(myClipArea);
+
+	//edited by Mike, 20240924; from 20240714
+    //g2d.drawImage(myBufferedImage,-(iFrameCount)*iFrameWidth, 0, null);
+    g2d.drawImage(explosionBufferedImage,-(0)*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }
+  
+  //added by Mike, 20241010
+ @Override
   public void drawActor(Graphics g, int iInputX, int iInputY) {
 	Rectangle2D rect = new Rectangle2D.Float();
     AffineTransform identity = new AffineTransform();
@@ -1812,7 +1966,7 @@ class EnemyAircraft extends Actor {
 	//removed by Mike, 20240711; from 20240625
 	//put after the last object to be drawn
 	//g2d.dispose();
-  }
+  }  
 
 //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   @Override
@@ -1829,6 +1983,9 @@ class EnemyAircraft extends Actor {
 	if (isTileInsideViewport(iViewPortX,iViewPortY, this.getX()-iDifferenceInXPos,this.getY()-iDifferenceInYPos))	
 	{	
 		drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+		
+		//added by Mike, 20241010	
+		drawExplosion(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);		
 	}
 
 	//when actual viewport is in right side, while enemy aircraft is in left side	
@@ -1841,7 +1998,10 @@ class EnemyAircraft extends Actor {
 
 	if (isTileInsideViewport(iViewPortXTemp,iViewPortY, this.getX(),this.getY()))	
 	{	
-		drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);		
+		drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+
+		//added by Mike, 20241010	
+		drawExplosion(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
 	}
 
 	
@@ -1853,7 +2013,10 @@ class EnemyAircraft extends Actor {
 	if (isTileInsideViewport(iViewPortXTemp,iViewPortY, this.getX(),this.getY()))	
 	{	
 		drawActor(g, this.getX()-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
-	}
+		
+		//added by Mike, 20241010	
+		drawExplosion(g, this.getX()-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);			
+	}	
   }
 }
 
