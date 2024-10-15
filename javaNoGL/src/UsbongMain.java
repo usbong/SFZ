@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20241010; from 20241003
+ * @last updated: 20241016; from 20241010
  * @website: www.usbong.ph
  *
  */
@@ -742,8 +742,13 @@ class Actor {
 	}
 
 	//added by Mike, 20240804
+	//TODO: -update: function name? due to can be true 
+	//even if not in "ACTIVE_STATE", example in "DYING_STATE"
     public boolean isActive() {
-        if (currentState==ACTIVE_STATE) {
+		//edited by Mike, 20241016
+        //if (currentState==ACTIVE_STATE) {
+        if (currentState!=HIDDEN_STATE) {
+
             return true;
 		}
         else {
@@ -1663,10 +1668,14 @@ class EnemyAircraft extends Actor {
 
 	@Override
 	public void hitBy(Actor a) {
-		currentState=HIDDEN_STATE;
+		//edited by Mike, 20241016
+		//currentState=HIDDEN_STATE;
+		currentState=DYING_STATE;
+		
 		isCollidable=false;
 
-		System.out.println("HIT!!! SET TO HIDDEN STATE");
+		//System.out.println("HIT!!! SET TO HIDDEN STATE");
+		System.out.println("HIT!!! SET TO DYING STATE");
 	}
 
 	//added by Mike, 20240805
@@ -1734,9 +1743,18 @@ class EnemyAircraft extends Actor {
 		}
 		else {
 			//iFrameCount=(iFrameCount+1)%iFrameCountMax;			
-			iDeathFrameCount=(iDeathFrameCount+1)%iFrameCountMax;
 			
-			iFrameCountDelay=0;
+			//edited by Mike, 20241016
+			//iDeathFrameCount=(iDeathFrameCount+1)%iFrameCountMax;
+			if (getCurrentState()==DYING_STATE) {
+				iDeathFrameCount=(iDeathFrameCount+1)%iFrameCountMax;
+
+				if (iDeathFrameCount==0) {
+					setCurrentState(HIDDEN_STATE);
+				}
+			}
+			
+			iFrameCountDelay=0;			
 		}
 
 		//iFrameCount=0;
@@ -1974,7 +1992,7 @@ class EnemyAircraft extends Actor {
 	if (currentState==HIDDEN_STATE) {
 		return;
 	}
-
+	
 	//drawActor(g, this.getX(), this.getY());
 	
 	int iDifferenceInXPos=iViewPortX-(this.getX());	
@@ -1982,10 +2000,14 @@ class EnemyAircraft extends Actor {
 
 	if (isTileInsideViewport(iViewPortX,iViewPortY, this.getX()-iDifferenceInXPos,this.getY()-iDifferenceInYPos))	
 	{	
-		drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
-		
-		//added by Mike, 20241010	
-		drawExplosion(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);		
+		//edited by Mike, 20241016
+		if (getCurrentState()!=DYING_STATE) {
+			drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+		}
+		else {
+			//added by Mike, 20241010	
+			drawExplosion(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);		
+		}
 	}
 
 	//when actual viewport is in right side, while enemy aircraft is in left side	
@@ -1998,10 +2020,14 @@ class EnemyAircraft extends Actor {
 
 	if (isTileInsideViewport(iViewPortXTemp,iViewPortY, this.getX(),this.getY()))	
 	{	
-		drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
-
-		//added by Mike, 20241010	
-		drawExplosion(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+		//edited by Mike, 20241016
+		if (getCurrentState()!=DYING_STATE) {
+			drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+		}
+		else {
+			//added by Mike, 20241010	
+			drawExplosion(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+		}
 	}
 
 	
@@ -2012,10 +2038,14 @@ class EnemyAircraft extends Actor {
 
 	if (isTileInsideViewport(iViewPortXTemp,iViewPortY, this.getX(),this.getY()))	
 	{	
-		drawActor(g, this.getX()-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
-		
-		//added by Mike, 20241010	
-		drawExplosion(g, this.getX()-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);			
+		//edited by Mike, 20241016
+		if (getCurrentState()!=DYING_STATE) {
+			drawActor(g, this.getX()-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+		}
+		else {
+			//added by Mike, 20241010	
+			drawExplosion(g, this.getX()-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);			
+		}
 	}	
   }
 }
