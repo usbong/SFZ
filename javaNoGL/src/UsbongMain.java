@@ -1508,6 +1508,22 @@ class RobotShip extends Actor {
 		return;
 	}
 
+	//added by Mike, 20241016
+	@Override
+	public void hitBy(Actor a) {
+/*		
+		if (a.getMyTileType()==TILE_HERO) {
+			return;
+		}
+*/
+		//HERO hit by enemies
+		//TODO: -update: this
+		currentState=HIDDEN_STATE;
+		isCollidable=false;
+
+		System.out.println("HERO HIT!!! SET TO HIDDEN STATE");
+	}
+		
   //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   //edited by Mike, 20240924
   @Override
@@ -1699,6 +1715,7 @@ class EnemyAircraft extends Actor {
 			bHasStarted=true;
 		}
 		else {		
+/*			//edited by Mike, 20241016		
 			//going down
 			if (iStepY==ISTEP_Y_DEFAULT) {
 				if (getY()<iInitialYPos+iTileHeight*2) {
@@ -1724,6 +1741,7 @@ class EnemyAircraft extends Actor {
 				myKeysDown[KEY_W]=true;
 				myKeysDown[KEY_S]=false;
 			}
+*/			
 		}
 		
 
@@ -3423,7 +3441,7 @@ class UsbongUtils {
 //for Actor object positions
 class Level2D extends Actor {
 	//private EnemyAircraft myEnemyAircraft;
-	private final int MAX_ENEMY_AIRCRAFT_COUNT=2;//1;//2; //5;
+	private final int MAX_ENEMY_AIRCRAFT_COUNT=10; //2;//1;//2; //5;
 	private EnemyAircraft[] myEnemyAircraftContainer;
 
 	//added by Mike, 20240809
@@ -3559,9 +3577,16 @@ class Level2D extends Actor {
 			tileMap[i][k]=TILE_BLANK;
 		  }
 	    }
-
+		
+		//edited by Mike, 20241016
+/*		
 		tileMap[6][MAX_TILE_MAP_WIDTH-3]=TILE_AIRCRAFT;
 		tileMap[5][3]=TILE_AIRCRAFT;
+*/
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
+			tileMap[5][i]=TILE_AIRCRAFT;
+		}
+		
 		//tileMap[5][0]=TILE_WALL;
 
 		//added by Mike, 20240817; from 20240729
@@ -3589,6 +3614,12 @@ class Level2D extends Actor {
 		//added by Mike, 20240831
 		iMouseXPos=e.getX();
 		iMouseYPos=e.getY();
+		
+		//added by Mike, 20241016
+		if (!myRobotShip.isActive()) {
+			return;
+		}		
+		
 /*
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 			  if (!myPlasmaContainer[i].isActive()) {
@@ -3618,6 +3649,12 @@ class Level2D extends Actor {
 	  //added by Mike, 20240927
 	  iMouseXPos=e.getX();
 	  iMouseYPos=e.getY();
+	  
+	  //added by Mike, 20241016
+	  if (!myRobotShip.isActive()) {
+		return;
+	  }
+	  
 	  
 		  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 			  if (!myPlasmaContainer[i].isActive()) {
@@ -3783,10 +3820,11 @@ class Level2D extends Actor {
 		//iViewPortY=0;
 
 		myBackgroundCanvas.synchronizeViewPortWithBackground(iViewPortX,iViewPortY);
-		myRobotShip.synchronizeViewPort(iViewPortX,iViewPortY, getStepX(),getStepY());
-
 		myBackgroundCanvas.synchronizeKeys(myKeysDown);
+		
+		myRobotShip.synchronizeViewPort(iViewPortX,iViewPortY, getStepX(),getStepY());		
 		myRobotShip.synchronizeKeys(myKeysDown);
+			
 		//-----------------------------------------------------------
 
 		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
@@ -3863,10 +3901,12 @@ class Level2D extends Actor {
 		//added by Mike, 20240809
 		myBackgroundCanvas.update();
 
-		//added by Mike, 20240810
-		myRobotShip.update();
-
-		this.collideWith(myRobotShip);
+		//edited by Mike, 20241016
+		if (myRobotShip.isActive()) {
+			//added by Mike, 20240810
+			myRobotShip.update();
+			this.collideWith(myRobotShip);
+		}		
 	}
 
 	//added by Mike, 20240804
