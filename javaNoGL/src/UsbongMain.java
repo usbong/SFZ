@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20241016; from 20241010
+ * @last updated: 20241017; from 20241016
  * @website: www.usbong.ph
  *
  */
@@ -2279,7 +2279,7 @@ class UsbongFont extends Actor {
 	
 /*
 	//String sFontString="A"; //output in int: 65
-	String sFontString="M"; //output in int: 65
+	String sFontString="M"; 
 
 	char cFontChar=sFontString.charAt(0);
 */	
@@ -2287,7 +2287,7 @@ class UsbongFont extends Actor {
 	
 	int iFontCharInAscii=(int)cFontChar;
 	
-	//System.out.println("iFontCharInAscii: "+iFontCharInAscii);		
+	System.out.println("iFontCharInAscii: "+iFontCharInAscii);		
 	
 	int iNumber=iFontCharInAscii-32;
 	int iRow=iNumber/12;
@@ -2349,9 +2349,11 @@ class UsbongFont extends Actor {
 	}
 
 	//drawActor(g, this.getX(), this.getY());
-	
+
+/*	//removed by Mike, 20241017	
 	String sFontString="INSERT COIN";//0123456789";
 	drawString(g, this.getX(), this.getY(), sFontString);
+*/	
   }
 }
 
@@ -2429,7 +2431,16 @@ class UsbongText extends Actor {
 
 	//drawActor(g, this.getX(), this.getY());
 	
-	myUsbongFont.draw(g);
+	//edited by Mike, 20241017
+	//myUsbongFont.draw(g);
+	
+	//String sFontString="INSERT COIN";//0123456789";
+	//String sFontString="100%";//0123456789";
+	//String sFontString="0123456789";//0123456789";
+	//String sFontString="0000000000";//0123456789";
+	String sFontString=",0%";//0123456789";
+
+	myUsbongFont.drawString(g, this.getX(), this.getY(), sFontString);
   }
 }
 
@@ -2498,6 +2509,9 @@ class Plasma extends Actor {
 		if (a.getMyTileType()==TILE_HERO) {
 			return;
 		}
+		
+		//added by Mike, 20241017
+		bIsChargedPlasma=false;
 
 		currentState=HIDDEN_STATE;
 		isCollidable=false;
@@ -3584,7 +3598,7 @@ class Level2D extends Actor {
 		tileMap[5][3]=TILE_AIRCRAFT;
 */
 		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
-			tileMap[5][i]=TILE_AIRCRAFT;
+			tileMap[2][i]=TILE_AIRCRAFT;
 		}
 		
 		//tileMap[5][0]=TILE_WALL;
@@ -3669,7 +3683,7 @@ class Level2D extends Actor {
 				  
 			    myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
 					
-			    bIsFiring=true;		
+			    bIsFiring=true;				    
 			    break;
 		    }
 		  }		  	  
