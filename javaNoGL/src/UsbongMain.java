@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20241017; from 20241016
+ * @last updated: 20241018; from 20241017
  * @website: www.usbong.ph
  *
  */
@@ -633,12 +633,16 @@ class Actor {
 	protected final int TILE_BLANK=0;
 	protected final int TILE_HERO=1;
 	protected final int TILE_AIRCRAFT=2;
+	
 	protected final int TILE_TREE=3;
 	protected final int TILE_WALL=4;
 	protected final int TILE_PLASMA=5;
 	protected final int TILE_BASE=6;
 	protected final int TILE_TEXT=7;
 
+	//added by Mike, 20241018
+	protected final int TILE_AIRCRAFT_BOSS=8;
+	
 	protected int myTileType=0;
 
 	//added by Mike, 20240714
@@ -1646,14 +1650,26 @@ class RobotShip extends Actor {
 }
 
 class EnemyAircraft extends Actor {
-
-    public EnemyAircraft(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+	
+	//edited by Mike, 20241018
+    //public EnemyAircraft(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+    public EnemyAircraft(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight, int iAircraftType) {
+		
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 
 	  try {
-		  myBufferedImage = ImageIO.read(new File("./res/robotship2.png"));
+		  if (iAircraftType==TILE_AIRCRAFT) { 
+			  myBufferedImage = ImageIO.read(new File("./res/robotship2.png"));
+		  }
+		  else if (iAircraftType==TILE_AIRCRAFT_BOSS) { 
+			  myBufferedImage = ImageIO.read(new File("./res/robotship3.png"));			  
+		  }		  
       } catch (IOException ex) {
       }
+	  
+		
+	  //added by Mike, 20241018
+	  myTileType=iAircraftType;	  
 	}
 
 	@Override
@@ -1679,7 +1695,8 @@ class EnemyAircraft extends Actor {
 		iStepX=ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
 		iStepY=ISTEP_Y_DEFAULT;//*2; //faster by 1 than the default
 
-		myTileType=TILE_AIRCRAFT;
+		//removed by Mike, 20241018
+		//myTileType=TILE_AIRCRAFT;
 	}
 
 	@Override
@@ -2287,7 +2304,7 @@ class UsbongFont extends Actor {
 	
 	int iFontCharInAscii=(int)cFontChar;
 	
-	System.out.println("iFontCharInAscii: "+iFontCharInAscii);		
+	//System.out.println("iFontCharInAscii: "+iFontCharInAscii);		
 	
 	int iNumber=iFontCharInAscii-32;
 	int iRow=iNumber/12;
@@ -3455,7 +3472,7 @@ class UsbongUtils {
 //for Actor object positions
 class Level2D extends Actor {
 	//private EnemyAircraft myEnemyAircraft;
-	private final int MAX_ENEMY_AIRCRAFT_COUNT=10; //2;//1;//2; //5;
+	private final int MAX_ENEMY_AIRCRAFT_COUNT=11;//10; //2;//1;//2; //5;
 	private EnemyAircraft[] myEnemyAircraftContainer;
 
 	//added by Mike, 20240809
@@ -3465,6 +3482,10 @@ class Level2D extends Actor {
 	//added by Mike, 20240825
 	private final int MAX_PLASMA_COUNT=5;//3;//10;//30;//5;//1;
 	private Plasma[] myPlasmaContainer;
+	
+	//added by Mike, 20241018
+	private final int MAX_ENEMY_PLASMA_COUNT=5;
+	private Plasma[] myEnemyPlasmaContainer;	
 
 	private boolean bIsFiring=false;
 	private boolean bHasPressedFiring=false;
@@ -3523,10 +3544,12 @@ class Level2D extends Actor {
 	  myKeysDown = new boolean[iNumOfKeyTypes];
 
 	  myEnemyAircraftContainer = new EnemyAircraft[MAX_ENEMY_AIRCRAFT_COUNT];
-
-	  for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
-		  myEnemyAircraftContainer[i] = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+			
+	  //edited by Mike, 20241018
+	  for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT-1; i++) {
+		  myEnemyAircraftContainer[i] = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight, TILE_AIRCRAFT);
 	  }
+	  myEnemyAircraftContainer[MAX_ENEMY_AIRCRAFT_COUNT-1] = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight, TILE_AIRCRAFT_BOSS);
 
 	  //added by Mike, 20240809
 	  myWallContainer = new Wall[MAX_WALL_COUNT];
@@ -3541,6 +3564,14 @@ class Level2D extends Actor {
 	  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 		  myPlasmaContainer[i] = new Plasma(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 	  }
+
+	  //added by Mike, 20241018
+	  myEnemyPlasmaContainer = new Plasma[MAX_ENEMY_PLASMA_COUNT];
+
+	  for (int i=0; i<MAX_ENEMY_PLASMA_COUNT; i++) {
+		  myEnemyPlasmaContainer[i] = new Plasma(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+	  }
+	  
 
 	  //added by Mike, 20240809
 	  myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
@@ -3597,9 +3628,12 @@ class Level2D extends Actor {
 		tileMap[6][MAX_TILE_MAP_WIDTH-3]=TILE_AIRCRAFT;
 		tileMap[5][3]=TILE_AIRCRAFT;
 */
-		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT-1; i++) {
 			tileMap[2][i]=TILE_AIRCRAFT;
 		}
+		
+		//boss
+		tileMap[0][MAX_TILE_MAP_WIDTH-1]=TILE_AIRCRAFT_BOSS;
 		
 		//tileMap[5][0]=TILE_WALL;
 
