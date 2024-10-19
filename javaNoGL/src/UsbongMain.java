@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20241018; from 20241017
+ * @last updated: 20241019; from 20241018
  * @website: www.usbong.ph
  *
  */
@@ -640,8 +640,8 @@ class Actor {
 	protected final int TILE_BASE=6;
 	protected final int TILE_TEXT=7;
 
-	//added by Mike, 20241018
 	protected final int TILE_AIRCRAFT_BOSS=8;
+	protected final int TILE_ENEMY_PLASMA=9;
 	
 	protected int myTileType=0;
 
@@ -1496,17 +1496,38 @@ class RobotShip extends Actor {
 
 		//return;
 
-		//edited by Mike, 20240706; OK
-		//animation
-		if (iFrameCountDelay<iFrameCountDelayMax) {
-			iFrameCountDelay++;
+		//edited by Mike, 20241019; from 20240706; OK
+		if (getCurrentState()==ACTIVE_STATE) {
+			//animation
+			if (iFrameCountDelay<iFrameCountDelayMax) {
+				iFrameCountDelay++;
+			}
+			else {
+				iFrameCount=(iFrameCount+1)%iFrameCountMax;
+				//iFrameCountDelay=0;
+				
+				bIsChangingDirection=false;				
+			}
 		}
-		else {
-			iFrameCount=(iFrameCount+1)%iFrameCountMax;
-			//iFrameCountDelay=0;
-			
-			bIsChangingDirection=false;				
+		//added by Mike, 20241019
+		else if (getCurrentState()==DYING_STATE) {
+			//animation
+			if (iFrameCountDelay<iFrameCountDelayMax/2) {
+				iFrameCountDelay++;
+			}
+			else {
+				if (getCurrentState()==DYING_STATE) {
+					iDeathFrameCount=(iDeathFrameCount+1)%iFrameCountMax;
+
+					if (iDeathFrameCount==0) {
+						setCurrentState(HIDDEN_STATE);
+					}
+				}
+				
+				iFrameCountDelay=0;			
+			}
 		}
+		
 		//iFrameCount=0;
 
 		return;
@@ -1520,13 +1541,52 @@ class RobotShip extends Actor {
 			return;
 		}
 */
-		//HERO hit by enemies
-		//TODO: -update: this
-		currentState=HIDDEN_STATE;
+
+		//edited by Mike, 20241019
+		//currentState=HIDDEN_STATE;
+		currentState=DYING_STATE;
+		
 		isCollidable=false;
 
-		System.out.println("HERO HIT!!! SET TO HIDDEN STATE");
+		//System.out.println("HIT!!! SET TO HIDDEN STATE");
+		System.out.println("HIT!!! SET TO DYING STATE");		
 	}
+		
+	//added by Mike, 20241019
+  @Override
+  public void drawExplosion(Graphics g, int iInputX, int iInputY) {
+	Rectangle2D rect = new Rectangle2D.Float();
+    AffineTransform identity = new AffineTransform();
+    Graphics2D g2d = (Graphics2D)g;
+	
+    AffineTransform trans = new AffineTransform();
+    trans.setTransform(identity);
+	trans.translate(iInputX,iInputY);
+	trans.scale((iTileWidth*1.0)/iFrameWidth,(iTileHeight*1.0)/iFrameHeight);
+
+	//added by Mike, 20240714
+	//put this after scale;
+	trans.translate(0-(iDeathFrameCount)*iFrameWidth,0);	
+	
+	//added by Mike, 20240625
+	g2d.setTransform(trans);
+	
+	rect.setRect(0+(iDeathFrameCount)*iFrameWidth,0, iFrameWidth,iFrameHeight);	
+	
+	
+	Area myClipArea = new Area(rect);
+
+    //edited by Mike, 20240625; from 20240623
+    g2d.setClip(myClipArea);
+
+	//edited by Mike, 20240924; from 20240714
+    //g2d.drawImage(myBufferedImage,-(iFrameCount)*iFrameWidth, 0, null);
+    g2d.drawImage(explosionBufferedImage,-(0)*iFrameWidth, 0, null);
+
+	//removed by Mike, 20240711; from 20240625
+	//put after the last object to be drawn
+	//g2d.dispose();
+  }		
 		
   //Additional Reference: 	https://docs.oracle.com/javase/tutorial/2d/advanced/examples/ClipImage.java; last accessed: 20240625
   //edited by Mike, 20240924
@@ -1642,10 +1702,14 @@ class RobotShip extends Actor {
 		return;
 	}
 
-	int iDifferenceInXPos=this.getX();
-	int iDifferenceInYPos=this.getY();
-
-    drawActor(g, this.getX(), this.getY());
+	//edited by Mike, 20241019
+    //drawActor(g, this.getX(), this.getY());
+	if (getCurrentState()!=DYING_STATE) {
+		drawActor(g, this.getX(), this.getY());
+	}
+	else {
+		drawExplosion(g, this.getX(), this.getY());		
+	}
   }
 }
 
@@ -1723,9 +1787,17 @@ class EnemyAircraft extends Actor {
 	@Override
 	public void update() {
 		//TODO: -update: this; AI
-		
-		setX(getX()+getStepX());
-		
+
+		//setX(getX()+getStepX());
+
+		if (myTileType==TILE_AIRCRAFT) { 
+			setX(getX()+getStepX());
+		}
+		else if (myTileType==TILE_AIRCRAFT_BOSS) { 
+			//note: remove this to create stationary turret
+			setX(getX()+getStepX());
+		}
+				
 		if (!bHasStarted) {
 			iInitialXPos=getX();
 			iInitialYPos=getY();
@@ -2477,13 +2549,19 @@ class Plasma extends Actor {
 	
 	private boolean bIsChargedPlasma=false;
 
-    public Plasma(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+	//edited by Mike, 20241019
+	public Plasma(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight, int iPlasmaType) {
+	
+    //public Plasma(int iOffsetScreenWidthLeftMargin, int iOffsetScreenHeightTopMargin, int iStageWidth, int iStageHeight, int iTileWidth, int iTileHeight) {
+				
 	  super(iOffsetScreenWidthLeftMargin, iOffsetScreenHeightTopMargin, iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 
 	  try {
 		  myBufferedImage = ImageIO.read(new File("./res/plasma.png"));
       } catch (IOException ex) {
       }
+	  
+	  myTileType=iPlasmaType;	  
 	}
 	
 	public void setChargedPlasma(boolean b) {
@@ -2511,6 +2589,11 @@ class Plasma extends Actor {
 		iXDistanceTraveledMax=iViewPortWidth/2+iTileWidth*2;
 		iYDistanceTraveledMax=iViewPortHeight+iTileHeight;
 
+		//added by Mike, 20241019
+		if (this.getMyTileType()==TILE_ENEMY_PLASMA) {
+			iXDistanceTraveledMax=iViewPortWidth+iTileWidth*2;
+		}
+		
 		//default
 		currentState=HIDDEN_STATE; //ACTIVE_STATE;
 		isCollidable=true;
@@ -2518,13 +2601,16 @@ class Plasma extends Actor {
 		iStepX=0;//ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
 		iStepY=0;//ISTEP_Y_DEFAULT;//*2; //faster by 1 than the default
 
-		myTileType=TILE_PLASMA;
+		//removed by Mike, 20241019
+		//myTileType=TILE_PLASMA;
 	}
 
 	@Override
-	public void hitBy(Actor a) {
-		if (a.getMyTileType()==TILE_HERO) {
-			return;
+	public void hitBy(Actor a) {		
+		if (this.getMyTileType()==TILE_PLASMA) {
+			if (a.getMyTileType()==TILE_HERO) {
+				return;
+			}
 		}
 		
 		//added by Mike, 20241017
@@ -2544,7 +2630,6 @@ class Plasma extends Actor {
 	@Override
 	public void keyReleased(KeyEvent key) {
 	}
-
 
 	//reference: Usbong Game Off 2023
 	//public void processMouseInput(MouseEvent e, int iHeroX, int iHeroY) {
@@ -2597,8 +2682,65 @@ class Plasma extends Actor {
 		iRotationDegrees=iMainImageTileStepAngle;
 	}
 
+	public void processMouseInputForEnemy(int iHeroXPos, int iHeroYPos, int iEnemyX, int iEnemyY) {
+
+		//if hidden, i.e. not available, for use;
+		//if (getCurrentState()!=HIDDEN_STATE) {
+		if (getCurrentState()==ACTIVE_STATE) {
+			return;
+		}
+		
+		setCurrentState(ACTIVE_STATE);
+		//added by Mike, 20240828
+		setCollidable(true);
+
+		this.setX(iEnemyX);
+		this.setY(iEnemyY);
+
+		//added by Mike, 20240826
+		iXInitialDistanceTraveled=getX();
+		iYInitialDistanceTraveled=getY();
+
+		iXCurrentDistanceTraveled=0;
+		iYCurrentDistanceTraveled=0;
+/*
+	    int iDeltaX=(e.getX())-(this.getX()+this.getWidth()/2);
+        int iDeltaY=(e.getY())-(this.getY()+this.getHeight()/2);
+*/
+
+	    int iDeltaX=(iHeroXPos)-(this.getX()+this.getWidth()/2);
+        int iDeltaY=(iHeroYPos)-(this.getY()+this.getHeight()/2);
+
+	    iDeltaY*=-1;
+
+	    double dMainImageTileStepAngleRad=Math.atan2(iDeltaX,iDeltaY);
+
+        int iMainImageTileStepAngle=(int)(dMainImageTileStepAngleRad*(180/Math.PI));
+
+	    //clockwise
+	    iMainImageTileStepAngle=(iMainImageTileStepAngle)%360;
+
+	    System.out.println(">>>>>>>>>iMainImageTileStepAngle: "+iMainImageTileStepAngle);
+
+	    iStepY=(int)(ISTEP_Y_PLASMA*Math.cos(dMainImageTileStepAngleRad));
+	    iStepY*=-1;
+		
+        iStepX=(int)(ISTEP_X_PLASMA*Math.sin(dMainImageTileStepAngleRad));
+		
+		//added by Mike, 20241003
+		iRotationDegrees=iMainImageTileStepAngle;
+	}
+	
 	@Override
 	public void update() {
+/*		
+		//added by Mike, 20241019; debug
+		if (this.getMyTileType()==TILE_ENEMY_PLASMA) {
+			iFrameCount=0;
+			return;
+		}
+*/
+		
 		setX(getX()+getStepX());
 		setY(getY()+getStepY());
 
@@ -2741,7 +2883,43 @@ class Plasma extends Actor {
 		return;
 	}
 
-	drawActor(g, this.getX(), this.getY());
+	//edited by Mike, 20241019
+	//drawActor(g, this.getX(), this.getY());
+
+	if (this.getMyTileType()==TILE_PLASMA) {
+		drawActor(g, this.getX(), this.getY());
+	}
+	else {
+		int iDifferenceInXPos=iViewPortX-(this.getX());	
+		int iDifferenceInYPos=iViewPortY-(this.getY());
+
+		if (isTileInsideViewport(iViewPortX,iViewPortY, this.getX()-iDifferenceInXPos,this.getY()-iDifferenceInYPos))	
+		{	
+			drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+		}
+
+		//when actual viewport is in right side, while enemy aircraft is in left side	
+		//iViewPortX negative number
+		int iViewPortXTemp=(iOffsetScreenWidthLeftMargin+(MAX_TILE_MAP_WIDTH-6)*iTileWidth);
+			
+		//based on wrap around; left-most
+		iDifferenceInXPos=(iViewPortX+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth)-this.getX();	
+		
+		if (isTileInsideViewport(iViewPortXTemp,iViewPortY, this.getX(),this.getY()))	
+		{	
+			drawActor(g, iOffsetScreenWidthLeftMargin-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);	
+		}
+		
+		//when actual viewport is in left side, while enemy aircraft is in right side
+		//iViewPortX positive number		
+		iDifferenceInXPos=iViewPortX-(iOffsetScreenWidthLeftMargin+(MAX_TILE_MAP_WIDTH-1)*iTileWidth);
+		iViewPortXTemp=0+iOffsetScreenWidthLeftMargin;
+
+		if (isTileInsideViewport(iViewPortXTemp,iViewPortY, this.getX(),this.getY()))	
+		{	
+			drawActor(g, this.getX()-iDifferenceInXPos, iOffsetScreenHeightTopMargin-iDifferenceInYPos);
+		}	
+	}
   }
 }
 
@@ -3472,8 +3650,11 @@ class UsbongUtils {
 //for Actor object positions
 class Level2D extends Actor {
 	//private EnemyAircraft myEnemyAircraft;
-	private final int MAX_ENEMY_AIRCRAFT_COUNT=11;//10; //2;//1;//2; //5;
+	private final int MAX_ENEMY_AIRCRAFT_COUNT=10; //2;//1;//2; //5;
 	private EnemyAircraft[] myEnemyAircraftContainer;
+
+	private final int MAX_ENEMY_AIRCRAFT_BOSS_COUNT=1; 
+	private EnemyAircraft[] myEnemyAircraftBossContainer;
 
 	//added by Mike, 20240809
 	private final int MAX_WALL_COUNT=0;//0;//16;//1;//2;
@@ -3484,7 +3665,7 @@ class Level2D extends Actor {
 	private Plasma[] myPlasmaContainer;
 	
 	//added by Mike, 20241018
-	private final int MAX_ENEMY_PLASMA_COUNT=5;
+	private final int MAX_ENEMY_PLASMA_COUNT=1;//5;
 	private Plasma[] myEnemyPlasmaContainer;	
 
 	private boolean bIsFiring=false;
@@ -3544,13 +3725,17 @@ class Level2D extends Actor {
 	  myKeysDown = new boolean[iNumOfKeyTypes];
 
 	  myEnemyAircraftContainer = new EnemyAircraft[MAX_ENEMY_AIRCRAFT_COUNT];
+	  myEnemyAircraftBossContainer = new EnemyAircraft[MAX_ENEMY_AIRCRAFT_BOSS_COUNT];
 			
 	  //edited by Mike, 20241018
-	  for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT-1; i++) {
+	  for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
 		  myEnemyAircraftContainer[i] = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight, TILE_AIRCRAFT);
 	  }
-	  myEnemyAircraftContainer[MAX_ENEMY_AIRCRAFT_COUNT-1] = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight, TILE_AIRCRAFT_BOSS);
 
+	  for (int i=0; i<MAX_ENEMY_AIRCRAFT_BOSS_COUNT; i++) {
+		  myEnemyAircraftBossContainer[i] = new EnemyAircraft(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight, TILE_AIRCRAFT_BOSS);
+	  }
+	  
 	  //added by Mike, 20240809
 	  myWallContainer = new Wall[MAX_WALL_COUNT];
 
@@ -3562,17 +3747,16 @@ class Level2D extends Actor {
 	  myPlasmaContainer = new Plasma[MAX_PLASMA_COUNT];
 
 	  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
-		  myPlasmaContainer[i] = new Plasma(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		  myPlasmaContainer[i] = new Plasma(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight, TILE_PLASMA);
 	  }
 
 	  //added by Mike, 20241018
 	  myEnemyPlasmaContainer = new Plasma[MAX_ENEMY_PLASMA_COUNT];
 
 	  for (int i=0; i<MAX_ENEMY_PLASMA_COUNT; i++) {
-		  myEnemyPlasmaContainer[i] = new Plasma(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
+		  myEnemyPlasmaContainer[i] = new Plasma(iOffsetScreenWidthLeftMargin,iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight, TILE_ENEMY_PLASMA);
 	  }
 	  
-
 	  //added by Mike, 20240809
 	  myBackgroundCanvas = new BackgroundCanvas(0+iOffsetScreenWidthLeftMargin,0+iOffsetScreenHeightTopMargin,iStageWidth, iStageHeight, iTileWidth, iTileHeight);
 
@@ -3628,12 +3812,15 @@ class Level2D extends Actor {
 		tileMap[6][MAX_TILE_MAP_WIDTH-3]=TILE_AIRCRAFT;
 		tileMap[5][3]=TILE_AIRCRAFT;
 */
-		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT-1; i++) {
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
 			tileMap[2][i]=TILE_AIRCRAFT;
 		}
 		
 		//boss
-		tileMap[0][MAX_TILE_MAP_WIDTH-1]=TILE_AIRCRAFT_BOSS;
+		//tileMap[0][MAX_TILE_MAP_WIDTH-1]=TILE_AIRCRAFT_BOSS;
+		//MAX_ENEMY_AIRCRAFT_BOSS_COUNT
+		//tileMap[0][24]=TILE_AIRCRAFT_BOSS;
+		tileMap[0][5]=TILE_AIRCRAFT_BOSS;
 		
 		//tileMap[5][0]=TILE_WALL;
 
@@ -3680,6 +3867,41 @@ class Level2D extends Actor {
 			  }
 		}
 */		
+		//only 1 Boss; red aircraft; smarter AI
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_BOSS_COUNT; i++) {	
+			//Boss
+			if (myEnemyAircraftBossContainer[i].isActive()) {
+				for (int k=0; k<MAX_ENEMY_PLASMA_COUNT; k++) {					
+					if (!myEnemyPlasmaContainer[k].isActive()) {
+						//TODO: -update: this to include if hero robot ship is at right-most of map; reminder wrap around
+						myEnemyPlasmaContainer[k].processMouseInputForEnemy(this.getX()+iViewPortWidth/2,myRobotShip.getY(), myEnemyAircraftBossContainer[i].getX(),myEnemyAircraftBossContainer[i].getY());
+				
+/*						
+						myEnemyPlasmaContainer[k].setX(myEnemyAircraftBossContainer[i].getX());
+						
+						myEnemyPlasmaContainer[k].setY(myEnemyAircraftBossContainer[i].getY());
+
+						myEnemyPlasmaContainer[k].setCurrentState(ACTIVE_STATE);
+						myEnemyPlasmaContainer[k].setCollidable(true);		
+						
+*/
+/*						
+System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PLASMA!");				
+
+System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyAircraftBossContainer[i].getX(): "+myEnemyAircraftBossContainer[i].getX());				
+System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyAircraftBossContainer[i].getY(): "+myEnemyAircraftBossContainer[i].getY());				
+System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myRobotShip.getX(): "+myRobotShip.getX());				
+System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myRobotShip.getY(): "+myRobotShip.getY());			
+
+System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].getX(): "+myEnemyPlasmaContainer[k].getX());				
+System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].getY(): "+myEnemyPlasmaContainer[k].getY());				
+*/						
+						break;
+					  }
+				}
+			}
+		}
+
 		bIsFiring=false;
 		bHasPressedFiring=true;
 
@@ -3703,24 +3925,23 @@ class Level2D extends Actor {
 		return;
 	  }
 	  
-	  
-		  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
-			  if (!myPlasmaContainer[i].isActive()) {
+	  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
+		  if (!myPlasmaContainer[i].isActive()) {
+			  
+			//added by Mike, 20240910
+			if (iPlasmaCharge==iPlasmaChargeMax) {
+			  myPlasmaContainer[i].setChargedPlasma(true);
+			  bIsPlasmaChargeReleased=true;
 				  
-				//added by Mike, 20240910
-				if (iPlasmaCharge==iPlasmaChargeMax) {
-				  myPlasmaContainer[i].setChargedPlasma(true);
-				  bIsPlasmaChargeReleased=true;
-					  
-				  System.out.println("Plasma Charge Released!: "+iPlasmaCharge);  
-				}
-				  
-			    myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
-					
-			    bIsFiring=true;				    
-			    break;
-		    }
-		  }		  	  
+			  System.out.println("Plasma Charge Released!: "+iPlasmaCharge);  
+			}
+			  
+			myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
+				
+			bIsFiring=true;				    
+			break;
+		}
+	  }		  	  
 	  
 
 /*
@@ -3896,6 +4117,29 @@ class Level2D extends Actor {
 				myEnemyAircraftContainer[i].setX(iOffsetScreenWidthLeftMargin+0-myEnemyAircraftContainer[i].getWidth()/2); //OK;
 			}
 		}
+		
+		//added by Mike, 20241018
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_BOSS_COUNT; i++) {
+			
+			if (!myEnemyAircraftBossContainer[i].isActive()) {
+				continue;
+			}
+			
+			myEnemyAircraftBossContainer[i].synchronizeViewPortWithBackground(iViewPortX,iViewPortY);
+			//continuously update, even if not inside viewport
+			myEnemyAircraftBossContainer[i].update();
+
+			//went beyond left-most
+			//OK
+			if (myEnemyAircraftBossContainer[i].getX()+myEnemyAircraftBossContainer[i].getWidth()/2<=0+iOffsetScreenWidthLeftMargin) {
+				
+				myEnemyAircraftBossContainer[i].setX(myEnemyAircraftBossContainer[i].getX()+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth);
+			}
+			
+			if (myEnemyAircraftBossContainer[i].getX()+myEnemyAircraftBossContainer[i].getWidth()/2>=iRightMostLevelWidth) {
+				myEnemyAircraftBossContainer[i].setX(iOffsetScreenWidthLeftMargin+0-myEnemyAircraftBossContainer[i].getWidth()/2); //OK;
+			}
+		}		
 
 		//added by Mike, 20240825
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
@@ -3940,10 +4184,43 @@ class Level2D extends Actor {
 /*
 				System.out.println("myPlasmaContainer[i].getY(): "+myPlasmaContainer[i].getY());
 				System.out.println("myEnemyAircraftContainer[k].getY(): "+myEnemyAircraftContainer[k].getY());
-*/
-				
-				myBackgroundCanvas.collideWithBackgroundTile(myPlasmaContainer[i]);
+*/				
 			}
+
+			//added by Mike, 20241018
+			for (int k=0; k<MAX_ENEMY_AIRCRAFT_BOSS_COUNT; k++) {
+				myPlasmaContainer[i].collideWithEnemy(myEnemyAircraftBossContainer[k]);
+			}
+			
+			myBackgroundCanvas.collideWithBackgroundTile(myPlasmaContainer[i]);
+		}
+
+		//added by Mike, 20241018		
+		for (int i=0; i<MAX_ENEMY_PLASMA_COUNT; i++) {
+			//added by Mike, 20240910
+			//put charge
+			//System.out.println("CHARGED!");
+						
+			if (!myEnemyPlasmaContainer[i].isActive()) {
+				continue;
+			}
+						
+			myEnemyPlasmaContainer[i].synchronizeViewPortWithBackground(iViewPortX,iViewPortY);			
+			myEnemyPlasmaContainer[i].update();
+
+			//went beyond left-most
+			//OK
+			if (myEnemyPlasmaContainer[i].getX()+myEnemyPlasmaContainer[i].getWidth()/2<=0+iOffsetScreenWidthLeftMargin) {
+				myEnemyPlasmaContainer[i].setX(myEnemyPlasmaContainer[i].getX()+MAX_TILE_MAP_WIDTH*iTileWidth-iTileWidth);
+			}
+			
+			if (myEnemyPlasmaContainer[i].getX()+myEnemyPlasmaContainer[i].getWidth()/2>=iRightMostLevelWidth) {
+				myEnemyPlasmaContainer[i].setX(iOffsetScreenWidthLeftMargin+0-myEnemyPlasmaContainer[i].getWidth()/2); //OK;
+			}
+		
+			//removed by Mike, 20241019
+			//put in collideWith(...); due to hitting Hero		
+			//myEnemyPlasmaContainer[i].collideWithEnemy(myRobotShip);
 		}
 
 		//added by Mike, 20240809
@@ -3988,6 +4265,63 @@ class Level2D extends Actor {
 				a.hitBy(myEnemyAircraftContainer[i]);			
 			}	
 		}
+		
+		//added by Mike, 20241019
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_BOSS_COUNT; i++) {
+
+			if (!myEnemyAircraftBossContainer[i].isActive()) {
+				continue;
+			}
+
+			if ((!myEnemyAircraftBossContainer[i].checkIsCollidable())||(!a.checkIsCollidable()))
+			{
+				//not collidable
+				return;
+			}
+			
+			int iDifferenceInXPosOfViewPortAndBG=iViewPortX-(iOffsetScreenWidthLeftMargin);
+
+			int iDifferenceInYPosOfViewPortAndBG=iViewPortY-(iOffsetScreenHeightTopMargin);
+
+			if (isActorIntersectingWithActor(a,myEnemyAircraftBossContainer[i],myEnemyAircraftBossContainer[i].getX()-iDifferenceInXPosOfViewPortAndBG,myEnemyAircraftBossContainer[i].getY()-iDifferenceInYPosOfViewPortAndBG))
+			
+			{
+				System.out.println("COLLISION!");
+
+				myEnemyAircraftBossContainer[i].hitBy(a);
+				a.hitBy(myEnemyAircraftBossContainer[i]);			
+			}	
+		}		
+		
+		//added by Mike, 20241019
+		for (int i=0; i<MAX_ENEMY_PLASMA_COUNT; i++) {
+
+			if (!myEnemyPlasmaContainer[i].isActive()) {
+				continue;
+			}
+
+			if ((!myEnemyPlasmaContainer[i].checkIsCollidable())||(!a.checkIsCollidable()))
+			{
+				//not collidable
+				return;
+			}
+			
+			int iDifferenceInXPosOfViewPortAndBG=iViewPortX-(iOffsetScreenWidthLeftMargin);
+
+			int iDifferenceInYPosOfViewPortAndBG=iViewPortY-(iOffsetScreenHeightTopMargin);
+
+			if (isActorIntersectingWithActor(a,myEnemyPlasmaContainer[i],myEnemyPlasmaContainer[i].getX()-iDifferenceInXPosOfViewPortAndBG,myEnemyPlasmaContainer[i].getY()-iDifferenceInYPosOfViewPortAndBG))
+			
+			{
+				System.out.println("COLLISION!");
+
+				myEnemyPlasmaContainer[i].hitBy(a);
+				//tileMap[i][k]=TILE_BLANK;
+
+				a.hitBy(myEnemyPlasmaContainer[i]);			
+			}	
+		}
+		
 
 /*
 		//added by Mike, 20240809
@@ -4012,6 +4346,8 @@ class Level2D extends Actor {
 	//during init
 	public void initLevel() {
 		int iEnemyAircraftCount=0;
+		int iEnemyAircraftBossCount=0;
+		
 		int iWallCount=0;
 		int iPlasmaCount=0;
 		
@@ -4029,6 +4365,9 @@ class Level2D extends Actor {
 
 					int iDifferenceInYPos=iViewPortY-(iOffsetScreenHeightTopMargin+iTileHeight*i);
 */
+					//edited by Mike, 20241018
+					//if (iEnemyAircraftCount<MAX_ENEMY_AIRCRAFT_COUNT) {
+					//TODO: -update: this; Boss types also exist
 					if (iEnemyAircraftCount<MAX_ENEMY_AIRCRAFT_COUNT) {
 
 						if (myEnemyAircraftContainer[iEnemyAircraftCount].isActive()) {
@@ -4043,6 +4382,23 @@ class Level2D extends Actor {
 							tileMap[i][k]=TILE_BLANK;
 
 							iEnemyAircraftCount++;
+						}
+					}
+				}
+				else if (tileMap[i][k]==TILE_AIRCRAFT_BOSS) {
+
+					System.out.println("TILE_AIRCRAFT BOSS!");
+
+					if (iEnemyAircraftBossCount<MAX_ENEMY_AIRCRAFT_BOSS_COUNT) {
+						if (myEnemyAircraftBossContainer[iEnemyAircraftBossCount].getMyTileType()==TILE_AIRCRAFT_BOSS) {							
+							if (myEnemyAircraftBossContainer[iEnemyAircraftBossCount].isActive()) {
+								myEnemyAircraftBossContainer[iEnemyAircraftBossCount].setX(0+iOffsetScreenWidthLeftMargin+iTileWidth*k);
+								myEnemyAircraftBossContainer[iEnemyAircraftBossCount].setY(0+iOffsetScreenHeightTopMargin+iTileHeight*i);
+
+								tileMap[i][k]=TILE_BLANK;
+
+								iEnemyAircraftBossCount++;
+							}
 						}
 					}
 				}
@@ -4245,8 +4601,6 @@ class Level2D extends Actor {
 			}
 		  }
 	    }
-
-	//still work-in-progress
 	
 		//added by Mike, 20240902
 		for (int i=0; i<MAX_ENEMY_AIRCRAFT_COUNT; i++) {
@@ -4289,6 +4643,24 @@ class Level2D extends Actor {
 			g.fillPolygon(p);
 */			
 		}
+		
+		for (int i=0; i<MAX_ENEMY_AIRCRAFT_BOSS_COUNT; i++) {
+			
+			if (!myEnemyAircraftBossContainer[i].isActive()) {
+				continue;
+			}
+
+			//#E2536F")); //pink; //#FF7236")); //orange
+			g.setColor(Color.decode("#FF7236")); //A6340C
+						
+			double dTileMapY=((myEnemyAircraftBossContainer[i].getY()*1.0-iOffsetScreenHeightTopMargin)/(MAX_TILE_MAP_HEIGHT*iTileHeight)*iMiniMapHeight);
+			
+			double dTileMapX=((myEnemyAircraftBossContainer[i].getX()*1.0-iOffsetScreenWidthLeftMargin)/(MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+
+			double dMiniMapOffsetLeftMargin=((iOffsetScreenWidthLeftMargin)/(iOffsetScreenWidthLeftMargin+MAX_TILE_MAP_WIDTH*iTileWidth)*iMiniMapWidth);
+			
+			g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dTileMapX,iMiniMapY+(int)dTileMapY,iMiniMapTileWidth,iMiniMapTileHeight);
+		}
 
         g.setColor(Color.decode("#59A6DC")); //blue; hero
         g.fillRect(iMiniMapOffsetScreenWidthLeftMargin+iMiniMapX+(int)dMiniMapHeroX,iMiniMapY+(int)dMiniMapHeroY,iMiniMapTileWidth,iMiniMapTileHeight);
@@ -4312,6 +4684,12 @@ class Level2D extends Actor {
 				myEnemyAircraftContainer[iEnemyAircraftCount].draw(g);
 			}
 		}
+		
+		for (int iEnemyAircraftBossCount=0; iEnemyAircraftBossCount<MAX_ENEMY_AIRCRAFT_BOSS_COUNT; iEnemyAircraftBossCount++) {
+			if (myEnemyAircraftBossContainer[iEnemyAircraftBossCount].isActive()) {
+				myEnemyAircraftBossContainer[iEnemyAircraftBossCount].draw(g);
+			}
+		}
 
 		//added by Mike, 20240809
 		for (int iWallCount=0; iWallCount<MAX_WALL_COUNT; iWallCount++) {
@@ -4324,6 +4702,19 @@ class Level2D extends Actor {
 		for (int iPlasmaCount=0; iPlasmaCount<MAX_PLASMA_COUNT; iPlasmaCount++) {
 			if (myPlasmaContainer[iPlasmaCount].isActive()) {
 				myPlasmaContainer[iPlasmaCount].draw(g);
+			}
+		}
+		
+		//added by Mike, 20241018
+		for (int iEnemyPlasmaCount=0; iEnemyPlasmaCount<MAX_ENEMY_PLASMA_COUNT; iEnemyPlasmaCount++) {			
+			if (myEnemyPlasmaContainer[iEnemyPlasmaCount].isActive()) {
+				myEnemyPlasmaContainer[iEnemyPlasmaCount].draw(g);
+				
+				System.out.println("HALLO");
+				System.out.println(">>>>>>>>>>>>>>myEnemyPlasmaContainer[iEnemyPlasmaCount].getX(): "+myEnemyPlasmaContainer[iEnemyPlasmaCount].getX());
+				
+				System.out.println(">>>>>>>>>>>>>>myEnemyPlasmaContainer[iEnemyPlasmaCount].getY(): "+myEnemyPlasmaContainer[iEnemyPlasmaCount].getY());
+
 			}
 		}
 
