@@ -15,7 +15,7 @@
  * @company: Usbong
  * @author: SYSON, MICHAEL B.
  * @date created: 20240522
- * @last updated: 20241019; from 20241018
+ * @last updated: 20241020; from 20241019
  * @website: www.usbong.ph
  *
  */
@@ -751,8 +751,9 @@ class Actor {
     public boolean isActive() {
 		//edited by Mike, 20241016
         //if (currentState==ACTIVE_STATE) {
+		//edited by Mike, 20241020
         if (currentState!=HIDDEN_STATE) {
-
+        //if ((currentState!=HIDDEN_STATE) && (currentState!=DYING_STATE)) {
             return true;
 		}
         else {
@@ -807,6 +808,11 @@ class Actor {
 		return myTileType;
 	}
 
+	//added by Mike, 20241020
+	public void setMyTileType(int iTileType) {
+		myTileType=iTileType;
+	}
+	
 	//added by Mike, 20240804
 	public boolean checkIsCollidable() {
 		return isCollidable;
@@ -1148,6 +1154,17 @@ class Actor {
 	public void collideWithEnemy(Actor a) {
 						
 		//plasma actor
+		if (!this.isActive()) {
+			return;
+		}
+		
+		if (!this.checkIsCollidable())
+		{
+			//not collidable
+			return;
+		}
+		
+				
 		if (!a.isActive())
 		{
 			//not collidable
@@ -1172,7 +1189,9 @@ class Actor {
 				this.hitBy(a);
 				//tileMap[i][k]=TILE_BLANK;
 
-				a.hitBy(this);			
+				a.hitBy(this);
+				
+				return;
 		}
 
 		//edited by Mike, 20240919; from 20240918
@@ -1188,6 +1207,8 @@ class Actor {
 
 				this.hitBy(a);
 				a.hitBy(this);			
+				
+				return;
 		}
 
 		//when actual viewport is in left side, while enemy aircraft is in right side
@@ -1199,6 +1220,8 @@ class Actor {
 
 				this.hitBy(a);
 				a.hitBy(this);			
+				
+				return;				
 		}
 	}	
 
@@ -2561,7 +2584,8 @@ class Plasma extends Actor {
       } catch (IOException ex) {
       }
 	  
-	  myTileType=iPlasmaType;	  
+	  //myTileType=iPlasmaType;	  
+	  setMyTileType(iPlasmaType);	  
 	}
 	
 	public void setChargedPlasma(boolean b) {
@@ -2569,7 +2593,7 @@ class Plasma extends Actor {
 	}
 
 	@Override
-	public void reset() {
+	public void reset() {		
 		iWidth=iTileWidth;
 		iHeight=iTileHeight;
 
@@ -2601,17 +2625,34 @@ class Plasma extends Actor {
 		iStepX=0;//ISTEP_X_DEFAULT;//*2; //faster by 1 than the default
 		iStepY=0;//ISTEP_Y_DEFAULT;//*2; //faster by 1 than the default
 
+		bIsChargedPlasma=false;
+
 		//removed by Mike, 20241019
 		//myTileType=TILE_PLASMA;
 	}
 
 	@Override
 	public void hitBy(Actor a) {		
+/*		//removed by Mike, 20241020
 		if (this.getMyTileType()==TILE_PLASMA) {
 			if (a.getMyTileType()==TILE_HERO) {
 				return;
 			}
+
+			//added by Mike, 20241020			
+			if (a.getMyTileType()==TILE_ENEMY_PLASMA) {
+				return;
+			}
 		}
+		
+		//added by Mike, 20241020
+		//TODO: -add: explosion behavior when plasma hits plasma
+		if (this.getMyTileType()==TILE_ENEMY_PLASMA) {
+			if (a.getMyTileType()==TILE_PLASMA) {
+				return;
+			}
+		}
+*/
 		
 		//added by Mike, 20241017
 		bIsChargedPlasma=false;
@@ -3853,7 +3894,11 @@ class Level2D extends Actor {
 		//added by Mike, 20241016
 		if (!myRobotShip.isActive()) {
 			return;
-		}		
+		}
+
+		if (myRobotShip.getCurrentState()==DYING_STATE) {
+			return;
+		}
 		
 /*
 		for (int i=0; i<MAX_PLASMA_COUNT; i++) {
@@ -3912,6 +3957,9 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].g
 	//added by Mike, 20240830
 	@Override
 	public void mouseReleased(MouseEvent e) {
+	  //debug
+	  //if(true) return;
+		
 	  //System.out.println("Released!");
 
 	  //bIsFiring=false;
@@ -3924,6 +3972,11 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].g
 	  if (!myRobotShip.isActive()) {
 		return;
 	  }
+	  
+	  if (myRobotShip.getCurrentState()==DYING_STATE) {
+		return;
+	  }
+	  
 	  
 	  for (int i=0; i<MAX_PLASMA_COUNT; i++) {
 		  if (!myPlasmaContainer[i].isActive()) {
@@ -3938,6 +3991,7 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].g
 			  
 			myPlasmaContainer[i].processMouseInput(iMouseXPos, iMouseYPos, myRobotShip.getX(),myRobotShip.getY());
 				
+			//consider removing
 			bIsFiring=true;				    
 			break;
 		}
@@ -4176,7 +4230,7 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].g
 			}
 			
 			//added by Mike, 20240825
-			for (int k=0; k<MAX_ENEMY_AIRCRAFT_COUNT; k++) {
+			for (int k=0; k<MAX_ENEMY_AIRCRAFT_COUNT; k++) {				
 				myPlasmaContainer[i].collideWithEnemy(myEnemyAircraftContainer[k]);
 
 				//System.out.println("myPlasmaContainer[i].getX(): "+myPlasmaContainer[i].getX());
@@ -4247,7 +4301,8 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].g
 			if ((!myEnemyAircraftContainer[i].checkIsCollidable())||(!a.checkIsCollidable()))
 			{
 				//not collidable
-				return;
+				//return;
+				continue;
 			}
 			
 			int iDifferenceInXPosOfViewPortAndBG=iViewPortX-(iOffsetScreenWidthLeftMargin);
@@ -4276,7 +4331,8 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].g
 			if ((!myEnemyAircraftBossContainer[i].checkIsCollidable())||(!a.checkIsCollidable()))
 			{
 				//not collidable
-				return;
+				//return;
+				continue;
 			}
 			
 			int iDifferenceInXPosOfViewPortAndBG=iViewPortX-(iOffsetScreenWidthLeftMargin);
@@ -4297,13 +4353,18 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].g
 		for (int i=0; i<MAX_ENEMY_PLASMA_COUNT; i++) {
 
 			if (!myEnemyPlasmaContainer[i].isActive()) {
+				
+//System.out.println("Enemy Plasma: NOT ACTIVE!!!");				
 				continue;
 			}
 
 			if ((!myEnemyPlasmaContainer[i].checkIsCollidable())||(!a.checkIsCollidable()))
 			{
+//System.out.println("Enemy Plasma: NOT COLLIDABLE!!!");				
+
 				//not collidable
-				return;
+				//return;
+				continue;
 			}
 			
 			int iDifferenceInXPosOfViewPortAndBG=iViewPortX-(iOffsetScreenWidthLeftMargin);
@@ -4313,7 +4374,10 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> myEnemyPlasmaContainer[k].g
 			if (isActorIntersectingWithActor(a,myEnemyPlasmaContainer[i],myEnemyPlasmaContainer[i].getX()-iDifferenceInXPosOfViewPortAndBG,myEnemyPlasmaContainer[i].getY()-iDifferenceInYPosOfViewPortAndBG))
 			
 			{
-				System.out.println("COLLISION!");
+				//System.out.println("COLLISION!");
+
+				System.out.println("COLLISION! HERO IS HIT!!!");
+
 
 				myEnemyPlasmaContainer[i].hitBy(a);
 				//tileMap[i][k]=TILE_BLANK;
